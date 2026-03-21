@@ -1,0 +1,433 @@
+{
+    "document_info": {
+      "title": "PRD - Viaje360: Agente Personal de Viajes Inteligente",
+      "version": "1.1",
+      "date": "2024-07-28",
+      "language": "Spanish",
+      "programming_languages": ["TypeScript", "Shadcn-ui", "Tailwind CSS"],
+      "project_name": "viaje360",
+      "original_requirements": "Crear una aplicación web que funcione como agente personal para hacer tours personalizados adaptados al estilo de viaje del usuario, incluyendo reservas de vuelos y hoteles, búsqueda de transporte público, gestión de actividades con modificaciones por clima, búsqueda de restaurantes, control de presupuesto, información en tiempo real, juegos educativos de quiz/trivia, sistema de gamificación tipo Pokémon GO para coleccionar monumentos, y funcionalidades completas de compartir experiencias y trofeos en redes sociales."
+    },
+    
+    "product_definition": {
+      "product_goals": [
+        "Revolucionar la planificación de viajes mediante IA personalizada que se adapte completamente al estilo y preferencias de cada usuario, eliminando la fricción en el proceso de planificación",
+        "Crear una experiencia de viaje gamificada e interactiva que transforme el turismo tradicional en una aventura educativa y entretenida mediante mecánicas de colección y aprendizaje",
+        "Integrar de manera seamless todos los aspectos del viaje (transporte, alojamiento, actividades, presupuesto) en una sola plataforma inteligente con capacidades de adaptación en tiempo real"
+      ],
+      
+      "user_stories": [
+        "Como viajero aventurero, quiero que la aplicación genere itinerarios personalizados basados en mis preferencias de actividad física y presupuesto, para que pueda maximizar mi experiencia sin preocuparme por la planificación",
+        "Como turista cultural, quiero coleccionar monumentos y sitios históricos mediante el sistema de gamificación, para que mi viaje sea más interactivo y aprenda sobre cada destino de forma entretenida",
+        "Como viajero frecuente, quiero que la aplicación ajuste automáticamente mis actividades cuando cambie el clima, para que nunca pierda tiempo por cancelaciones imprevistas",
+        "Como usuario consciente del presupuesto, quiero monitorear mis gastos en tiempo real y recibir sugerencias de alternativas económicas, para que pueda controlar mi presupuesto sin sacrificar experiencias",
+        "Como viajero educativo, quiero acceder a juegos de trivia sobre mi destino antes y durante el viaje, para que pueda enriquecer mi conocimiento cultural de forma divertida",
+        "Como usuario social, quiero compartir mis experiencias de viaje, fotos y momentos destacados en mis redes sociales favoritas, para que pueda inspirar a otros y mantener un registro social de mis aventuras",
+        "Como coleccionista de destinos, quiero compartir mis trofeos y logros de gamificación en redes sociales, para que pueda mostrar mis colecciones de monumentos y competir amigablemente con mis amigos viajeros"
+      ],
+      
+      "competitive_analysis": [
+        {
+          "name": "Expedia",
+          "pros": ["IA avanzada con Romie", "Integración social", "Programa de fidelización robusto"],
+          "cons": ["Sin gamificación", "Limitada personalización profunda", "No hay gestión inteligente de clima"]
+        },
+        {
+          "name": "TripAdvisor",
+          "pros": ["AI Trip Planner exitoso", "Reviews confiables", "Gran base de datos"],
+          "cons": ["Falta integración de reservas completa", "Sin elementos de juego", "No gestiona presupuesto activamente"]
+        },
+        {
+          "name": "Airbnb",
+          "pros": ["Experiencias locales únicas", "Comunidad fuerte", "Alojamientos diversos"],
+          "cons": ["Limitado a alojamientos principalmente", "Sin planificación integral", "Falta gamificación"]
+        },
+        {
+          "name": "TripIt",
+          "pros": ["Excelente organización de itinerarios", "Sincronización automática", "Interfaz limpia"],
+          "cons": ["Solo organización post-reserva", "Sin reservas integradas", "No hay elementos interactivos"]
+        },
+        {
+          "name": "Pokémon GO",
+          "pros": ["Gamificación exitosa", "Base de usuarios masiva", "Mecánicas de colección adictivas"],
+          "cons": ["No enfocado en viajes", "Sin planificación", "Limitado valor educativo turístico"]
+        },
+        {
+          "name": "Rick Steves Audio Europe",
+          "pros": ["Contenido educativo de calidad", "Funciona offline", "Tours autoguiados"],
+          "cons": ["Solo Europa", "Sin gamificación", "Sin planificación de viajes"]
+        },
+        {
+          "name": "Trail Wallet",
+          "pros": ["Especializado en viajes", "Funciona offline", "Multi-moneda"],
+          "cons": ["Solo iOS", "Funcionalidad limitada", "Sin integración con reservas"]
+        }
+      ],
+      
+      "competitive_quadrant_chart": "```mermaid\nquadrantChart\n    title \"Análisis Competitivo - Funcionalidad vs Gamificación\"\n    x-axis \"Baja Funcionalidad\" --> \"Alta Funcionalidad\"\n    y-axis \"Baja Gamificación\" --> \"Alta Gamificación\"\n    quadrant-1 \"Líderes Innovadores\"\n    quadrant-2 \"Potencial de Mejora\"\n    quadrant-3 \"Nicho Limitado\"\n    quadrant-4 \"Funcional pero Aburrido\"\n    \"Expedia\": [0.85, 0.2]\n    \"TripAdvisor\": [0.8, 0.15]\n    \"Airbnb\": [0.6, 0.25]\n    \"TripIt\": [0.7, 0.1]\n    \"Pokémon GO\": [0.3, 0.9]\n    \"Rick Steves\": [0.5, 0.3]\n    \"Trail Wallet\": [0.4, 0.1]\n    \"Viaje360 (Target)\": [0.9, 0.85]\n```"
+    },
+    
+    "technical_specifications": {
+      "requirements_analysis": {
+        "overview": "Viaje360 requiere una arquitectura compleja que integre múltiples APIs externas, sistemas de IA para personalización, capacidades de gamificación en tiempo real, y gestión avanzada de datos de usuario. La aplicación debe ser responsive, escalable y capaz de funcionar tanto online como offline en funciones críticas.",
+        "key_technical_challenges": [
+          "Integración seamless con múltiples APIs de terceros (vuelos, hoteles, transporte, clima)",
+          "Sistema de IA para personalización de recomendaciones basado en comportamiento del usuario",
+          "Gamificación en tiempo real con geolocalización precisa y sistema de colecciones",
+          "Gestión compleja de presupuesto con múltiples monedas y tracking en tiempo real",
+          "Integración seamless con múltiples APIs de redes sociales manteniendo privacidad del usuario",
+          "Generación automática de contenido optimizado para diferentes plataformas sociales",
+          "Optimización de rendimiento para experiencias móviles fluidas"
+        ]
+      },
+      
+      "requirements_pool": [
+        {
+          "id": "REQ-001",
+          "priority": "P0",
+          "category": "Autenticación",
+          "description": "Sistema de registro y autenticación de usuarios con OAuth social",
+          "acceptance_criteria": "Usuarios deben poder registrarse/iniciar sesión con email, Google, Facebook y Apple"
+        },
+        {
+          "id": "REQ-002", 
+          "priority": "P0",
+          "category": "Perfil de Usuario",
+          "description": "Sistema de perfiles personalizables con preferencias de viaje",
+          "acceptance_criteria": "Usuarios pueden configurar estilo de viaje, presupuesto, preferencias alimentarias, actividades favoritas"
+        },
+        {
+          "id": "REQ-003",
+          "priority": "P0", 
+          "category": "Búsqueda de Vuelos",
+          "description": "Integración con APIs de aerolíneas para búsqueda y reserva de vuelos",
+          "acceptance_criteria": "Búsqueda en tiempo real con filtros avanzados y comparación de precios de múltiples fuentes"
+        },
+        {
+          "id": "REQ-004",
+          "priority": "P0",
+          "category": "Reservas de Hoteles", 
+          "description": "Sistema de búsqueda y reserva de alojamientos",
+          "acceptance_criteria": "Integración con Booking.com, Expedia APIs para búsqueda por ubicación, fecha, precio y amenidades"
+        },
+        {
+          "id": "REQ-005",
+          "priority": "P0",
+          "category": "Transporte Público",
+          "description": "Planificador de transporte público desde hoteles a actividades",
+          "acceptance_criteria": "Integración con APIs de transporte local, cálculo de rutas óptimas con tiempos reales"
+        },
+        {
+          "id": "REQ-006",
+          "priority": "P0",
+          "category": "Gestión de Actividades",
+          "description": "Sistema de búsqueda, reserva y organización de actividades turísticas",
+          "acceptance_criteria": "Catálogo de actividades por destino con reserva integrada y gestión de horarios"
+        },
+        {
+          "id": "REQ-007",
+          "priority": "P0",
+          "category": "Adaptación Climática",
+          "description": "Sistema inteligente que modifica actividades según condiciones meteorológicas",
+          "acceptance_criteria": "Integración con API de clima, sugerencias automáticas de actividades alternativas indoor cuando llueve"
+        },
+        {
+          "id": "REQ-008",
+          "priority": "P0",
+          "category": "Búsqueda de Restaurantes",
+          "description": "Motor de recomendación de restaurantes basado en ubicación y preferencias",
+          "acceptance_criteria": "Integración con Google Places, Yelp, filtros por tipo de cocina, precio, distancia y ratings"
+        },
+        {
+          "id": "REQ-009",
+          "priority": "P0",
+          "category": "Control de Presupuesto",
+          "description": "Sistema de tracking y gestión de gastos de viaje en tiempo real",
+          "acceptance_criteria": "Dashboard de gastos, alertas de presupuesto, conversión de monedas, categorización automática"
+        },
+        {
+          "id": "REQ-010",
+          "priority": "P1",
+          "category": "Información en Tiempo Real",
+          "description": "Actualizaciones en tiempo real de vuelos, clima, transporte y eventos",
+          "acceptance_criteria": "Push notifications para cambios relevantes, datos actualizados cada 15 minutos"
+        },
+        {
+          "id": "REQ-011",
+          "priority": "P1",
+          "category": "Juegos Educativos",
+          "description": "Sistema de quiz y trivia sobre destinos de viaje",
+          "acceptance_criteria": "Base de datos de preguntas por destino, sistema de puntuación, progress tracking"
+        },
+        {
+          "id": "REQ-012",
+          "priority": "P1",
+          "category": "Gamificación",
+          "description": "Sistema tipo Pokémon GO para coleccionar monumentos y destinos",
+          "acceptance_criteria": "Geolocalización precisa, sistema de colecciones, logros, leaderboards, realidad aumentada básica"
+        },
+        {
+          "id": "REQ-013",
+          "priority": "P1",
+          "category": "IA Personalizada",
+          "description": "Motor de IA para recomendaciones personalizadas basadas en historial",
+          "acceptance_criteria": "Machine learning para preferencias del usuario, recomendaciones mejoradas con cada viaje"
+        },
+        {
+          "id": "REQ-014",
+          "priority": "P1",
+          "category": "Itinerario Inteligente",
+          "description": "Generador automático de itinerarios optimizados",
+          "acceptance_criteria": "Algoritmos de optimización de rutas, consideración de tiempos de traslado, preferencias usuario"
+        },
+        {
+          "id": "REQ-015",
+          "priority": "P2",
+          "category": "Funcionalidad Offline",
+          "description": "Acceso a funciones básicas sin conexión a internet",
+          "acceptance_criteria": "Itinerarios descargables, mapas offline, información básica de destinos"
+        },
+        {
+          "id": "REQ-016",
+          "priority": "P1",
+          "category": "Compartir Experiencias Sociales",
+          "description": "Sistema completo para compartir experiencias de viaje en redes sociales",
+          "acceptance_criteria": "Usuarios pueden compartir fotos, reseñas, itinerarios y momentos destacados en Instagram, Facebook, Twitter, TikTok con templates personalizados, hashtags automáticos y geolocalización"
+        },
+        {
+          "id": "REQ-017",
+          "priority": "P1",
+          "category": "Compartir Trofeos y Logros",
+          "description": "Funcionalidad para compartir trofeos de gamificación y colecciones en redes sociales",
+          "acceptance_criteria": "Sistema de badges compartibles, imágenes generadas automáticamente de colecciones, estadísticas de viaje, logros desbloqueados con formato optimizado para cada red social"
+        },
+        {
+          "id": "REQ-018",
+          "priority": "P1",
+          "category": "Generador de Contenido Social",
+          "description": "Motor automático de generación de contenido para redes sociales",
+          "acceptance_criteria": "IA que genera captions, hashtags relevantes, storytelling automático, templates visuales personalizados, optimización por plataforma (Stories, Posts, Reels)"
+        },
+        {
+          "id": "REQ-019",
+          "priority": "P1",
+          "category": "Configuración de Privacidad Social",
+          "description": "Sistema granular de permisos y privacidad para compartir contenido",
+          "acceptance_criteria": "Control de qué información compartir, configuración por red social, permisos de geolocalización, opciones de anonimización de datos personales"
+        },
+        {
+          "id": "REQ-020",
+          "priority": "P2",
+          "category": "Asistente de Voz",
+          "description": "Interfaz de voz para consultas rápidas durante el viaje",
+          "acceptance_criteria": "Reconocimiento de voz, respuestas sobre itinerario, clima, direcciones"
+        }
+      ],
+      
+      "ui_design_draft": {
+        "main_navigation": {
+          "description": "Bottom tab navigation con 5 secciones principales",
+          "tabs": ["Inicio", "Explorar", "Mi Viaje", "Colección", "Perfil"]
+        },
+        "home_screen": {
+          "components": [
+            "Widget de viaje actual con clima en tiempo real",
+            "Recomendaciones personalizadas del día",
+            "Acceso rápido a quiz/trivia",
+            "Estado de presupuesto actual",
+            "Últimos monumentos coleccionados",
+            "Botón de compartir experiencia rápida"
+          ]
+        },
+        "trip_planner": {
+          "features": [
+            "Mapa interactivo con actividades",
+            "Timeline de itinerario con drag & drop",
+            "Integración de reservas en tiempo real",
+            "Sugerencias inteligentes basadas en clima",
+            "Calculator de presupuesto integrado"
+          ]
+        },
+        "gamification_interface": {
+          "elements": [
+            "Mapa AR para colección de monumentos",
+            "Inventario de colecciones con rareza",
+            "Leaderboard global y local",
+            "Sistema de logros y badges",
+            "Challenges diarios y semanales",
+            "Botones de compartir logros individuales",
+            "Galería de trofeos compartibles",
+            "Preview de contenido social antes de publicar"
+          ]
+        },
+        "design_principles": [
+          "Material Design 3 para consistencia",
+          "Colores cálidos inspirados en viajes (blues, greens, oranges)",
+          "Tipografía legible en todas las condiciones de luz",
+          "Iconografía universal para diferentes culturas",
+          "Accesibilidad completa (WCAG 2.1 AA)"
+        ]
+      },
+      
+      "technical_architecture": {
+        "frontend": {
+          "framework": "Next.js 14 con App Router",
+          "ui_library": "Shadcn-ui + Tailwind CSS",
+          "state_management": "Zustand para estado global",
+          "maps": "Mapbox GL JS para mapas interactivos",
+          "ar_capabilities": "WebXR APIs para funciones AR básicas",
+          "offline_support": "Service Workers + IndexedDB"
+        },
+        "backend_apis": {
+          "flight_apis": ["Amadeus API", "Skyscanner API", "Kiwi.com API"],
+          "hotel_apis": ["Booking.com API", "Expedia API", "Hotels.com API"],
+          "transport_apis": ["Google Directions API", "Citymapper API", "Transitland API"],
+          "weather_api": "OpenWeatherMap API",
+          "restaurant_apis": ["Google Places API", "Yelp Fusion API"],
+          "currency_api": "ExchangeRate-API",
+          "geolocation": "HTML5 Geolocation + IP geolocation fallback"
+        },
+        "database_design": {
+          "user_profiles": "Preferencias, historial, colecciones",
+          "trips": "Itinerarios, reservas, gastos",
+          "content": "Quiz questions, monumentos, POIs",
+          "gamification": "Logros, puntuaciones, challenges"
+        }
+      },
+      
+      "social_sharing_specifications": {
+        "overview": "Sistema integral de compartir contenido en redes sociales que transforma las experiencias de viaje en contenido atractivo y personalizado para diferentes plataformas",
+        "supported_platforms": [
+          {
+            "platform": "Instagram",
+            "content_types": ["Posts", "Stories", "Reels"],
+            "features": ["Filtros automáticos", "Hashtags geográficos", "Templates de destinos", "Colecciones de highlights"]
+          },
+          {
+            "platform": "Facebook",
+            "content_types": ["Posts", "Stories", "Check-ins"],
+            "features": ["Eventos de viaje", "Álbumes automáticos", "Reviews integradas", "Mapas de viaje"]
+          },
+          {
+            "platform": "Twitter/X",
+            "content_types": ["Tweets", "Threads", "Spaces"],
+            "features": ["Live tweeting de experiencias", "Threads de itinerarios", "Hashtags trending", "Geo-tweets"]
+          },
+          {
+            "platform": "TikTok",
+            "content_types": ["Videos cortos", "Compilaciones"],
+            "features": ["Templates de viaje", "Música local automática", "Transiciones de destinos", "Challenges de viaje"]
+          },
+          {
+            "platform": "LinkedIn",
+            "content_types": ["Posts profesionales", "Artículos"],
+            "features": ["Networking de viajeros", "Business travel insights", "Cultural learnings", "Professional development"]
+          }
+        ],
+        "content_generation_engine": {
+          "ai_features": [
+            "Generación automática de captions contextuales",
+            "Hashtags inteligentes basados en ubicación y actividad",
+            "Storytelling personalizado según estilo del usuario",
+            "Optimización de contenido por algoritmos de cada plataforma"
+          ],
+          "visual_elements": [
+            "Templates personalizables por destino",
+            "Watermarks discretos de Viaje360",
+            "Mapas de recorrido ilustrados",
+            "Badges y trofeos visuales compartibles"
+          ],
+          "privacy_controls": [
+            "Selector granular de información a compartir",
+            "Opción de anonimizar datos personales",
+            "Control de geolocalización por post",
+            "Configuración de audiencia por plataforma"
+          ]
+        }
+      },
+      
+      "open_questions": [
+        "¿Qué nivel de integración se requiere con sistemas de pago para procesar reservas directamente vs. redirect a sitios de terceros?",
+        "¿Se necesita soporte para múltiples idiomas desde el lanzamiento o se puede implementar progresivamente?",
+        "¿Cuál es el presupuesto aproximado para APIs de terceros que tienen costos por llamada (especialmente flight APIs)?",
+        "¿Se requiere compliance específico para manejo de datos de menores de edad para el sistema de gamificación?",
+        "¿Hay preferencias específicas de monetización (freemium, suscripción, comisiones por reservas)?",
+        "¿Se necesita funcionalidad de viajes grupales o solo individuales en la versión inicial?",
+        "¿Qué nivel de precisión se requiere para la geolocalización del sistema de colección (metros vs. decenas de metros)?",
+        "¿Se requiere integración con sistemas de loyalty de aerolíneas y hoteles existentes?",
+        "¿Qué políticas se implementarán para moderación de contenido compartido en redes sociales?",
+        "¿Cómo se garantizará que el contenido generado automáticamente cumpla con las políticas de cada plataforma social?",
+        "¿Se implementará sistema de verificación de reviews y experiencias compartidas para evitar contenido falso?",
+        "¿Qué nivel de integración con APIs de redes sociales (lectura vs escritura vs ambas) se requiere?",
+        "¿Cómo se manejará la revocación de permisos sociales y la sincronización de datos?",
+        "¿Se implementarán analytics para medir engagement y viralidad del contenido compartido?",
+        "¿Se creará una comunidad interna vs depender completamente de redes sociales externas?",
+        "¿Qué medidas de protección de datos se implementarán para información compartida socialmente?",
+        "¿Se requerirá aprobación manual para contenido generado automáticamente antes de publicar?"
+      ]
+    },
+    
+    "market_analysis": {
+      "market_size": {
+        "ai_travel_assistants": "USD 454.83M en 2024, proyectado a USD 883.32M en 2030 (CAGR 11.69%)",
+        "ai_in_tourism": "USD 2.95B en 2024, proyectado a USD 13.38B en 2030 (CAGR 28.7%)",
+        "online_travel_agencies": "USD 253.2B en 2024, proyectado a USD 533.7B en 2034 (CAGR 7.9%)",
+        "mobile_bookings": "68% de reservas online en 2023, proyectado 75% en 2030"
+      },
+      
+      "key_trends": [
+        "Personalización impulsada por IA está revolutionando la experiencia de viaje",
+        "Gamificación en turismo creando nuevas formas de engagement",
+        "Integración seamless de múltiples servicios en una sola plataforma",
+        "Demanda creciente por experiencias auténticas y locales",
+        "Importancia crítica de funcionalidades móviles y offline"
+      ],
+      
+      "target_market": {
+        "primary": "Millennials y Gen Z (53-57% prefieren planificación asistida por IA)",
+        "secondary": "Viajeros frecuentes que buscan eficiencia y personalización",
+        "tertiary": "Turistas culturales interesados en aprendizaje y gamificación"
+      },
+      
+      "value_proposition": "Viaje360 será la primera plataforma que combine completamente planificación inteligente, gestión integral de viajes, gamificación educativa y adaptabilidad en tiempo real, ofreciendo una experiencia de viaje verdaderamente personalizada e interactiva."
+    },
+    
+    "success_metrics": {
+      "user_acquisition": [
+        "10,000 usuarios registrados en los primeros 3 meses",
+        "Tasa de conversión de registro a primer itinerario creado: >60%",
+        "CAC (Customer Acquisition Cost) < $25"
+      ],
+      "engagement": [
+        "Tiempo promedio en app: >15 minutos por sesión",
+        "Retención de 7 días: >40%",
+        "Retención de 30 días: >25%",
+        "Monumentos coleccionados por usuario activo: >5 por viaje"
+      ],
+      "business": [
+        "Revenue por usuario: $50+ anual",
+        "Margen de contribución: >30%",
+        "NPS (Net Promoter Score): >50"
+      ],
+      "feature_adoption": [
+        "Uso de planificador IA: >80% de usuarios",
+        "Participación en gamificación: >60% de usuarios",
+        "Uso de funciones de presupuesto: >70% de usuarios"
+      ]
+    },
+    
+    "development_roadmap": {
+      "mvp_phase": {
+        "duration": "4-6 meses",
+        "features": ["Autenticación", "Perfil básico", "Búsqueda vuelos/hoteles", "Itinerario simple", "Presupuesto básico"]
+      },
+      "beta_phase": {
+        "duration": "2-3 meses", 
+        "features": ["Transporte público", "Adaptación clima", "Gamificación básica", "Quiz sistema"]
+      },
+      "launch_phase": {
+        "duration": "2-3 meses",
+        "features": ["IA personalización", "Funcionalidades sociales completas", "Generador de contenido automático", "AR avanzada", "Funciones offline", "Analytics sociales", "Optimizaciones performance"]
+      }
+    }
+  }

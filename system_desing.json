@@ -1,0 +1,321 @@
+{
+    "project_info": {
+      "name": "Viaje360",
+      "version": "1.0",
+      "description": "Agente Personal de Viajes Inteligente con Gamificación y Social Media Integration",
+      "architecture_date": "2025-07-28",
+      "technologies": ["Next.js 14", "TypeScript", "Shadcn-ui", "Tailwind CSS", "PostgreSQL", "Redis", "Node.js"]
+    },
+    
+    "architecture_overview": {
+      "pattern": "Microservices with Monolithic Frontend",
+      "deployment_model": "Cloud-native with CDN",
+      "scalability_approach": "Horizontal scaling with load balancing",
+      "data_flow": "Event-driven architecture with real-time updates"
+    },
+  
+    "system_components": {
+      "frontend": {
+        "framework": "Next.js 14 with App Router",
+        "ui_library": "Shadcn-ui + Tailwind CSS",
+        "state_management": "Zustand",
+        "routing": "Next.js App Router with dynamic routes",
+        "pwa_features": "Service Workers + Web App Manifest",
+        "offline_support": "IndexedDB + Service Worker caching",
+        "real_time": "WebSocket client + Server-Sent Events",
+        "ar_integration": "WebXR APIs for gamification",
+        "geolocation": "HTML5 Geolocation API",
+        "key_libraries": [
+          "react-hook-form",
+          "zod",
+          "framer-motion",
+          "mapbox-gl",
+          "recharts",
+          "react-hot-toast"
+        ]
+      },
+  
+      "backend_api": {
+        "runtime": "Node.js 20+",
+        "framework": "Express.js with TypeScript",
+        "authentication": "JWT + OAuth 2.0",
+        "api_design": "RESTful APIs + GraphQL for complex queries",
+        "real_time_server": "Socket.io for WebSocket connections",
+        "job_queue": "Bull Queue with Redis",
+        "file_storage": "AWS S3 with CloudFront CDN",
+        "security": [
+          "Helmet.js for security headers",
+          "Rate limiting with express-rate-limit",
+          "Input validation with Joi",
+          "CORS configuration",
+          "API key management"
+        ]
+      },
+  
+      "database_layer": {
+        "primary_database": {
+          "type": "PostgreSQL 15+",
+          "orm": "Prisma",
+          "connection_pooling": "PgBouncer",
+          "backup_strategy": "Automated daily backups + Point-in-time recovery",
+          "indexes": "Optimized indexes for frequent queries",
+          "partitioning": "Table partitioning for large datasets"
+        },
+        "cache_layer": {
+          "type": "Redis 7+",
+          "use_cases": [
+            "Session storage",
+            "API response caching",
+            "Real-time data caching",
+            "Job queue storage",
+            "Rate limiting counters"
+          ],
+          "clustering": "Redis Cluster for high availability"
+        }
+      },
+  
+      "external_integrations": {
+        "flight_apis": [
+          {
+            "name": "Amadeus API",
+            "purpose": "Flight search and booking",
+            "rate_limits": "10 calls/second",
+            "cost_model": "Pay per successful booking"
+          },
+          {
+            "name": "Skyscanner API", 
+            "purpose": "Price comparison and alerts",
+            "rate_limits": "100 calls/minute",
+            "cost_model": "Subscription based"
+          }
+        ],
+        
+        "hotel_apis": [
+          {
+            "name": "Booking.com API",
+            "purpose": "Hotel search and reservations",
+            "rate_limits": "5 calls/second",
+            "cost_model": "Commission per booking"
+          },
+          {
+            "name": "Expedia API",
+            "purpose": "Extended hotel inventory", 
+            "rate_limits": "10 calls/second",
+            "cost_model": "Commission per booking"
+          }
+        ],
+  
+        "social_media_apis": [
+          {
+            "name": "Instagram Basic Display API",
+            "purpose": "User authentication and posting",
+            "rate_limits": "200 calls/hour per user",
+            "authentication": "OAuth 2.0"
+          },
+          {
+            "name": "Facebook Graph API",
+            "purpose": "Page and profile posting",
+            "rate_limits": "600 calls/minute", 
+            "authentication": "OAuth 2.0"
+          },
+          {
+            "name": "Twitter API v2",
+            "purpose": "Tweet posting and engagement",
+            "rate_limits": "300 tweets/15-minute window",
+            "authentication": "OAuth 2.0"
+          }
+        ]
+      }
+    },
+  
+    "core_features_architecture": {
+      "ai_personalization_engine": {
+        "ml_framework": "TensorFlow.js + Python backend",
+        "recommendation_algorithms": [
+          "Collaborative Filtering",
+          "Content-Based Filtering", 
+          "Matrix Factorization",
+          "Deep Learning Models"
+        ],
+        "data_sources": [
+          "User behavior tracking",
+          "Travel history analysis",
+          "Preference learning",
+          "Social interaction patterns"
+        ],
+        "real_time_updates": "Continuous learning with user feedback",
+        "privacy_protection": "Federated learning approach"
+      },
+  
+      "gamification_system": {
+        "geolocation_accuracy": "5-meter precision using GPS + Network triangulation",
+        "collection_mechanics": {
+          "monument_detection": "Geofencing with 50-meter radius",
+          "verification_process": "GPS + Photo verification + ML image recognition",
+          "rarity_system": "Common, Rare, Epic, Legendary classification",
+          "collection_rewards": "Points, badges, achievements, leaderboard position"
+        },
+        "ar_integration": {
+          "technology": "WebXR Device API",
+          "3d_models": "glTF format for monuments",
+          "rendering": "Three.js for 3D visualization",
+          "fallback": "2D overlay for unsupported devices"
+        }
+      },
+  
+      "social_media_integration": {
+        "content_generation_ai": {
+          "text_generation": "GPT-based caption generation",
+          "hashtag_optimization": "Trending hashtag analysis per platform",
+          "image_processing": "Automatic filters and enhancements",
+          "platform_optimization": "Format-specific content adaptation"
+        },
+        "privacy_controls": {
+          "granular_permissions": "Per-platform, per-content-type settings",
+          "data_minimization": "Only share explicitly approved data",
+          "revocation_handling": "Graceful handling of permission revocations",
+          "audit_logging": "Complete sharing history for user review"
+        }
+      }
+    },
+  
+    "security_architecture": {
+      "authentication_authorization": {
+        "jwt_implementation": {
+          "access_tokens": "15-minute expiration",
+          "refresh_tokens": "7-day expiration with rotation",
+          "token_storage": "Secure httpOnly cookies",
+          "signing_algorithm": "RS256 with rotating keys"
+        },
+        "oauth_providers": [
+          "Google OAuth 2.0",
+          "Facebook Login", 
+          "Apple Sign In",
+          "Twitter OAuth"
+        ]
+      },
+  
+      "data_protection": {
+        "encryption": {
+          "at_rest": "AES-256 encryption for sensitive data",
+          "in_transit": "TLS 1.3 for all communications",
+          "key_management": "AWS KMS for key rotation"
+        },
+        "privacy_compliance": {
+          "gdpr": "Full GDPR compliance with data portability",
+          "ccpa": "California Consumer Privacy Act compliance",
+          "data_retention": "Automatic data purging after 7 years"
+        }
+      }
+    },
+  
+    "deployment_architecture": {
+      "infrastructure": {
+        "cloud_provider": "AWS (primary) with multi-region deployment",
+        "compute": {
+          "frontend": "Vercel for Next.js deployment with edge functions",
+          "backend": "AWS ECS Fargate for containerized APIs",
+          "background_jobs": "AWS Lambda for event-driven processing"
+        },
+        "storage": {
+          "database": "AWS RDS PostgreSQL with Multi-AZ deployment",
+          "cache": "AWS ElastiCache Redis with clustering",
+          "file_storage": "AWS S3 with CloudFront CDN"
+        }
+      },
+  
+      "cicd_pipeline": {
+        "version_control": "Git with GitFlow branching strategy",
+        "ci_platform": "GitHub Actions", 
+        "deployment_strategy": {
+          "staging": "Automatic deployment on PR merge to develop",
+          "production": "Blue-green deployment with manual approval",
+          "rollback": "Automated rollback on health check failures"
+        }
+      }
+    },
+  
+    "development_timeline": {
+      "phase_1_mvp": {
+        "duration": "4-6 months",
+        "team_size": "6-8 developers",
+        "features": [
+          "User authentication and profiles",
+          "Basic trip planning",
+          "Flight and hotel search integration", 
+          "Simple itinerary generation",
+          "Basic budget tracking",
+          "Core gamification mechanics"
+        ]
+      },
+  
+      "phase_2_beta": {
+        "duration": "2-3 months",
+        "features": [
+          "AI-powered personalization",
+          "Advanced gamification with AR",
+          "Weather-based itinerary adaptation",
+          "Quiz and trivia system", 
+          "Real-time notifications",
+          "Basic social sharing"
+        ]
+      },
+  
+      "phase_3_launch": {
+        "duration": "2-3 months", 
+        "features": [
+          "Advanced social media integration",
+          "Content generation AI",
+          "Offline functionality",
+          "Performance optimizations",
+          "Analytics and monitoring"
+        ]
+      }
+    },
+  
+    "cost_estimation": {
+      "development_costs": {
+        "team": "6-8 developers × 10 months × $80k/year avg = $400-533k",
+        "infrastructure": "AWS costs ~$2-5k/month during development",
+        "third_party_apis": "~$1-3k/month for API access during development"
+      },
+      
+      "operational_costs_monthly": {
+        "infrastructure": "$3-10k (scales with users)",
+        "api_costs": "$2-8k (based on booking volume)", 
+        "monitoring_tools": "$500-1k",
+        "estimated_total": "$5.5-19k per month"
+      }
+    },
+  
+    "unclear_aspects": [
+      "Nivel de integración de pagos - ¿procesamiento directo o redirección?",
+      "Soporte multi-idioma desde lanzamiento vs implementación progresiva",
+      "Presupuesto específico para APIs de terceros con costos por llamada",
+      "Compliance para manejo de datos de menores de edad",
+      "Modelo de monetización preferido - freemium, suscripción o comisiones",
+      "Funcionalidad de viajes grupales en MVP o solo individual",
+      "Precisión requerida para geolocalización - metros vs decenas de metros",
+      "Integración con programas de loyalty existentes",
+      "Políticas de moderación para contenido compartido en redes sociales",
+      "Sistema de verificación de reviews para evitar contenido falso"
+    ],
+  
+    "recommendations": {
+      "immediate_next_steps": [
+        "Definir MVP con funcionalidades core prioritarias",
+        "Establecer presupuesto claro para APIs de terceros", 
+        "Crear prototipo de gamificación para validar mecánicas",
+        "Realizar investigación técnica de APIs de redes sociales",
+        "Establecer métricas de éxito claras por funcionalidad"
+      ],
+      
+      "risk_mitigation": [
+        "Implementar sistema de feature flags para rollout gradual",
+        "Crear arquitectura modular para agregar features progresivamente",
+        "Establecer limits y fallbacks para todas las APIs externas",
+        "Planificar estrategia de scaling desde día 1",
+        "Implementar monitoreo comprehensivo desde MVP"
+      ]
+    }
+  }

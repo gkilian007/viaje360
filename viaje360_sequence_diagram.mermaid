@@ -1,0 +1,235 @@
+sequenceDiagram
+    participant U as User
+    participant FE as Frontend
+    participant BE as Backend
+    participant DB as Database
+    participant AI as AIEngine
+    participant FA as FlightAPI
+    participant HA as HotelAPI
+    participant WA as WeatherAPI
+    participant TA as TransportAPI
+    participant RA as RestaurantAPI
+    participant SMA as SocialMediaAPI
+    participant NS as NotificationService
+    participant RS as RealtimeService
+
+    %% User Registration and Profile Setup
+    Note over U,FE: User Registration & Profile Setup
+    U->>FE: Register account with email/OAuth
+    FE->>BE: POST /auth/register
+    BE->>DB: CREATE User record
+    DB-->>BE: User created
+    BE-->>FE: Registration success + JWT token
+    FE-->>U: Welcome screen
+
+    U->>FE: Complete travel preferences
+    FE->>BE: POST /users/preferences
+    BE->>DB: CREATE TravelPreferences
+    BE->>AI: Initialize user profile
+    AI->>DB: Store initial ML model
+    DB-->>BE: Preferences saved
+    BE-->>FE: Profile setup complete
+    FE-->>U: Dashboard ready
+
+    %% Trip Planning Flow
+    Note over U,AI: Trip Planning with AI Personalization
+    U->>FE: Start new trip planning
+    FE->>BE: GET /destinations/suggestions
+    BE->>AI: generate_recommendations(user_id, context)
+    AI->>DB: Query user history and preferences
+    DB-->>AI: User data
+    AI-->>BE: Personalized destination suggestions
+    BE-->>FE: Destination recommendations
+    FE-->>U: Show suggested destinations
+
+    U->>FE: Select destination and dates
+    FE->>BE: POST /trips/create
+    BE->>DB: CREATE Trip record
+    BE->>WA: get_forecast(destination, travel_dates)
+    WA-->>BE: Weather forecast data
+    BE->>DB: Store weather data
+    DB-->>BE: Trip created
+    BE-->>FE: Trip ID and initial data
+    FE-->>U: Trip creation success
+
+    %% Flight Search and Booking
+    Note over U,FA: Flight Search and Booking
+    U->>FE: Search flights
+    FE->>BE: GET /flights/search
+    BE->>FA: search_flights(origin, destination, dates)
+    FA-->>BE: Available flights
+    BE->>DB: Cache flight results
+    BE-->>FE: Flight options with prices
+    FE-->>U: Display flight options
+
+    U->>FE: Select and book flight
+    FE->>BE: POST /bookings/flight
+    BE->>FA: book_flight(flight_id, passenger_info)
+    FA-->>BE: Booking confirmation
+    BE->>DB: CREATE FlightBooking
+    BE->>NS: send_booking_confirmation(user_id)
+    NS->>U: Push notification + Email
+    BE-->>FE: Booking success
+    FE-->>U: Booking confirmation screen
+
+    %% Hotel Search and Booking
+    Note over U,HA: Hotel Search and Booking
+    U->>FE: Search hotels near destination
+    FE->>BE: GET /hotels/search
+    BE->>HA: search_hotels(location, dates, guests)
+    HA-->>BE: Available hotels
+    BE->>AI: rank_hotels_by_preference(hotels, user_preferences)
+    AI-->>BE: Ranked hotel recommendations
+    BE-->>FE: Personalized hotel options
+    FE-->>U: Display hotels with AI ranking
+
+    U->>FE: Book selected hotel
+    FE->>BE: POST /bookings/hotel
+    BE->>HA: book_hotel(hotel_id, booking_details)
+    HA-->>BE: Booking confirmation
+    BE->>DB: CREATE HotelBooking
+    BE-->>FE: Booking success
+    FE-->>U: Hotel booking confirmed
+
+    %% Itinerary Generation
+    Note over U,AI: AI-Powered Itinerary Generation
+    U->>FE: Generate itinerary
+    FE->>BE: POST /itinerary/generate
+    BE->>AI: generate_itinerary(trip_id, preferences)
+    AI->>DB: Query local activities and attractions
+    AI->>RA: search_restaurants(location, cuisine_preferences)
+    RA-->>AI: Restaurant recommendations
+    AI->>TA: get_optimal_routes(activities, hotel_location)
+    TA-->>AI: Transportation options
+    AI-->>BE: Complete itinerary with optimized routes
+    BE->>DB: CREATE Itinerary and ItineraryDays
+    BE-->>FE: Generated itinerary
+    FE-->>U: Interactive itinerary display
+
+    %% Weather-Based Adaptation
+    Note over WA,RS: Real-time Weather Adaptation
+    WA->>BE: Weather alert (rain forecast)
+    BE->>DB: Query affected trips
+    DB-->>BE: Active trips in affected area
+    BE->>AI: adapt_itinerary_for_weather(trip_ids, weather_data)
+    AI->>DB: Query indoor alternatives
+    AI-->>BE: Modified itinerary suggestions
+    BE->>RS: broadcast_weather_update(affected_users)
+    RS->>FE: WebSocket update
+    FE-->>U: Weather alert + alternative suggestions
+    
+    U->>FE: Accept itinerary changes
+    FE->>BE: PUT /itinerary/update
+    BE->>DB: UPDATE Itinerary
+    BE-->>FE: Update confirmed
+    FE-->>U: Itinerary updated
+
+    %% Budget Tracking
+    Note over U,DB: Budget Management
+    U->>FE: Add expense during trip
+    FE->>BE: POST /budget/expense
+    BE->>DB: CREATE Expense
+    BE->>DB: UPDATE Budget spent amounts
+    BE->>DB: Check budget thresholds
+    
+    alt Budget threshold exceeded
+        BE->>NS: send_budget_alert(user_id)
+        NS->>U: Budget alert notification
+    end
+    
+    BE-->>FE: Expense recorded
+    FE-->>U: Budget updated display
+
+    %% Gamification - Monument Collection
+    Note over U,RS: Gamification System
+    U->>FE: Visit monument location
+    FE->>BE: POST /game/check-collection (with GPS coords)
+    BE->>DB: Query nearby monuments
+    DB-->>BE: Monument data
+    BE->>BE: verify_collection(user_location, monument_location)
+    
+    alt Collection successful
+        BE->>DB: CREATE Collection record
+        BE->>DB: UPDATE GameProfile points
+        BE->>DB: Check for new achievements
+        BE->>RS: broadcast_collection(user_id, monument)
+        RS->>FE: WebSocket collection success
+        FE-->>U: Collection animation + points
+        
+        BE->>DB: Query achievement unlocks
+        alt New achievement unlocked
+            BE->>NS: send_achievement_notification(user_id)
+            NS->>U: Achievement unlock notification
+        end
+    end
+
+    %% Quiz and Trivia System
+    Note over U,DB: Educational Quiz System
+    U->>FE: Start destination quiz
+    FE->>BE: GET /quiz/start
+    BE->>DB: Query quiz questions for destination
+    DB-->>BE: Quiz questions
+    BE-->>FE: Quiz session data
+    FE-->>U: Quiz interface
+
+    U->>FE: Submit quiz answers
+    FE->>BE: POST /quiz/submit
+    BE->>DB: Calculate score and update GameProfile
+    BE->>DB: UPDATE quiz statistics
+    BE-->>FE: Quiz results and points earned
+    FE-->>U: Results screen with educational content
+
+    %% Social Media Integration
+    Note over U,SMA: Social Media Sharing
+    U->>FE: Share travel experience
+    FE->>BE: POST /social/share
+    BE->>AI: generate_content(experience_data, user_preferences)
+    AI-->>BE: Generated captions and hashtags
+    BE->>SMA: authenticate_user(social_platforms)
+    SMA-->>BE: Auth tokens
+    BE->>SMA: post_content(platforms, generated_content)
+    SMA-->>BE: Post results and engagement data
+    BE->>DB: Store social sharing record
+    BE-->>FE: Sharing success
+    FE-->>U: Content shared confirmation
+
+    %% Trophy Sharing
+    Note over U,SMA: Trophy and Achievement Sharing
+    U->>FE: Share collected trophy
+    FE->>BE: POST /social/share-trophy
+    BE->>AI: generate_trophy_content(collection, achievement)
+    AI-->>BE: Trophy share content
+    BE->>SMA: post_content(platforms, trophy_content)
+    SMA-->>BE: Sharing results
+    BE->>DB: Update sharing statistics
+    BE-->>FE: Trophy shared successfully
+    FE-->>U: Trophy share confirmation
+
+    %% Real-time Updates
+    Note over RS,U: Real-time Notifications
+    loop Every 15 minutes
+        RS->>WA: Check weather updates
+        WA-->>RS: Current weather data
+        RS->>FA: Check flight status updates
+        FA-->>RS: Flight status changes
+        RS->>TA: Check transport delays
+        TA-->>RS: Transport updates
+        
+        alt Changes detected
+            RS->>FE: WebSocket real-time update
+            FE-->>U: Live notification
+            RS->>NS: Queue push notification
+            NS->>U: Push notification
+        end
+    end
+
+    %% AI Learning and Personalization
+    Note over AI,DB: Continuous Learning
+    loop Daily ML model update
+        AI->>DB: Query user behavior data
+        DB-->>AI: Recent user interactions
+        AI->>AI: Update personalization model
+        AI->>DB: Store updated ML model
+        AI->>DB: Generate new recommendations
+        DB-->>AI: Model updated successfully
+    end

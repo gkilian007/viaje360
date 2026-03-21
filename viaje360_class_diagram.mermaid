@@ -1,0 +1,395 @@
+classDiagram
+    class User {
+        +id: string
+        +email: string
+        +password_hash: string
+        +profile: UserProfile
+        +preferences: TravelPreferences
+        +created_at: Date
+        +updated_at: Date
+        +authenticate(password: string) boolean
+        +update_profile(data: UserProfile) void
+        +get_travel_history() Trip[]
+    }
+
+    class UserProfile {
+        +user_id: string
+        +first_name: string
+        +last_name: string
+        +avatar_url: string
+        +birth_date: Date
+        +nationality: string
+        +languages: string[]
+        +bio: string
+        +social_links: SocialLinks
+        +update(data: Partial<UserProfile>) void
+    }
+
+    class TravelPreferences {
+        +user_id: string
+        +travel_style: TravelStyle
+        +budget_range: BudgetRange
+        +activity_types: ActivityType[]
+        +food_preferences: FoodPreference[]
+        +accommodation_type: AccommodationType
+        +transport_preferences: TransportType[]
+        +accessibility_needs: string[]
+        +update_preferences(prefs: Partial<TravelPreferences>) void
+    }
+
+    class Trip {
+        +id: string
+        +user_id: string
+        +title: string
+        +destination: Destination
+        +start_date: Date
+        +end_date: Date
+        +budget: Budget
+        +status: TripStatus
+        +itinerary: Itinerary
+        +bookings: Booking[]
+        +created_at: Date
+        +create_itinerary() Itinerary
+        +add_booking(booking: Booking) void
+        +calculate_total_cost() number
+        +export_to_pdf() Buffer
+    }
+
+    class Itinerary {
+        +id: string
+        +trip_id: string
+        +days: ItineraryDay[]
+        +total_duration: number
+        +optimization_score: number
+        +add_day(day: ItineraryDay) void
+        +optimize_routes() void
+        +adapt_for_weather(weather: WeatherData) void
+        +generate_timeline() TimelineEvent[]
+    }
+
+    class ItineraryDay {
+        +id: string
+        +itinerary_id: string
+        +date: Date
+        +activities: Activity[]
+        +meals: Restaurant[]
+        +transportation: Transportation[]
+        +budget_spent: number
+        +add_activity(activity: Activity) void
+        +reorder_activities(order: string[]) void
+        +calculate_day_cost() number
+    }
+
+    class Activity {
+        +id: string
+        +name: string
+        +description: string
+        +category: ActivityCategory
+        +location: Location
+        +duration: number
+        +cost: number
+        +weather_dependency: WeatherDependency
+        +booking_required: boolean
+        +rating: number
+        +reviews: Review[]
+        +book() Booking
+        +get_alternatives() Activity[]
+    }
+
+    class Booking {
+        +id: string
+        +trip_id: string
+        +type: BookingType
+        +provider: string
+        +reference_number: string
+        +status: BookingStatus
+        +booking_date: Date
+        +total_cost: number
+        +confirmation_details: BookingDetails
+        +cancel() boolean
+        +modify(changes: BookingModification) boolean
+        +get_confirmation() BookingConfirmation
+    }
+
+    class FlightBooking {
+        +departure_airport: string
+        +arrival_airport: string
+        +departure_time: Date
+        +arrival_time: Date
+        +airline: string
+        +flight_number: string
+        +seat_class: SeatClass
+        +baggage_allowance: BaggageInfo
+        +check_flight_status() FlightStatus
+    }
+
+    class HotelBooking {
+        +hotel_id: string
+        +hotel_name: string
+        +check_in_date: Date
+        +check_out_date: Date
+        +room_type: string
+        +guests_count: number
+        +amenities: string[]
+        +cancellation_policy: CancellationPolicy
+        +extend_stay(nights: number) boolean
+    }
+
+    class Budget {
+        +id: string
+        +trip_id: string
+        +total_budget: number
+        +currency: string
+        +categories: BudgetCategory[]
+        +expenses: Expense[]
+        +alerts_enabled: boolean
+        +add_expense(expense: Expense) void
+        +get_remaining_budget() number
+        +get_spending_summary() SpendingSummary
+        +convert_currency(target_currency: string) number
+    }
+
+    class BudgetCategory {
+        +id: string
+        +name: string
+        +allocated_amount: number
+        +spent_amount: number
+        +percentage: number
+        +update_spent(amount: number) void
+        +get_remaining() number
+    }
+
+    class Expense {
+        +id: string
+        +budget_id: string
+        +category: string
+        +amount: number
+        +currency: string
+        +description: string
+        +date: Date
+        +location: Location
+        +receipt_url: string
+        +categorize_automatically() string
+    }
+
+    class GameProfile {
+        +user_id: string
+        +level: number
+        +total_points: number
+        +achievements: Achievement[]
+        +collections: Collection[]
+        +badges: Badge[]
+        +streak_days: number
+        +last_activity: Date
+        +add_points(points: number) void
+        +unlock_achievement(achievement_id: string) void
+        +get_leaderboard_position() number
+    }
+
+    class Collection {
+        +id: string
+        +user_id: string
+        +monument_id: string
+        +collected_at: Date
+        +location: Location
+        +photo_url: string
+        +rarity: RarityLevel
+        +verification_status: VerificationStatus
+        +share_on_social(platforms: SocialPlatform[]) void
+    }
+
+    class Monument {
+        +id: string
+        +name: string
+        +description: string
+        +location: Location
+        +category: MonumentCategory
+        +historical_period: string
+        +rarity: RarityLevel
+        +collection_radius: number
+        +ar_model_url: string
+        +trivia_questions: TriviaQuestion[]
+        +verify_collection(user_location: Location) boolean
+    }
+
+    class Achievement {
+        +id: string
+        +name: string
+        +description: string
+        +icon_url: string
+        +points_reward: number
+        +rarity: RarityLevel
+        +unlock_condition: AchievementCondition
+        +category: AchievementCategory
+        +check_unlock_condition(user: User) boolean
+    }
+
+    class Quiz {
+        +id: string
+        +destination_id: string
+        +title: string
+        +description: string
+        +difficulty: DifficultyLevel
+        +questions: TriviaQuestion[]
+        +time_limit: number
+        +points_reward: number
+        +start_quiz() QuizSession
+        +get_leaderboard() QuizLeaderboard[]
+    }
+
+    class TriviaQuestion {
+        +id: string
+        +question: string
+        +options: string[]
+        +correct_answer: number
+        +explanation: string
+        +category: QuestionCategory
+        +difficulty: DifficultyLevel
+        +points_value: number
+        +validate_answer(answer: number) boolean
+    }
+
+    class SocialShare {
+        +id: string
+        +user_id: string
+        +content_type: ShareContentType
+        +content_data: ShareContent
+        +platforms: SocialPlatform[]
+        +generated_content: GeneratedContent
+        +privacy_settings: PrivacySettings
+        +scheduled_time: Date
+        +status: ShareStatus
+        +generate_content() GeneratedContent
+        +publish_to_platforms() ShareResult[]
+    }
+
+    class GeneratedContent {
+        +caption: string
+        +hashtags: string[]
+        +media_urls: string[]
+        +platform_specific: Map<SocialPlatform, PlatformContent>
+        +location_tag: Location
+        +mentions: string[]
+        +optimize_for_platform(platform: SocialPlatform) PlatformContent
+    }
+
+    class APIIntegration {
+        +service_name: string
+        +api_key: string
+        +base_url: string
+        +rate_limits: RateLimit
+        +last_request: Date
+        +request_count: number
+        +make_request(endpoint: string, params: object) APIResponse
+        +handle_rate_limit() void
+        +refresh_token() string
+    }
+
+    class FlightAPI {
+        +search_flights(origin: string, destination: string, dates: DateRange) Flight[]
+        +get_flight_prices(flight_ids: string[]) FlightPrice[]
+        +book_flight(flight_id: string, passenger_info: PassengerInfo) BookingConfirmation
+        +get_flight_status(flight_number: string) FlightStatus
+    }
+
+    class HotelAPI {
+        +search_hotels(location: Location, dates: DateRange, guests: number) Hotel[]
+        +get_hotel_details(hotel_id: string) HotelDetails
+        +check_availability(hotel_id: string, dates: DateRange) Availability
+        +book_hotel(hotel_id: string, booking_details: HotelBookingDetails) BookingConfirmation
+    }
+
+    class WeatherAPI {
+        +get_current_weather(location: Location) WeatherData
+        +get_forecast(location: Location, days: number) WeatherForecast[]
+        +get_weather_alerts(location: Location) WeatherAlert[]
+        +analyze_activity_weather_impact(activity: Activity, weather: WeatherData) WeatherImpact
+    }
+
+    class TransportAPI {
+        +get_directions(origin: Location, destination: Location, mode: TransportMode) Route[]
+        +get_public_transit(origin: Location, destination: Location) TransitRoute[]
+        +get_real_time_updates(route_id: string) TransitUpdate[]
+        +calculate_travel_time(route: Route, current_time: Date) number
+    }
+
+    class RestaurantAPI {
+        +search_restaurants(location: Location, cuisine: CuisineType, budget: BudgetRange) Restaurant[]
+        +get_restaurant_details(restaurant_id: string) RestaurantDetails
+        +get_reviews(restaurant_id: string) Review[]
+        +make_reservation(restaurant_id: string, reservation_details: ReservationDetails) Reservation
+    }
+
+    class SocialMediaAPI {
+        +authenticate_user(platform: SocialPlatform) AuthToken
+        +post_content(platform: SocialPlatform, content: GeneratedContent) PostResult
+        +get_user_profile(platform: SocialPlatform) SocialProfile
+        +get_platform_insights(post_id: string) EngagementMetrics
+    }
+
+    class AIPersonalizationEngine {
+        +user_profile: UserProfile
+        +travel_history: Trip[]
+        +preferences: TravelPreferences
+        +learning_model: MLModel
+        +generate_recommendations(destination: Location, dates: DateRange) Recommendation[]
+        +analyze_user_behavior(actions: UserAction[]) BehaviorInsights
+        +predict_preferences(context: TravelContext) PreferencesPrediction
+        +update_model(feedback: UserFeedback) void
+    }
+
+    class RealtimeService {
+        +websocket_connections: WebSocketConnection[]
+        +notification_queue: NotificationQueue
+        +broadcast_update(event: RealtimeEvent) void
+        +send_personal_notification(user_id: string, notification: Notification) void
+        +handle_weather_changes(location: Location, weather: WeatherData) void
+        +handle_flight_updates(flight_updates: FlightUpdate[]) void
+    }
+
+    class NotificationService {
+        +send_push_notification(user_id: string, message: PushNotification) void
+        +send_email(user_id: string, email: EmailMessage) void
+        +send_sms(user_id: string, message: SMSMessage) void
+        +schedule_notification(notification: ScheduledNotification) void
+        +get_notification_preferences(user_id: string) NotificationPreferences
+    }
+
+    %% Relationships
+    User ||--|| UserProfile : has
+    User ||--|| TravelPreferences : has
+    User ||--|| GameProfile : has
+    User ||--o{ Trip : creates
+    User ||--o{ SocialShare : creates
+
+    Trip ||--|| Itinerary : has
+    Trip ||--|| Budget : has
+    Trip ||--o{ Booking : contains
+
+    Itinerary ||--o{ ItineraryDay : contains
+    ItineraryDay ||--o{ Activity : includes
+
+    Booking ||--|| FlightBooking : "is-a"
+    Booking ||--|| HotelBooking : "is-a"
+
+    Budget ||--o{ BudgetCategory : contains
+    Budget ||--o{ Expense : tracks
+
+    GameProfile ||--o{ Collection : owns
+    GameProfile ||--o{ Achievement : earned
+
+    Collection }o--|| Monument : references
+    Quiz ||--o{ TriviaQuestion : contains
+    Monument ||--o{ TriviaQuestion : associated
+
+    APIIntegration ||--|| FlightAPI : "is-a"
+    APIIntegration ||--|| HotelAPI : "is-a"
+    APIIntegration ||--|| WeatherAPI : "is-a"
+    APIIntegration ||--|| TransportAPI : "is-a"
+    APIIntegration ||--|| RestaurantAPI : "is-a"
+    APIIntegration ||--|| SocialMediaAPI : "is-a"
+
+    SocialShare ||--|| GeneratedContent : contains
+    AIPersonalizationEngine ..> User : analyzes
+    RealtimeService ..> User : notifies
+    NotificationService ..> User : sends_to
