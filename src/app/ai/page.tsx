@@ -43,12 +43,12 @@ export default function AIPage() {
       })
 
       if (!res.ok) throw new Error("Request failed")
-      const data = await res.json() as { response: string }
+      const data = (await res.json()) as { ok: true; data: { response: string } }
 
       const aiMsg: ChatMessageType = {
         id: `msg-${Date.now()}-ai`,
         role: "assistant",
-        content: data.response,
+        content: data.data.response,
         timestamp: new Date().toISOString(),
       }
       addChatMessage(aiMsg)

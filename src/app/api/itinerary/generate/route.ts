@@ -1,33 +1,29 @@
-import { NextRequest, NextResponse } from "next/server"
-import type { OnboardingData } from "@/lib/onboarding-types"
+import { NextRequest } from "next/server"
+import { onboardingRequestSchema } from "@/lib/api/contracts"
+import {
+  errorResponse,
+  normalizeRouteError,
+  parseJsonBody,
+  successResponse,
+} from "@/lib/api/route-helpers"
+import { resolveRequestIdentity } from "@/lib/auth/server"
 import { generateItinerary, mapToAppTypes } from "@/lib/services/itinerary.service"
 import { createTrip } from "@/lib/services/trip.service"
 import { createServiceClient } from "@/lib/supabase/server"
 
-// Demo user ID used when no auth is present
-const DEMO_USER_ID = "00000000-0000-0000-0000-000000000001"
-
 export async function POST(req: NextRequest) {
   try {
-    const body = await req.json() as OnboardingData
+    const body = await parseJsonBody(req, onboardingRequestSchema)
+    const identity = await resolveRequestIdentity()
 
-    if (!body.destination || !body.startDate || !body.endDate) {
-      return NextResponse.json(
-        { error: "destination, startDate, and endDate are required" },
-        { status: 400 }
-      )
+    if (!identity.userId) {
+      return errorResponse("UNAUTHORIZED", "Authentication required to generate and save a trip", 401)
     }
 
-    // 1. Generate itinerary via Gemini
     const generatedItinerary = await generateItinerary(body)
-
-    // 2. Generate a local trip ID (used for mapping even if Supabase save fails)
     const localTripId = `trip-${Date.now()}`
-
-    // 3. Map to app types (works without Supabase)
     const { trip, days } = mapToAppTypes(generatedItinerary, localTripId)
 
-    // Populate destination info from onboarding data
     const appTrip = {
       ...trip,
       destination: body.destination,
@@ -36,16 +32,14 @@ export async function POST(req: NextRequest) {
       endDate: body.endDate,
     }
 
-    // 4. Try to save to Supabase (non-blocking, demo mode if it fails)
-    let supabaseTripId: string | null = null
+    let resolvedTripId = localTripId
+
     try {
       const supabase = createServiceClient()
-
-      // Save onboarding profile
       const { data: onboardingRow } = await supabase
         .from("onboarding_profiles")
         .insert({
-          user_id: DEMO_USER_ID,
+          user_id: identity.userId,
           destination: body.destination,
           start_date: body.startDate,
           end_date: body.endDate,
@@ -80,36 +74,34 @@ export async function POST(req: NextRequest) {
 
       if (onboardingRow) {
         const dbTrip = await createTrip(
-          DEMO_USER_ID,
+          identity.userId,
           onboardingRow.id as string,
           generatedItinerary,
           body.startDate,
           body.endDate,
           body.destination
         )
+
         if (dbTrip) {
-          supabaseTripId = dbTrip.id as string
+          resolvedTripId = dbTrip.id as string
         }
       }
-    } catch (supabaseErr) {
-      // Supabase save failed — continue with local data
-      console.warn("Supabase save skipped (demo mode):", supabaseErr)
+    } catch (supabaseError) {
+      console.warn("Supabase save skipped (fallback mode):", supabaseError)
     }
 
-    return NextResponse.json({
+    return successResponse({
       trip: {
         ...appTrip,
-        id: supabaseTripId ?? localTripId,
+        id: resolvedTripId,
       },
       days,
       itinerary: generatedItinerary,
-      tripId: supabaseTripId ?? localTripId,
+      tripId: resolvedTripId,
+      identity,
     })
-  } catch (err) {
-    console.error("itinerary/generate error:", err)
-    return NextResponse.json(
-      { error: err instanceof Error ? err.message : "Failed to generate itinerary" },
-      { status: 500 }
-    )
+  } catch (error) {
+    console.error("itinerary/generate error:", error)
+    return normalizeRouteError(error, "Failed to generate itinerary")
   }
 }

@@ -21,8 +21,8 @@ export function QuizCard() {
       const dest = currentTrip?.destination ?? "Barcelona"
       const res = await fetch(`/api/quiz?destination=${encodeURIComponent(dest)}`)
       if (!res.ok) throw new Error("Failed")
-      const data = await res.json() as { question: typeof currentQuiz }
-      setCurrentQuiz(data.question)
+      const data = (await res.json()) as { ok: true; data: { question: typeof currentQuiz } }
+      setCurrentQuiz(data.data.question)
     } catch {
       setCurrentQuiz({
         id: "fallback-1",

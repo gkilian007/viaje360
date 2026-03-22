@@ -1,25 +1,36 @@
-import { NextResponse } from "next/server"
-import { getActiveTrip } from "@/lib/services/trip.service"
 import { getItinerary, mapDbItineraryToAppTypes } from "@/lib/services/itinerary.service"
-
-const DEMO_USER_ID = "00000000-0000-0000-0000-000000000001"
+import { getActiveTrip, getChatHistory, mapDbChatMessagesToAppMessages } from "@/lib/services/trip.service"
+import { successResponse } from "@/lib/api/route-helpers"
+import { resolveRequestIdentity } from "@/lib/auth/server"
 
 export async function GET() {
   try {
-    const trip = await getActiveTrip(DEMO_USER_ID)
-    if (!trip) {
-      return NextResponse.json({ trip: null, days: [] })
+    const identity = await resolveRequestIdentity()
+    if (!identity.userId) {
+      return successResponse({ trip: null, days: [], chatMessages: [] })
     }
 
-    const itinerary = await getItinerary(trip.id)
+    const trip = await getActiveTrip(identity.userId)
+    if (!trip) {
+      return successResponse({ trip: null, days: [], chatMessages: [] })
+    }
+
+    const [itinerary, chatHistory] = await Promise.all([
+      getItinerary(trip.id),
+      getChatHistory(trip.id),
+    ])
+
     if (!itinerary) {
-      return NextResponse.json({ trip: null, days: [] })
+      return successResponse({ trip: null, days: [], chatMessages: [] })
     }
 
     const mapped = mapDbItineraryToAppTypes(itinerary.trip, itinerary.days)
-    return NextResponse.json(mapped)
-  } catch (err) {
-    console.error("trips/active error:", err)
-    return NextResponse.json({ trip: null, days: [] }, { status: 200 })
+    return successResponse({
+      ...mapped,
+      chatMessages: mapDbChatMessagesToAppMessages(chatHistory),
+    })
+  } catch (error) {
+    console.error("trips/active error:", error)
+    return successResponse({ trip: null, days: [], chatMessages: [] })
   }
 }

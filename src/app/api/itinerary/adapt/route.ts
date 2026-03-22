@@ -1,32 +1,25 @@
-import { NextRequest, NextResponse } from "next/server"
+import { NextRequest } from "next/server"
+import { adaptRequestSchema } from "@/lib/api/contracts"
+import {
+  normalizeRouteError,
+  parseJsonBody,
+  successResponse,
+  errorResponse,
+} from "@/lib/api/route-helpers"
 import { adaptItinerary } from "@/lib/services/itinerary.service"
 
 export async function POST(req: NextRequest) {
   try {
-    const body = await req.json() as { tripId: string; reason: string }
-
-    if (!body.tripId || !body.reason) {
-      return NextResponse.json(
-        { error: "tripId and reason are required" },
-        { status: 400 }
-      )
-    }
-
+    const body = await parseJsonBody(req, adaptRequestSchema)
     const adapted = await adaptItinerary(body.tripId, body.reason)
 
     if (!adapted) {
-      return NextResponse.json(
-        { error: "Could not adapt itinerary" },
-        { status: 500 }
-      )
+      return errorResponse("BAD_GATEWAY", "Could not adapt itinerary", 502)
     }
 
-    return NextResponse.json({ itinerary: adapted })
-  } catch (err) {
-    console.error("itinerary/adapt error:", err)
-    return NextResponse.json(
-      { error: "Failed to adapt itinerary" },
-      { status: 500 }
-    )
+    return successResponse({ itinerary: adapted })
+  } catch (error) {
+    console.error("itinerary/adapt error:", error)
+    return normalizeRouteError(error, "Failed to adapt itinerary")
   }
 }

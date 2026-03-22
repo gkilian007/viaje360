@@ -1,5 +1,6 @@
 import { createServiceClient } from "@/lib/supabase/server"
 import type { DbTrip, DbChatMessage, GeneratedItinerary } from "@/lib/supabase/database.types"
+import type { ChatMessage } from "@/lib/types"
 
 export async function createTrip(
   userId: string,
@@ -140,6 +141,15 @@ export async function addChatMessage(
   } catch (err) {
     console.error("addChatMessage error:", err)
   }
+}
+
+export function mapDbChatMessagesToAppMessages(messages: DbChatMessage[]): ChatMessage[] {
+  return messages.map((message) => ({
+    id: message.id,
+    role: message.role,
+    content: message.content,
+    timestamp: message.created_at,
+  }))
 }
 
 export async function getChatHistory(

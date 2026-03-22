@@ -1,4 +1,11 @@
-import { NextRequest, NextResponse } from "next/server"
+import { NextRequest } from "next/server"
+import { placesSearchRequestSchema } from "@/lib/api/contracts"
+import {
+  errorResponse,
+  normalizeRouteError,
+  parseJsonBody,
+  successResponse,
+} from "@/lib/api/route-helpers"
 
 const GEMINI_API_URL =
   "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent"
@@ -20,28 +27,10 @@ interface PlaceResult {
 
 export async function POST(req: NextRequest) {
   try {
-    const body = await req.json() as {
-      query: string
-      location: string
-      filters?: {
-        kidFriendly?: boolean
-        petFriendly?: boolean
-        dietary?: string[]
-        accessible?: boolean
-        type?: string
-      }
-    }
-
-    if (!body.query || !body.location) {
-      return NextResponse.json(
-        { error: "query and location are required" },
-        { status: 400 }
-      )
-    }
-
+    const body = await parseJsonBody(req, placesSearchRequestSchema)
     const apiKey = process.env.GEMINI_API_KEY
     if (!apiKey) {
-      return NextResponse.json({ error: "API key not configured" }, { status: 500 })
+      return errorResponse("INTERNAL_ERROR", "API key not configured", 500)
     }
 
     const filters = body.filters ?? {}
@@ -51,7 +40,9 @@ export async function POST(req: NextRequest) {
       filters.accessible ? "wheelchair accessible" : "",
       ...(filters.dietary ?? []),
       filters.type ?? "",
-    ].filter(Boolean).join(", ")
+    ]
+      .filter(Boolean)
+      .join(", ")
 
     const prompt = `You are a travel expert. Find places in ${body.location} matching: "${body.query}".
 ${filterText ? `Required filters: ${filterText}` : ""}
@@ -84,10 +75,10 @@ Return ONLY valid JSON array with 5 results:
     })
 
     if (!res.ok) {
-      return NextResponse.json({ error: "Search failed" }, { status: 500 })
+      return errorResponse("BAD_GATEWAY", "Search failed", 502)
     }
 
-    const data = await res.json() as {
+    const data = (await res.json()) as {
       candidates: Array<{ content: { parts: Array<{ text: string }> } }>
     }
 
@@ -101,12 +92,9 @@ Return ONLY valid JSON array with 5 results:
       places = []
     }
 
-    return NextResponse.json({ places })
-  } catch (err) {
-    console.error("places/search error:", err)
-    return NextResponse.json(
-      { error: "Failed to search places" },
-      { status: 500 }
-    )
+    return successResponse({ places })
+  } catch (error) {
+    console.error("places/search error:", error)
+    return normalizeRouteError(error, "Failed to search places")
   }
 }

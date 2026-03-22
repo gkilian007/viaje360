@@ -21,6 +21,18 @@ interface GenerateResponse {
   tripId: string
 }
 
+interface GenerateResponseEnvelope {
+  ok: true
+  data: GenerateResponse
+}
+
+interface ErrorEnvelope {
+  ok: false
+  error: {
+    message: string
+  }
+}
+
 export function GeneratingStep() {
   const router = useRouter()
   const { data, completeOnboarding } = useOnboardingStore()
@@ -48,14 +60,14 @@ export function GeneratingStep() {
       clearInterval(interval)
 
       if (!res.ok) {
-        const errData = await res.json() as { error?: string }
-        throw new Error(errData.error ?? "Error generando itinerario")
+        const errData = (await res.json()) as ErrorEnvelope
+        throw new Error(errData.error.message ?? "Error generando itinerario")
       }
 
-      const result = await res.json() as GenerateResponse
+      const result = (await res.json()) as GenerateResponseEnvelope
 
-      setCurrentTrip(result.trip)
-      setGeneratedItinerary(result.days)
+      setCurrentTrip(result.data.trip)
+      setGeneratedItinerary(result.data.days)
       setMessageIndex(LOADING_MESSAGES.length - 1)
 
       setTimeout(() => {

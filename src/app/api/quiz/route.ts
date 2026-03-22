@@ -1,10 +1,16 @@
-import { NextRequest, NextResponse } from "next/server"
+import { NextRequest } from "next/server"
 import { generateQuizQuestion } from "@/lib/gemini"
+import { quizAwardRequestSchema } from "@/lib/api/contracts"
+import {
+  errorResponse,
+  normalizeRouteError,
+  parseJsonBody,
+  successResponse,
+} from "@/lib/api/route-helpers"
+import { resolveRequestIdentity } from "@/lib/auth/server"
 import { createServiceClient } from "@/lib/supabase/server"
 import { updateXp } from "@/lib/services/profile.service"
 import type { QuizQuestion } from "@/lib/types"
-
-const DEMO_USER_ID = "00000000-0000-0000-0000-000000000001"
 
 export async function GET(req: NextRequest) {
   try {
@@ -12,34 +18,26 @@ export async function GET(req: NextRequest) {
     const tripId = searchParams.get("tripId")
     let destination = searchParams.get("destination") ?? "Barcelona"
 
-    // If tripId provided, get the actual destination from Supabase
     if (tripId) {
       try {
         const supabase = createServiceClient()
-        const { data: trip } = await supabase
-          .from("trips")
-          .select("destination")
-          .eq("id", tripId)
-          .single()
-
+        const { data: trip } = await supabase.from("trips").select("destination").eq("id", tripId).single()
         if (trip?.destination) {
           destination = trip.destination as string
         }
       } catch {
-        // fallback to query param destination
+        // keep destination query fallback
       }
     }
 
     const raw = await generateQuizQuestion(destination)
-
-    // Strip markdown code fences if present
     const cleaned = raw.replace(/```json\s*/g, "").replace(/```\s*/g, "").trim()
 
     let parsed: Omit<QuizQuestion, "id">
     try {
       parsed = JSON.parse(cleaned) as Omit<QuizQuestion, "id">
     } catch {
-      return NextResponse.json({ error: "Invalid JSON from Gemini" }, { status: 500 })
+      return errorResponse("BAD_GATEWAY", "Invalid JSON from Gemini", 502)
     }
 
     const question: QuizQuestion = {
@@ -47,24 +45,27 @@ export async function GET(req: NextRequest) {
       ...parsed,
     }
 
-    return NextResponse.json({ question })
-  } catch (err) {
-    console.error("Quiz API error:", err)
-    return NextResponse.json({ error: "Failed to generate quiz" }, { status: 500 })
+    return successResponse({ question })
+  } catch (error) {
+    console.error("Quiz API error:", error)
+    return normalizeRouteError(error, "Failed to generate quiz")
   }
 }
 
-// POST to award XP after correct quiz answer
 export async function POST(req: NextRequest) {
   try {
-    const body = await req.json() as { xpReward: number; userId?: string }
-    const userId = body.userId ?? DEMO_USER_ID
+    const body = await parseJsonBody(req, quizAwardRequestSchema)
+    const identity = await resolveRequestIdentity()
 
-    await updateXp(userId, body.xpReward ?? 50)
+    if (!identity.userId) {
+      return errorResponse("UNAUTHORIZED", "Authentication required to award XP", 401)
+    }
 
-    return NextResponse.json({ success: true })
-  } catch (err) {
-    console.error("Quiz XP award error:", err)
-    return NextResponse.json({ error: "Failed to award XP" }, { status: 500 })
+    await updateXp(identity.userId, body.xpReward)
+
+    return successResponse({ success: true, identity })
+  } catch (error) {
+    console.error("Quiz XP award error:", error)
+    return normalizeRouteError(error, "Failed to award XP")
   }
 }

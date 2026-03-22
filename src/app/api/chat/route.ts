@@ -1,45 +1,34 @@
-import { NextRequest, NextResponse } from "next/server"
+import { NextRequest } from "next/server"
 import { generateChatResponse } from "@/lib/gemini"
+import { resolveRequestIdentity } from "@/lib/auth/server"
+import { chatRequestSchema } from "@/lib/api/contracts"
+import {
+  errorResponse,
+  normalizeRouteError,
+  parseJsonBody,
+  successResponse,
+} from "@/lib/api/route-helpers"
 import { addChatMessage, getChatHistory } from "@/lib/services/trip.service"
 import { createServiceClient } from "@/lib/supabase/server"
 
-const DEMO_USER_ID = "00000000-0000-0000-0000-000000000001"
-
 export async function POST(req: NextRequest) {
   try {
-    const body = await req.json() as {
-      message: string
-      history?: Array<{ role: "user" | "model"; text: string }>
-      tripId?: string
-    }
-
+    const body = await parseJsonBody(req, chatRequestSchema)
+    const identity = await resolveRequestIdentity()
     const { message, tripId } = body
-    let { history = [] } = body
+    let { history } = body
 
-    if (!message?.trim()) {
-      return NextResponse.json({ error: "Message required" }, { status: 400 })
+    if (tripId && !identity.userId) {
+      return errorResponse("UNAUTHORIZED", "Authentication required for trip chat", 401)
     }
 
-    // If tripId provided, build richer context from Supabase
     let systemContext = ""
     if (tripId) {
       try {
         const supabase = createServiceClient()
-
-        // Fetch trip details
-        const { data: trip } = await supabase
-          .from("trips")
-          .select("*")
-          .eq("id", tripId)
-          .single()
-
-        // Fetch onboarding preferences
+        const { data: trip } = await supabase.from("trips").select("*").eq("id", tripId).single()
         const { data: onboarding } = trip
-          ? await supabase
-              .from("onboarding_profiles")
-              .select("*")
-              .eq("id", trip.onboarding_id)
-              .single()
+          ? await supabase.from("onboarding_profiles").select("*").eq("id", trip.onboarding_id).single()
           : { data: null }
 
         if (trip) {
@@ -59,37 +48,32 @@ User preferences:
 ` : ""}`
         }
 
-        // Load recent chat history from Supabase if no history provided
         if (history.length === 0) {
           const savedMessages = await getChatHistory(tripId)
-          history = savedMessages.map((m) => ({
-            role: (m.role === "assistant" ? "model" : "user") as "user" | "model",
-            text: m.content,
+          history = savedMessages.map((savedMessage) => ({
+            role: (savedMessage.role === "assistant" ? "model" : "user") as "user" | "model",
+            text: savedMessage.content,
           }))
         }
-      } catch (ctxErr) {
-        console.warn("Could not load trip context:", ctxErr)
+      } catch (contextError) {
+        console.warn("Could not load trip context:", contextError)
       }
     }
 
     const response = await generateChatResponse(history, message, systemContext)
 
-    // Save messages to Supabase if tripId provided
-    if (tripId) {
+    if (tripId && identity.userId) {
       try {
-        await addChatMessage(tripId, DEMO_USER_ID, "user", message)
-        await addChatMessage(tripId, DEMO_USER_ID, "assistant", response)
-      } catch (saveErr) {
-        console.warn("Could not save chat messages:", saveErr)
+        await addChatMessage(tripId, identity.userId, "user", message)
+        await addChatMessage(tripId, identity.userId, "assistant", response)
+      } catch (saveError) {
+        console.warn("Could not save chat messages:", saveError)
       }
     }
 
-    return NextResponse.json({ response })
-  } catch (err) {
-    console.error("Chat API error:", err)
-    return NextResponse.json(
-      { error: "Failed to generate response" },
-      { status: 500 }
-    )
+    return successResponse({ response })
+  } catch (error) {
+    console.error("Chat API error:", error)
+    return normalizeRouteError(error, "Failed to generate response")
   }
 }

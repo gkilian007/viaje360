@@ -3,17 +3,31 @@
 import { useEffect, useRef } from "react"
 import { usePathname } from "next/navigation"
 import { useAppStore } from "@/store/useAppStore"
-import type { DayItinerary, Trip } from "@/lib/types"
+import { selectHydratedAppState } from "@/lib/bootstrap/hydration"
+import type { ChatMessage, DayItinerary, Trip } from "@/lib/types"
 
 interface ActiveTripResponse {
   trip: Trip | null
   days: DayItinerary[]
+  chatMessages: ChatMessage[]
+}
+
+interface ActiveTripEnvelope {
+  ok: true
+  data: ActiveTripResponse
 }
 
 export function AppBootstrap() {
   const pathname = usePathname()
   const hasFetchedRef = useRef(false)
-  const { currentTrip, generatedItinerary, setCurrentTrip, setGeneratedItinerary } = useAppStore()
+  const {
+    currentTrip,
+    generatedItinerary,
+    chatMessages,
+    setCurrentTrip,
+    setGeneratedItinerary,
+    replaceChatMessages,
+  } = useAppStore()
 
   useEffect(() => {
     if (pathname?.startsWith("/onboarding")) return
@@ -27,16 +41,34 @@ export function AppBootstrap() {
         const res = await fetch("/api/trips/active", { cache: "no-store" })
         if (!res.ok) return
 
-        const data = (await res.json()) as ActiveTripResponse
-        if (data.trip) setCurrentTrip(data.trip)
-        if (data.days?.length) setGeneratedItinerary(data.days)
+        const payload = (await res.json()) as ActiveTripEnvelope
+        const nextState = selectHydratedAppState({
+          local: {
+            currentTrip,
+            generatedItinerary,
+            chatMessages,
+          },
+          remote: payload.data,
+        })
+
+        setCurrentTrip(nextState.currentTrip)
+        setGeneratedItinerary(nextState.generatedItinerary)
+        replaceChatMessages(nextState.chatMessages)
       } catch (err) {
         console.warn("Could not hydrate active trip:", err)
       }
     }
 
     void hydrateActiveTrip()
-  }, [pathname, currentTrip, generatedItinerary, setCurrentTrip, setGeneratedItinerary])
+  }, [
+    pathname,
+    currentTrip,
+    generatedItinerary,
+    chatMessages,
+    setCurrentTrip,
+    setGeneratedItinerary,
+    replaceChatMessages,
+  ])
 
   return null
 }

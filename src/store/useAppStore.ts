@@ -40,6 +40,7 @@ interface AppState {
   addXp: (amount: number) => void
   collectMonument: (monumentId: string) => void
   addChatMessage: (msg: ChatMessage) => void
+  replaceChatMessages: (messages: ChatMessage[]) => void
   setChatLoading: (loading: boolean) => void
   setCurrentQuiz: (quiz: QuizQuestion | null) => void
   setQuizLoading: (loading: boolean) => void
@@ -102,6 +103,8 @@ export const useAppStore = create<AppState>()(
 
       addChatMessage: (msg) =>
         set((state) => ({ chatMessages: [...state.chatMessages, msg] })),
+
+      replaceChatMessages: (messages) => set({ chatMessages: messages }),
 
       setChatLoading: (loading) => set({ isChatLoading: loading }),
 
