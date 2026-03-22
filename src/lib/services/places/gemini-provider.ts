@@ -44,10 +44,9 @@ export class GeminiPlacesProvider implements PlacesProvider {
       .filter(Boolean)
       .join(", ")
 
-    const prompt = `You are a travel expert. Find up to 5 real places in ${params.location} matching "${params.query}".
+    const prompt = `Find up to 3 real places in ${params.location} matching "${params.query}".
 ${filterText ? `Required filters: ${filterText}` : ""}
-
-Return ONLY compact JSON. No markdown. Keep notes under 140 characters and openingHours very short. If a field is unknown, use an empty string, null, false, or [].
+Return ONLY a compact JSON array. No markdown. Keep each notes value under 80 characters.
 [
   {
     "name": "Place name",
@@ -55,16 +54,9 @@ Return ONLY compact JSON. No markdown. Keep notes under 140 characters and openi
     "address": "Full address",
     "neighborhood": "Neighborhood",
     "rating": 4.5,
-    "priceLevel": "€|€€|€€€|€€€€",
-    "notes": "Brief description",
-    "kidFriendly": true,
-    "petFriendly": false,
+    "notes": "Short tip",
     "accessible": true,
-    "dietaryOptions": ["vegetarian"],
-    "openingHours": "09:00-20:00",
-    "indoor": true,
-    "lat": 40.4168,
-    "lng": -3.7038
+    "indoor": true
   }
 ]`
 
