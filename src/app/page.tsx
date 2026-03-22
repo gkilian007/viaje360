@@ -1,5 +1,5 @@
-import { redirect } from "next/navigation"
+import { RootRedirect } from "@/components/RootRedirect"
 
 export default function RootPage() {
-  redirect("/plan")
+  return <RootRedirect />
 }
