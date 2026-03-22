@@ -1,61 +1,66 @@
 "use client"
 
 import { create } from "zustand"
-import type { Trip, Monument, Trophy, User } from "@/lib/types"
-import { demoUser, demoTrip, demoMonuments, demoTrophies } from "@/lib/demo-data"
+import type { Trip, User, Monument, Achievement, ChatMessage, QuizQuestion } from "@/lib/types"
+import {
+  demoUser,
+  demoTrip,
+  demoMonuments,
+  demoAchievements,
+  demoChatMessages,
+} from "@/lib/demo-data"
 
 interface AppState {
+  // Core
   user: User
   currentTrip: Trip | null
   monuments: Monument[]
-  trophies: Trophy[]
+  achievements: Achievement[]
+
+  // Chat
+  chatMessages: ChatMessage[]
+  isChatLoading: boolean
+
+  // Quiz
+  currentQuiz: QuizQuestion | null
+  isQuizLoading: boolean
+  quizAnswered: boolean
+  quizCorrect: boolean | null
+
+  // Achievement overlay
+  pendingAchievement: Achievement | null
+
+  // UI
   activeTab: string
 
   // Actions
-  setCurrentTrip: (trip: Trip | null) => void
-  addMonument: (monument: Monument) => void
-  collectMonument: (monumentId: string) => void
-  addXp: (amount: number) => void
   setActiveTab: (tab: string) => void
-  updateUser: (updates: Partial<User>) => void
+  addXp: (amount: number) => void
+  collectMonument: (monumentId: string) => void
+  addChatMessage: (msg: ChatMessage) => void
+  setChatLoading: (loading: boolean) => void
+  setCurrentQuiz: (quiz: QuizQuestion | null) => void
+  setQuizLoading: (loading: boolean) => void
+  answerQuiz: (answerIndex: number) => void
+  clearQuiz: () => void
+  setPendingAchievement: (achievement: Achievement | null) => void
 }
 
 export const useAppStore = create<AppState>((set) => ({
   user: demoUser,
   currentTrip: demoTrip,
   monuments: demoMonuments,
-  trophies: demoTrophies,
-  activeTab: "/",
+  achievements: demoAchievements,
+  chatMessages: demoChatMessages,
+  isChatLoading: false,
+  currentQuiz: null,
+  isQuizLoading: false,
+  quizAnswered: false,
+  quizCorrect: null,
+  pendingAchievement: null,
+  activeTab: "/plan",
 
-  setCurrentTrip: (trip) => set({ currentTrip: trip }),
-
-  addMonument: (monument) =>
-    set((state) => ({
-      monuments: [...state.monuments, monument],
-      user: {
-        ...state.user,
-        monumentsCollected: state.user.monumentsCollected + 1,
-      },
-    })),
-
-  collectMonument: (monumentId) =>
-    set((state) => {
-      const monument = state.monuments.find((m) => m.id === monumentId)
-      if (!monument || monument.collected) return state
-
-      return {
-        monuments: state.monuments.map((m) =>
-          m.id === monumentId
-            ? { ...m, collected: true, collectedAt: new Date().toISOString() }
-            : m
-        ),
-        user: {
-          ...state.user,
-          xp: state.user.xp + monument.xpReward,
-          monumentsCollected: state.user.monumentsCollected + 1,
-        },
-      }
-    }),
+  setActiveTab: (tab) => set({ activeTab: tab }),
 
   addXp: (amount) =>
     set((state) => {
@@ -70,10 +75,51 @@ export const useAppStore = create<AppState>((set) => ({
       }
     }),
 
-  setActiveTab: (tab) => set({ activeTab: tab }),
+  collectMonument: (monumentId) =>
+    set((state) => {
+      const monument = state.monuments.find((m) => m.id === monumentId)
+      if (!monument || monument.collected) return state
+      return {
+        monuments: state.monuments.map((m) =>
+          m.id === monumentId
+            ? { ...m, collected: true, collectedAt: new Date().toISOString() }
+            : m
+        ),
+        user: {
+          ...state.user,
+          xp: state.user.xp + monument.xpReward,
+          monumentsCollected: state.user.monumentsCollected + 1,
+        },
+      }
+    }),
 
-  updateUser: (updates) =>
-    set((state) => ({
-      user: { ...state.user, ...updates },
-    })),
+  addChatMessage: (msg) =>
+    set((state) => ({ chatMessages: [...state.chatMessages, msg] })),
+
+  setChatLoading: (loading) => set({ isChatLoading: loading }),
+
+  setCurrentQuiz: (quiz) => set({ currentQuiz: quiz, quizAnswered: false, quizCorrect: null }),
+
+  setQuizLoading: (loading) => set({ isQuizLoading: loading }),
+
+  answerQuiz: (answerIndex) =>
+    set((state) => {
+      if (!state.currentQuiz) return state
+      const correct = answerIndex === state.currentQuiz.correctIndex
+      return {
+        quizAnswered: true,
+        quizCorrect: correct,
+        user: correct
+          ? {
+              ...state.user,
+              xp: state.user.xp + (state.currentQuiz?.xpReward ?? 50),
+            }
+          : state.user,
+      }
+    }),
+
+  clearQuiz: () =>
+    set({ currentQuiz: null, quizAnswered: false, quizCorrect: null }),
+
+  setPendingAchievement: (achievement) => set({ pendingAchievement: achievement }),
 }))

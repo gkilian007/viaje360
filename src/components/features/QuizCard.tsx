@@ -1,95 +1,180 @@
 "use client"
 
-import { useState } from "react"
-import { Zap, CheckCircle2, XCircle } from "lucide-react"
-import { Card, CardContent } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
 import { useAppStore } from "@/store/useAppStore"
 
-interface QuizQuestion {
-  question: string
-  options: string[]
-  correctIndex: number
-}
+export function QuizCard() {
+  const {
+    currentQuiz,
+    isQuizLoading,
+    quizAnswered,
+    quizCorrect,
+    answerQuiz,
+    clearQuiz,
+    setCurrentQuiz,
+    setQuizLoading,
+    currentTrip,
+  } = useAppStore()
 
-interface QuizCardProps {
-  quizData: QuizQuestion
-}
-
-export function QuizCard({ quizData }: QuizCardProps) {
-  const addXp = useAppStore((s) => s.addXp)
-  const [selected, setSelected] = useState<number | null>(null)
-
-  const answered = selected !== null
-  const isCorrect = selected === quizData.correctIndex
-
-  function handleSelect(index: number) {
-    if (answered) return
-    setSelected(index)
-    if (index === quizData.correctIndex) {
-      addXp(50)
+  async function fetchQuiz() {
+    setQuizLoading(true)
+    try {
+      const dest = currentTrip?.destination ?? "Barcelona"
+      const res = await fetch(`/api/quiz?destination=${encodeURIComponent(dest)}`)
+      if (!res.ok) throw new Error("Failed")
+      const data = await res.json() as { question: typeof currentQuiz }
+      setCurrentQuiz(data.question)
+    } catch {
+      setCurrentQuiz({
+        id: "fallback-1",
+        question: "¿En qué año fue declarada la Sagrada Família Patrimonio de la Humanidad por la UNESCO?",
+        options: ["1982", "1984", "2005", "2010"],
+        correctIndex: 3,
+        funFact: "La UNESCO declaró la Sagrada Família Patrimonio de la Humanidad en 2010, junto con otras obras de Gaudí.",
+        xpReward: 50,
+      })
+    } finally {
+      setQuizLoading(false)
     }
   }
 
+  if (!currentQuiz && !isQuizLoading) {
+    return (
+      <button
+        className="w-full py-4 px-5 rounded-2xl flex items-center gap-3 cursor-pointer hover:scale-[1.01] active:scale-[0.99] transition-all"
+        style={{
+          background: "rgba(255, 219, 60, 0.08)",
+          border: "1px solid rgba(255, 219, 60, 0.2)",
+        }}
+        onClick={fetchQuiz}
+      >
+        <div
+          className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0"
+          style={{ background: "rgba(255, 219, 60, 0.15)" }}
+        >
+          <span
+            className="material-symbols-outlined text-[22px] text-[#ffdb3c]"
+            style={{ fontVariationSettings: "'FILL' 1, 'wght' 400, 'GRAD' 0, 'opsz' 24" }}
+          >
+            quiz
+          </span>
+        </div>
+        <div className="text-left">
+          <p className="text-[13px] font-semibold text-white">Trivia de Barcelona</p>
+          <p className="text-[11px] text-[#c0c6d6]">Gana XP respondiendo preguntas</p>
+        </div>
+        <span className="material-symbols-outlined text-[18px] text-[#c0c6d6] ml-auto">
+          chevron_right
+        </span>
+      </button>
+    )
+  }
+
+  if (isQuizLoading) {
+    return (
+      <div
+        className="w-full py-8 rounded-2xl flex items-center justify-center gap-2"
+        style={{ background: "rgba(42, 42, 44, 0.8)", border: "1px solid rgba(255,255,255,0.06)" }}
+      >
+        <div className="w-3 h-3 rounded-full bg-[#0A84FF] animate-bounce" style={{ animationDelay: "0ms" }} />
+        <div className="w-3 h-3 rounded-full bg-[#0A84FF] animate-bounce" style={{ animationDelay: "150ms" }} />
+        <div className="w-3 h-3 rounded-full bg-[#0A84FF] animate-bounce" style={{ animationDelay: "300ms" }} />
+      </div>
+    )
+  }
+
   return (
-    <Card className="border-slate-700/30 overflow-hidden">
-      {/* Header */}
-      <div className="bg-gradient-to-r from-violet-600 to-purple-700 px-4 py-3 flex items-center justify-between">
-        <div>
-          <p className="text-white/70 text-xs font-medium uppercase tracking-wide">Quiz del Día</p>
-          <p className="text-white font-semibold text-sm">Gana +50 XP</p>
-        </div>
-        <div className="flex items-center gap-1 bg-white/20 rounded-full px-2.5 py-1">
-          <Zap className="w-3.5 h-3.5 text-yellow-300 fill-yellow-300" />
-          <span className="text-white text-xs font-bold">50 XP</span>
-        </div>
+    <div
+      className="rounded-2xl p-4 flex flex-col gap-3"
+      style={{
+        background: "rgba(42, 42, 44, 0.8)",
+        border: "1px solid rgba(255,255,255,0.06)",
+      }}
+    >
+      <div className="flex items-center gap-2">
+        <span
+          className="material-symbols-outlined text-[20px] text-[#ffdb3c]"
+          style={{ fontVariationSettings: "'FILL' 1, 'wght' 400, 'GRAD' 0, 'opsz' 24" }}
+        >
+          quiz
+        </span>
+        <span className="text-[11px] uppercase tracking-widest text-[#c0c6d6] font-medium">Trivia</span>
+        <span className="ml-auto text-[11px] font-bold text-[#ffdb3c] flex items-center gap-0.5">
+          <span className="material-symbols-outlined text-[13px]"
+            style={{ fontVariationSettings: "'FILL' 1, 'wght' 400, 'GRAD' 0, 'opsz' 24" }}>
+            stars
+          </span>
+          +{currentQuiz!.xpReward} XP
+        </span>
       </div>
 
-      <CardContent className="p-4">
-        <p className="text-white font-medium text-sm mb-4 leading-snug">{quizData.question}</p>
+      <p className="text-[14px] font-semibold text-white leading-snug">{currentQuiz!.question}</p>
 
-        <div className="space-y-2">
-          {quizData.options.map((option, i) => {
-            let btnClass = "w-full justify-start text-left text-sm h-auto py-2.5 px-3 "
+      <div className="flex flex-col gap-2">
+        {currentQuiz!.options.map((option, i) => {
+          let style: React.CSSProperties = {
+            background: "rgba(19, 19, 21, 0.6)",
+            border: "1px solid rgba(255,255,255,0.06)",
+          }
+          let textClass = "text-[#e4e2e4]"
 
-            if (!answered) {
-              btnClass += "bg-slate-700/50 hover:bg-slate-700 text-white border border-slate-600/50 hover:border-slate-500"
-            } else if (i === quizData.correctIndex) {
-              btnClass += "bg-emerald-500/20 text-emerald-400 border border-emerald-500/50"
-            } else if (i === selected) {
-              btnClass += "bg-red-500/20 text-red-400 border border-red-500/50"
-            } else {
-              btnClass += "bg-slate-800/50 text-slate-500 border border-slate-700/30"
+          if (quizAnswered) {
+            if (i === currentQuiz!.correctIndex) {
+              style = { background: "rgba(48, 209, 88, 0.15)", border: "1px solid rgba(48, 209, 88, 0.3)" }
+              textClass = "text-[#30D158]"
+            } else if (i !== currentQuiz!.correctIndex) {
+              style = { background: "rgba(19, 19, 21, 0.4)", border: "1px solid rgba(255,255,255,0.04)" }
+              textClass = "text-[#c0c6d6]/50"
             }
+          }
 
-            return (
-              <button
-                key={i}
-                onClick={() => handleSelect(i)}
-                disabled={answered}
-                className={`rounded-lg flex items-center gap-2 transition-colors ${btnClass}`}
-              >
-                <span className="flex-shrink-0 w-5 h-5 rounded-full bg-slate-600/50 flex items-center justify-center text-[11px] font-bold">
-                  {String.fromCharCode(65 + i)}
-                </span>
-                <span className="flex-1">{option}</span>
-                {answered && i === quizData.correctIndex && (
-                  <CheckCircle2 className="w-4 h-4 text-emerald-400 flex-shrink-0" />
-                )}
-                {answered && i === selected && i !== quizData.correctIndex && (
-                  <XCircle className="w-4 h-4 text-red-400 flex-shrink-0" />
-                )}
-              </button>
-            )
-          })}
-        </div>
+          return (
+            <button
+              key={i}
+              className={`w-full px-4 py-3 rounded-xl text-left text-[13px] font-medium transition-all hover:bg-white/5 ${textClass}`}
+              style={style}
+              onClick={() => !quizAnswered && answerQuiz(i)}
+              disabled={quizAnswered}
+            >
+              <span className="text-[#c0c6d6] mr-2">{String.fromCharCode(65 + i)}.</span>
+              {option}
+            </button>
+          )
+        })}
+      </div>
 
-        {answered && (
-          <p className={`text-xs mt-3 text-center font-medium ${isCorrect ? "text-emerald-400" : "text-slate-400"}`}>
-            {isCorrect ? "¡Correcto! +50 XP ganados 🎉" : `Respuesta correcta: ${quizData.options[quizData.correctIndex]}`}
+      {quizAnswered && (
+        <div
+          className="p-3 rounded-xl"
+          style={{
+            background: quizCorrect ? "rgba(48, 209, 88, 0.08)" : "rgba(255, 69, 58, 0.08)",
+            border: `1px solid ${quizCorrect ? "rgba(48, 209, 88, 0.2)" : "rgba(255, 69, 58, 0.2)"}`,
+          }}
+        >
+          <p className={`text-[12px] font-semibold mb-1 ${quizCorrect ? "text-[#30D158]" : "text-[#FF453A]"}`}>
+            {quizCorrect ? "¡Correcto! 🎉" : "¡Casi! 😅"}
           </p>
-        )}
-      </CardContent>
-    </Card>
+          <p className="text-[12px] text-[#c0c6d6]">{currentQuiz!.funFact}</p>
+        </div>
+      )}
+
+      {quizAnswered && (
+        <div className="flex gap-2">
+          <button
+            className="flex-1 py-2.5 rounded-xl text-[12px] font-semibold text-[#c0c6d6] transition-all hover:bg-white/5"
+            style={{ border: "1px solid rgba(255,255,255,0.08)" }}
+            onClick={clearQuiz}
+          >
+            Cerrar
+          </button>
+          <button
+            className="flex-1 py-2.5 rounded-xl text-[12px] font-semibold text-white transition-all hover:opacity-90"
+            style={{ background: "#0A84FF" }}
+            onClick={fetchQuiz}
+          >
+            Otra pregunta
+          </button>
+        </div>
+      )}
+    </div>
   )
 }

@@ -1,10 +1,13 @@
+// ─── User & Trip ─────────────────────────────────────────────────────────────
+
 export interface User {
   id: string
   name: string
-  email: string
   avatar?: string
   level: number
   xp: number
+  xpToNext: number
+  title: string
   totalTrips: number
   countriesVisited: number
   monumentsCollected: number
@@ -12,6 +15,7 @@ export interface User {
 
 export interface Trip {
   id: string
+  name: string
   destination: string
   country: string
   startDate: string
@@ -21,7 +25,56 @@ export interface Trip {
   status: "planning" | "active" | "completed"
   imageUrl?: string
   description?: string
+  currentActivity?: string
+  nextActivity?: TimelineActivity
+  weather?: Weather
 }
+
+// ─── Activities ───────────────────────────────────────────────────────────────
+
+export type ActivityType =
+  | "museum"
+  | "restaurant"
+  | "monument"
+  | "park"
+  | "shopping"
+  | "tour"
+  | "hotel"
+  | "transport"
+
+export interface TimelineActivity {
+  id: string
+  name: string
+  type: ActivityType
+  location: string
+  time: string
+  duration: number
+  cost: number
+  booked: boolean
+  notes?: string
+  icon?: string
+  friendAvatars?: string[]
+}
+
+export interface DayItinerary {
+  date: string
+  dayNumber: number
+  activities: TimelineActivity[]
+}
+
+// ─── Weather ──────────────────────────────────────────────────────────────────
+
+export interface Weather {
+  temp: number
+  condition: string
+  icon: string
+  humidity: number
+  wind: number
+}
+
+// ─── Monument / Achievement ───────────────────────────────────────────────────
+
+export type Rarity = "common" | "rare" | "epic" | "legendary"
 
 export interface Monument {
   id: string
@@ -32,46 +85,65 @@ export interface Monument {
   collected: boolean
   collectedAt?: string
   xpReward: number
-  rarity: "common" | "rare" | "epic" | "legendary"
+  rarity: Rarity
 }
 
-export interface Trophy {
+export interface Achievement {
   id: string
   name: string
   description: string
+  rarity: Rarity
+  xpReward: number
+  icon: string
+  unlockedAt?: string
+  unlocked: boolean
+  location?: string
+}
+
+// ─── Chat ─────────────────────────────────────────────────────────────────────
+
+export type MessageRole = "user" | "assistant"
+
+export interface ChatMessage {
+  id: string
+  role: MessageRole
+  content: string
+  timestamp: string
+  suggestions?: AISuggestion[]
+}
+
+export interface AISuggestion {
+  id: string
+  title: string
+  subtitle: string
   imageUrl?: string
-  earnedAt: string
-  category: "travel" | "culture" | "adventure" | "social"
+  imageColor?: string
+  cta?: string
+  ctaAction?: string
 }
 
-export interface Activity {
+// ─── Quiz ─────────────────────────────────────────────────────────────────────
+
+export interface QuizQuestion {
   id: string
-  name: string
-  type: "museum" | "restaurant" | "monument" | "park" | "shopping" | "tour"
-  location: string
-  time: string
-  duration: number
-  cost: number
-  booked: boolean
-  notes?: string
+  question: string
+  options: string[]
+  correctIndex: number
+  funFact: string
+  xpReward: number
 }
 
-export interface DayItinerary {
-  date: string
-  dayNumber: number
-  activities: Activity[]
-}
+// ─── Map ──────────────────────────────────────────────────────────────────────
 
-export interface Restaurant {
+export interface MapMarker {
   id: string
-  name: string
-  cuisine: string
-  location: string
-  rating: number
-  priceRange: "€" | "€€" | "€€€" | "€€€€"
-  booked: boolean
-  reservationTime?: string
+  lat: number
+  lng: number
+  label: string
+  type: "current" | "next" | "poi" | "visited"
 }
+
+// ─── Destination ──────────────────────────────────────────────────────────────
 
 export interface Destination {
   id: string
