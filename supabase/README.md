@@ -20,12 +20,13 @@ See the full step-by-step runbook here:
 
 ## Environment variables
 
-Make sure your `.env.local` has:
+Copy `.env.example` to `.env.local` and make sure at least these values are set:
 
 ```env
 NEXT_PUBLIC_SUPABASE_URL=https://your-project.supabase.co
 NEXT_PUBLIC_SUPABASE_ANON_KEY=your-anon-key
 SUPABASE_SERVICE_ROLE_KEY=your-service-role-key
+GEMINI_API_KEY=your-gemini-api-key
 ```
 
 Find these in Supabase dashboard under **Settings → API**.

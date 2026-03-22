@@ -50,10 +50,12 @@ test("chatRequestSchema trims and accepts message payloads", () => {
     message: "  Hola  ",
     history: [{ role: "user", text: "Context" }],
     tripId: "trip-123",
+    tripContext: "  Destino: Madrid  ",
   })
 
   assert.equal(result.message, "Hola")
   assert.equal(result.tripId, "trip-123")
+  assert.equal(result.tripContext, "Destino: Madrid")
   assert.equal(result.history.length, 1)
 })
 

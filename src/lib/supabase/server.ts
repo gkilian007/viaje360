@@ -1,20 +1,22 @@
 import { createClient as createSupabaseClient } from "@supabase/supabase-js"
+import { hasEnv, requireEnv } from "@/lib/env"
 
 export function isSupabaseConfigured() {
-  return Boolean(
-    process.env.NEXT_PUBLIC_SUPABASE_URL &&
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY &&
-    process.env.SUPABASE_SERVICE_ROLE_KEY
+  return (
+    hasEnv("NEXT_PUBLIC_SUPABASE_URL") &&
+    hasEnv("NEXT_PUBLIC_SUPABASE_ANON_KEY") &&
+    hasEnv("SUPABASE_SERVICE_ROLE_KEY")
   )
 }
 
 export function createServiceClient() {
-  if (!process.env.NEXT_PUBLIC_SUPABASE_URL || !process.env.SUPABASE_SERVICE_ROLE_KEY) {
-    throw new Error("Supabase service client is not configured")
-  }
+  const env = requireEnv(
+    ["NEXT_PUBLIC_SUPABASE_URL", "SUPABASE_SERVICE_ROLE_KEY"],
+    "Supabase service client"
+  )
 
   return createSupabaseClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL,
-    process.env.SUPABASE_SERVICE_ROLE_KEY
+    env.NEXT_PUBLIC_SUPABASE_URL,
+    env.SUPABASE_SERVICE_ROLE_KEY
   )
 }

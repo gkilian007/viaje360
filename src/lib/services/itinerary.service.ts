@@ -1,3 +1,4 @@
+import { requireEnv } from "@/lib/env"
 import { createServiceClient } from "@/lib/supabase/server"
 import type {
   DbActivity,
@@ -170,8 +171,7 @@ Hard requirements:
 }
 
 async function callGeminiRaw(prompt: string): Promise<string> {
-  const apiKey = process.env.GEMINI_API_KEY
-  if (!apiKey) throw new Error("GEMINI_API_KEY not set")
+  const apiKey = requireEnv("GEMINI_API_KEY", "Gemini itinerary generation")
 
   const res = await fetch(`${GEMINI_API_URL}?key=${apiKey}`, {
     method: "POST",

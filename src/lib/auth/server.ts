@@ -1,10 +1,11 @@
 import { cookies } from "next/headers"
 import { createServerClient as createSupabaseServerClient } from "@supabase/ssr"
+import { getEnv } from "@/lib/env"
 import { resolveCurrentUserIdentity, shouldAllowAnonymousFallback, type CurrentUserIdentity } from "./identity"
 
 function getPublicSupabaseEnv() {
-  const url = process.env.NEXT_PUBLIC_SUPABASE_URL
-  const anonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+  const url = getEnv("NEXT_PUBLIC_SUPABASE_URL")
+  const anonKey = getEnv("NEXT_PUBLIC_SUPABASE_ANON_KEY")
 
   if (!url || !anonKey) {
     return null

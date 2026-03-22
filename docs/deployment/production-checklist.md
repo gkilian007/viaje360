@@ -9,6 +9,7 @@
 - [ ] `GEMINI_API_KEY` configured
 - [ ] `GOOGLE_PLACES_API_KEY` configured if using Google Places primary provider
 - [ ] Feature flags reviewed for target environment
+- [ ] `VIAJE360_ALLOW_ANONYMOUS_FALLBACK=false` in production unless intentionally required
 - [ ] Build passes (`npm run build`)
 - [ ] Tests pass (`npm test`)
 

@@ -1,3 +1,5 @@
+import { getEnv } from "@/lib/env"
+
 export const DEV_ANONYMOUS_USER_ID = "00000000-0000-0000-0000-000000000001"
 
 export interface CurrentUserIdentity {
@@ -18,10 +20,15 @@ interface AllowAnonymousFallbackOptions {
 }
 
 export function shouldAllowAnonymousFallback({
-  nodeEnv = process.env.NODE_ENV,
-  explicitFlag = process.env.VIAJE360_ALLOW_ANONYMOUS_FALLBACK,
+  nodeEnv = getEnv("NODE_ENV"),
+  explicitFlag = getEnv("VIAJE360_ALLOW_ANONYMOUS_FALLBACK"),
 }: AllowAnonymousFallbackOptions = {}): boolean {
-  if (explicitFlag === "true") return true
+  if (explicitFlag != null) {
+    const normalized = explicitFlag.toLowerCase()
+    if (["1", "true", "yes", "on"].includes(normalized)) return true
+    if (["0", "false", "no", "off"].includes(normalized)) return false
+  }
+
   return nodeEnv !== "production"
 }
 

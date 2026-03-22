@@ -1,3 +1,5 @@
+import { requireEnv } from "@/lib/env"
+
 const GEMINI_API_URL =
   "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent"
 
@@ -37,8 +39,7 @@ export async function generateChatResponse(
   userMessage: string,
   extraContext?: string
 ): Promise<string> {
-  const apiKey = process.env.GEMINI_API_KEY
-  if (!apiKey) throw new Error("GEMINI_API_KEY not set")
+  const apiKey = requireEnv("GEMINI_API_KEY", "Gemini API")
 
   const systemPrompt = extraContext
     ? `${BASE_SYSTEM_PROMPT}\n\n${extraContext}`
@@ -74,8 +75,7 @@ export async function generateChatResponse(
 }
 
 export async function generateQuizQuestion(destination: string): Promise<string> {
-  const apiKey = process.env.GEMINI_API_KEY
-  if (!apiKey) throw new Error("GEMINI_API_KEY not set")
+  const apiKey = requireEnv("GEMINI_API_KEY", "Gemini API")
 
   const prompt = `Generate a travel/culture trivia question about ${destination}.
 Return ONLY valid JSON in this exact format, no markdown:

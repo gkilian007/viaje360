@@ -16,6 +16,7 @@ Viaje360 backend supports three environments:
 | `SUPABASE_SERVICE_ROLE_KEY` | optional* | yes | yes | yes for cache/persistence server paths |
 | `GEMINI_API_KEY` | recommended | yes | yes | yes for AI/chat and places fallback |
 | `GOOGLE_PLACES_API_KEY` | optional | optional | optional | no |
+| `VIAJE360_ALLOW_ANONYMOUS_FALLBACK` | optional | no | no | no |
 | `FEATURE_GOOGLE_PLACES` | optional | recommended | recommended | no |
 | `FEATURE_OPEN_METEO` | optional | recommended | recommended | no |
 | `FEATURE_PLACES_CACHE` | optional | recommended | recommended | no |
@@ -33,6 +34,7 @@ FEATURE_OPEN_METEO=true
 FEATURE_PLACES_CACHE=false
 FEATURE_WEATHER_CACHE=false
 FEATURE_RATE_LIMITING=false
+VIAJE360_ALLOW_ANONYMOUS_FALLBACK=true
 ```
 
 ### staging
@@ -42,6 +44,7 @@ FEATURE_OPEN_METEO=true
 FEATURE_PLACES_CACHE=true
 FEATURE_WEATHER_CACHE=true
 FEATURE_RATE_LIMITING=true
+VIAJE360_ALLOW_ANONYMOUS_FALLBACK=false
 ```
 
 ### prod
@@ -51,6 +54,7 @@ FEATURE_OPEN_METEO=true
 FEATURE_PLACES_CACHE=true
 FEATURE_WEATHER_CACHE=true
 FEATURE_RATE_LIMITING=true
+VIAJE360_ALLOW_ANONYMOUS_FALLBACK=false
 ```
 
 ## Fallback behavior

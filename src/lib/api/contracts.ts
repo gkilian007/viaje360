@@ -168,6 +168,7 @@ export const chatRequestSchema = z.object({
   message: z.string().trim().min(1, "Message required"),
   history: z.array(chatHistoryItemSchema).optional().default([]),
   tripId: z.string().trim().min(1).optional(),
+  tripContext: z.string().trim().min(1).optional(),
 })
 
 export const adaptRequestSchema = z.object({

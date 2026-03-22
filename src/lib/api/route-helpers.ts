@@ -2,6 +2,7 @@ import { NextResponse } from "next/server"
 import { z, ZodError } from "zod"
 import { createErrorBody, createSuccessBody, type ApiErrorCode } from "./responses"
 import { captureException, recordTrace } from "@/lib/ops/observability"
+import { MissingEnvironmentVariableError } from "@/lib/env"
 
 interface ResponseOptions {
   requestId?: string
@@ -55,6 +56,21 @@ export function normalizeRouteError(
 
   if (error instanceof ZodError) {
     return validationErrorResponse(error, requestId)
+  }
+
+  if (error instanceof MissingEnvironmentVariableError) {
+    return errorResponse(
+      "INTERNAL_ERROR",
+      error.message,
+      503,
+      {
+        ...(options?.details && typeof options.details === "object" ? options.details : {}),
+        route,
+        timestamp: new Date().toISOString(),
+        missing_env: error.missing,
+      },
+      requestId
+    )
   }
 
   const message = error instanceof Error ? error.message : fallbackMessage

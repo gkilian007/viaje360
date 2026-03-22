@@ -6,8 +6,32 @@ import { ChatMessage } from "@/components/features/ChatMessage"
 import { BottomNav } from "@/components/layout/BottomNav"
 import type { ChatMessage as ChatMessageType } from "@/lib/types"
 
+function buildTripContextSummary(
+  currentTrip: ReturnType<typeof useAppStore.getState>["currentTrip"],
+  generatedItinerary: ReturnType<typeof useAppStore.getState>["generatedItinerary"]
+) {
+  if (!currentTrip) return undefined
+
+  const activityLines = (generatedItinerary ?? [])
+    .slice(0, 2)
+    .flatMap((day) =>
+      day.activities.slice(0, 4).map((activity) => `- Day ${day.dayNumber} ${activity.time}: ${activity.name} (${activity.location})`)
+    )
+
+  return [
+    "Client-side trip context:",
+    `- Destination: ${currentTrip.destination}`,
+    `- Trip name: ${currentTrip.name}`,
+    `- Dates: ${currentTrip.startDate} to ${currentTrip.endDate}`,
+    `- Budget: €${currentTrip.budget} (spent €${currentTrip.spent})`,
+    activityLines.length > 0 ? "Planned activities:\n" + activityLines.join("\n") : "",
+  ]
+    .filter(Boolean)
+    .join("\n")
+}
+
 export default function AIPage() {
-  const { currentTrip, chatMessages, addChatMessage, isChatLoading, setChatLoading } = useAppStore()
+  const { currentTrip, generatedItinerary, chatMessages, addChatMessage, isChatLoading, setChatLoading } = useAppStore()
   const [input, setInput] = useState("")
   const messagesEndRef = useRef<HTMLDivElement>(null)
 
@@ -39,7 +63,12 @@ export default function AIPage() {
       const res = await fetch("/api/chat", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ message: text, history, tripId: currentTrip?.id }),
+        body: JSON.stringify({
+          message: text,
+          history,
+          tripId: currentTrip?.id,
+          tripContext: buildTripContextSummary(currentTrip, generatedItinerary),
+        }),
       })
 
       if (!res.ok) throw new Error("Request failed")
@@ -105,7 +134,7 @@ export default function AIPage() {
           <p className="text-[15px] font-semibold text-white">Viaje360 AI</p>
           <p className="text-[11px] text-[#30D158] flex items-center gap-1">
             <span className="w-1.5 h-1.5 rounded-full bg-[#30D158] inline-block pulse-blue" />
-            Activo · Barcelona
+            Activo · {currentTrip?.destination || "Sin destino"}
           </p>
         </div>
       </div>
@@ -188,7 +217,7 @@ export default function AIPage() {
             value={input}
             onChange={(e) => setInput(e.target.value)}
             onKeyDown={handleKeyDown}
-            placeholder="Pregunta sobre Barcelona..."
+            placeholder={`Pregunta sobre ${currentTrip?.destination || "tu viaje"}...`}
             rows={1}
             className="flex-1 bg-transparent text-[14px] text-[#e4e2e4] placeholder:text-[#c0c6d6]/50 resize-none leading-relaxed py-1.5"
             style={{ maxHeight: "120px" }}

@@ -1,3 +1,4 @@
+import { hasEnv } from "@/lib/env"
 import { getFeatureFlag } from "@/lib/feature-flags"
 import type { NormalizedPlace, PlacesProvider, PlacesSearchParams } from "./types"
 import { GeminiPlacesProvider } from "./gemini-provider"
@@ -13,10 +14,7 @@ const googleProvider = new GooglePlacesProvider()
  * Google Places is primary when enabled + API key present; Gemini is fallback.
  */
 export function getPlacesProvider(): PlacesProvider {
-  if (
-    getFeatureFlag("GOOGLE_PLACES") &&
-    process.env.GOOGLE_PLACES_API_KEY
-  ) {
+  if (getFeatureFlag("GOOGLE_PLACES") && hasEnv("GOOGLE_PLACES_API_KEY")) {
     return googleProvider
   }
   return geminiProvider

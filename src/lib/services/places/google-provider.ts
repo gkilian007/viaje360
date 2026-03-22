@@ -1,3 +1,4 @@
+import { requireEnv } from "@/lib/env"
 import type { NormalizedPlace, PlacesProvider, PlacesSearchParams } from "./types"
 
 const PLACES_TEXT_SEARCH_URL =
@@ -11,10 +12,7 @@ export class GooglePlacesProvider implements PlacesProvider {
   readonly name = "google"
 
   async search(params: PlacesSearchParams): Promise<NormalizedPlace[]> {
-    const apiKey = process.env.GOOGLE_PLACES_API_KEY
-    if (!apiKey) {
-      throw new Error("GOOGLE_PLACES_API_KEY not set")
-    }
+    const apiKey = requireEnv("GOOGLE_PLACES_API_KEY", "Google Places API")
 
     const filters = params.filters ?? {}
     const queryParts = [params.query]

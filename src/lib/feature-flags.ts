@@ -6,6 +6,8 @@
  * If the env var is missing or anything else, the flag is OFF.
  */
 
+import { readBooleanEnv } from "@/lib/env"
+
 const FLAG_PREFIX = "FEATURE_"
 
 /** Known feature flags with their defaults (all off unless env says otherwise) */
@@ -18,10 +20,7 @@ const DEFAULTS: Record<string, boolean> = {
 }
 
 export function getFeatureFlag(name: string): boolean {
-  const envVal = process.env[`${FLAG_PREFIX}${name}`]
-  if (envVal === "true" || envVal === "1") return true
-  if (envVal === "false" || envVal === "0") return false
-  return DEFAULTS[name] ?? false
+  return readBooleanEnv(`${FLAG_PREFIX}${name}`, DEFAULTS[name] ?? false)
 }
 
 export function getAllFeatureFlags(): Record<string, boolean> {

@@ -3,7 +3,6 @@ import { generateChatResponse } from "@/lib/gemini"
 import { resolveRequestIdentity } from "@/lib/auth/server"
 import { chatRequestSchema } from "@/lib/api/contracts"
 import {
-  errorResponse,
   normalizeRouteError,
   parseJsonBody,
   successResponse,
@@ -11,19 +10,19 @@ import {
 import { addChatMessage, getChatHistory } from "@/lib/services/trip.service"
 import { createServiceClient } from "@/lib/supabase/server"
 
+function isPersistedTripId(tripId: string) {
+  return /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(tripId)
+}
+
 export async function POST(req: NextRequest) {
   try {
     const body = await parseJsonBody(req, chatRequestSchema)
     const identity = await resolveRequestIdentity()
-    const { message, tripId } = body
+    const { message, tripId, tripContext } = body
     let { history } = body
 
-    if (tripId && !identity.userId) {
-      return errorResponse("UNAUTHORIZED", "Authentication required for trip chat", 401)
-    }
-
-    let systemContext = ""
-    if (tripId) {
+    let systemContext = tripContext?.trim() ?? ""
+    if (tripId && identity.userId && isPersistedTripId(tripId)) {
       try {
         const supabase = createServiceClient()
         const { data: trip } = await supabase.from("trips").select("*").eq("id", tripId).single()
@@ -32,7 +31,7 @@ export async function POST(req: NextRequest) {
           : { data: null }
 
         if (trip) {
-          systemContext = `
+          const persistedContext = `
 Current trip context:
 - Destination: ${trip.destination}
 - Trip name: ${trip.name}
@@ -45,7 +44,9 @@ User preferences:
 - Dietary: ${(onboarding.dietary_restrictions as string[]).join(", ") || "none"}
 - Transport: ${(onboarding.transport as string[]).join(", ")}
 - Budget level: ${onboarding.budget_level}
-` : ""}`
+` : ""}`.trim()
+
+          systemContext = [systemContext, persistedContext].filter(Boolean).join("\n\n")
         }
 
         if (history.length === 0) {
@@ -62,7 +63,7 @@ User preferences:
 
     const response = await generateChatResponse(history, message, systemContext)
 
-    if (tripId && identity.userId) {
+    if (tripId && identity.userId && isPersistedTripId(tripId)) {
       try {
         await addChatMessage(tripId, identity.userId, "user", message)
         await addChatMessage(tripId, identity.userId, "assistant", response)
