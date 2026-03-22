@@ -11,6 +11,13 @@ import {
   mapDbDaysToGeneratedItinerary,
   runReliableGenerationPipeline,
 } from "@/lib/services/itinerary-reliability"
+import {
+  createAdaptationEvent,
+  createItineraryVersion,
+  ensureInitialItineraryVersion,
+  replaceTripItinerary,
+} from "@/lib/services/trip.service"
+import type { ItineraryVersionSource } from "@/lib/services/itinerary-versioning"
 
 const GEMINI_API_URL =
   "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent"
@@ -329,7 +336,8 @@ export function mapDbItineraryToAppTypes(
 
 export async function adaptItinerary(
   tripId: string,
-  reason: string
+  reason: string,
+  source: ItineraryVersionSource = "manual"
 ): Promise<GeneratedItinerary | null> {
   try {
     const supabase = createServiceClient()
@@ -360,6 +368,13 @@ export async function adaptItinerary(
       (days ?? []) as Array<{ day_number: number; date: string; theme: string | null; is_rest_day: boolean; activities?: DbActivity[] }>,
       String(trip.name ?? "Viaje360 Trip")
     )
+    const currentVersion = await ensureInitialItineraryVersion({
+      tripId,
+      itinerary: currentSchedule,
+      createdBy: (trip.user_id as string | null) ?? null,
+      reason: "Initial generated itinerary",
+      source: "generate",
+    })
     const prompt = buildAdaptationPrompt(trip as Record<string, unknown>, onboarding as DbOnboardingProfile | null, currentSchedule, reason)
     const raw = await callGeminiRaw(prompt)
 
@@ -410,6 +425,43 @@ export async function adaptItinerary(
       },
       String(trip.destination ?? "Trip")
     )
+
+    const nextVersion = await createItineraryVersion({
+      tripId,
+      itinerary: result.itinerary,
+      source,
+      reason,
+      createdBy: (trip.user_id as string | null) ?? null,
+    })
+
+    if (!nextVersion) {
+      throw new Error("Failed to create itinerary version")
+    }
+
+    const adaptationEvent = await createAdaptationEvent({
+      tripId,
+      fromVersionId: currentVersion?.id ?? null,
+      toVersionId: nextVersion.id,
+      reason,
+      source,
+      metadata: {
+        fromVersionNumber: currentVersion?.version_number ?? null,
+        toVersionNumber: nextVersion.version_number,
+      },
+    })
+
+    if (!adaptationEvent) {
+      await supabase.from("itinerary_versions").delete().eq("id", nextVersion.id)
+      throw new Error("Failed to create adaptation event")
+    }
+
+    try {
+      await replaceTripItinerary(tripId, result.itinerary)
+    } catch (replaceError) {
+      await supabase.from("adaptation_events").delete().eq("id", adaptationEvent.id)
+      await supabase.from("itinerary_versions").delete().eq("id", nextVersion.id)
+      throw replaceError
+    }
 
     return result.itinerary
   } catch (err) {

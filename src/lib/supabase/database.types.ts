@@ -119,6 +119,29 @@ export interface DbChatMessage {
   created_at: string
 }
 
+export interface DbItineraryVersion {
+  id: string
+  trip_id: string
+  version_number: number
+  parent_version_id: string | null
+  snapshot: GeneratedItinerary
+  source: "generate" | "manual" | "weather" | "fatigue" | "system"
+  reason: string | null
+  created_by: string | null
+  created_at: string
+}
+
+export interface DbAdaptationEvent {
+  id: string
+  trip_id: string
+  from_version_id: string | null
+  to_version_id: string
+  source: "generate" | "manual" | "weather" | "fatigue" | "system"
+  reason: string
+  metadata: Record<string, unknown> | null
+  created_at: string
+}
+
 export interface DbAchievement {
   id: string
   user_id: string

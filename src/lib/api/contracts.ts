@@ -173,6 +173,7 @@ export const chatRequestSchema = z.object({
 export const adaptRequestSchema = z.object({
   tripId: z.string().trim().min(1, "tripId is required"),
   reason: z.string().trim().min(1, "reason is required"),
+  source: z.enum(["manual", "weather", "fatigue", "system"]).default("manual"),
 })
 
 export const placesSearchRequestSchema = z.object({

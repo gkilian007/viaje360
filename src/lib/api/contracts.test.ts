@@ -2,6 +2,7 @@ import test from "node:test"
 import assert from "node:assert/strict"
 
 import {
+  adaptRequestSchema,
   chatRequestSchema,
   onboardingRequestSchema,
   weatherQuerySchema,
@@ -66,6 +67,15 @@ test("weatherQuerySchema coerces numeric query params", () => {
   assert.equal(result.lat, 41.38)
   assert.equal(result.lng, 2.17)
   assert.equal(result.days, 5)
+})
+
+test("adaptRequestSchema defaults source to manual", () => {
+  const result = adaptRequestSchema.parse({
+    tripId: "trip-123",
+    reason: "Rainy afternoon",
+  })
+
+  assert.equal(result.source, "manual")
 })
 
 test("createErrorBody exposes a typed validation error shape", () => {
