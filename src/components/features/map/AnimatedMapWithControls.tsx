@@ -13,6 +13,15 @@ import {
 } from "./types"
 import { useRouteAnimation } from "./useRouteAnimation"
 import { createAvatarMarkerElement, updateAvatarMarker } from "./TravelerAvatar"
+import {
+  type TransportMode,
+  type RouteSummary,
+  TRANSPORT_MODES,
+  fetchDirections,
+  formatDuration,
+  formatDistance,
+  estimateTime,
+} from "./directions"
 
 interface AnimatedMapWithControlsProps {
   itinerary: DayItinerary[]
@@ -40,6 +49,9 @@ export function AnimatedMapWithControls({
   const [isLoaded, setIsLoaded] = useState(false)
   const [mapboxgl, setMapboxgl] = useState<any>(null)
   const [selectedActivity, setSelectedActivity] = useState<TimelineActivity | null>(null)
+  const [transportMode, setTransportMode] = useState<TransportMode>("walking")
+  const [routeSummary, setRouteSummary] = useState<RouteSummary | null>(null)
+  const [isLoadingRoute, setIsLoadingRoute] = useState(false)
 
   const dayData = itinerary[selectedDay - 1]
   const rawActivities = dayData?.activities ?? []
@@ -127,6 +139,49 @@ export function AnimatedMapWithControls({
     }
   }, [accessToken, mapboxgl])
 
+  // Fetch real directions when mode or activities change
+  useEffect(() => {
+    if (!isLoaded || activities.length < 2) {
+      setRouteSummary(null)
+      return
+    }
+
+    const fetchRoute = async () => {
+      setIsLoadingRoute(true)
+      const coords = activities.map((a) => a.coordinates)
+      const result = await fetchDirections(coords, transportMode, accessToken)
+      
+      if (result) {
+        setRouteSummary(result)
+      } else {
+        // Fallback: estimate times
+        const segments = []
+        let totalDistance = 0
+        let totalDuration = 0
+        
+        for (let i = 0; i < coords.length - 1; i++) {
+          const est = estimateTime(coords[i], coords[i + 1], transportMode)
+          segments.push({
+            from: coords[i],
+            to: coords[i + 1],
+            mode: transportMode,
+            distance: est.distance,
+            duration: est.duration,
+            geometry: [[coords[i].lng, coords[i].lat], [coords[i + 1].lng, coords[i + 1].lat]] as [number, number][],
+          })
+          totalDistance += est.distance
+          totalDuration += est.duration
+        }
+        
+        setRouteSummary({ totalDistance, totalDuration, segments })
+      }
+      
+      setIsLoadingRoute(false)
+    }
+
+    fetchRoute()
+  }, [isLoaded, activities, transportMode, accessToken])
+
   // Update map elements
   useEffect(() => {
     if (!map.current || !isLoaded || !mapboxgl) return
@@ -147,34 +202,45 @@ export function AnimatedMapWithControls({
 
     if (activities.length === 0) return
 
-    const coordinates = activities.map((a) => [a.coordinates.lng, a.coordinates.lat])
+    // Build route coordinates (use real directions if available)
+    let routeCoordinates: [number, number][]
+    
+    if (routeSummary && routeSummary.segments.length > 0) {
+      // Combine all segment geometries
+      routeCoordinates = routeSummary.segments.flatMap((seg) => seg.geometry)
+    } else {
+      // Fallback to straight lines
+      routeCoordinates = activities.map((a) => [a.coordinates.lng, a.coordinates.lat])
+    }
 
     // Route
-    if (coordinates.length >= 2) {
+    if (routeCoordinates.length >= 2) {
       map.current.addSource("route", {
         type: "geojson",
-        data: { type: "Feature", properties: {}, geometry: { type: "LineString", coordinates } },
+        data: { type: "Feature", properties: {}, geometry: { type: "LineString", coordinates: routeCoordinates } },
       })
+
+      const modeColor = TRANSPORT_MODES.find((m) => m.id === transportMode)?.color || "#0A84FF"
 
       map.current.addLayer({
         id: "route-glow",
         type: "line",
         source: "route",
-        paint: { "line-color": "#0A84FF", "line-width": 12, "line-opacity": 0.2, "line-blur": 4 },
+        paint: { "line-color": modeColor, "line-width": 12, "line-opacity": 0.2, "line-blur": 4 },
       })
 
       map.current.addLayer({
         id: "route",
         type: "line",
         source: "route",
-        paint: { "line-color": "#0A84FF", "line-width": 4 },
+        paint: { "line-color": modeColor, "line-width": 4 },
       })
     }
 
     // Markers
     activities.forEach((activity, i) => {
       const el = createMarker(activity, i)
-      const popup = new mapboxgl.Popup({ offset: 30, closeButton: false }).setHTML(createPopup(activity))
+      const popup = new mapboxgl.Popup({ offset: 30, closeButton: false }).setHTML(createPopup(activity, i, routeSummary))
       const marker = new mapboxgl.Marker(el)
         .setLngLat([activity.coordinates.lng, activity.coordinates.lat])
         .setPopup(popup)
@@ -193,10 +259,11 @@ export function AnimatedMapWithControls({
       .addTo(map.current!)
 
     // Fit bounds
+    const allCoords = routeCoordinates.length > 0 ? routeCoordinates : activities.map((a) => [a.coordinates.lng, a.coordinates.lat])
     const bounds = new mapboxgl.LngLatBounds()
-    coordinates.forEach((c) => bounds.extend(c as [number, number]))
-    map.current.fitBounds(bounds, { padding: { top: 120, bottom: 200, left: 60, right: 60 }, maxZoom: 15, duration: 1000 })
-  }, [activities, isLoaded, mapboxgl, onActivityClick])
+    allCoords.forEach((c) => bounds.extend(c as [number, number]))
+    map.current.fitBounds(bounds, { padding: { top: 120, bottom: 220, left: 60, right: 60 }, maxZoom: 15, duration: 1000 })
+  }, [activities, isLoaded, mapboxgl, onActivityClick, routeSummary, transportMode])
 
   const canAnimate = activities.length >= 2
 
@@ -207,6 +274,69 @@ export function AnimatedMapWithControls({
       {!isLoaded && (
         <div className="absolute inset-0 flex items-center justify-center bg-[#0f1117]">
           <div className="w-8 h-8 border-2 border-[#0A84FF] border-t-transparent rounded-full animate-spin" />
+        </div>
+      )}
+
+      {/* Transport mode selector */}
+      <div className="absolute top-28 left-4 z-20">
+        <div
+          className="flex gap-1 p-1 rounded-xl"
+          style={{ background: "rgba(19,19,21,0.95)", backdropFilter: "blur(20px)", border: "1px solid rgba(255,255,255,0.1)" }}
+        >
+          {TRANSPORT_MODES.map((mode) => (
+            <motion.button
+              key={mode.id}
+              whileTap={{ scale: 0.95 }}
+              onClick={() => setTransportMode(mode.id)}
+              className="px-3 py-2 rounded-lg flex items-center gap-2 transition-all"
+              style={{
+                background: transportMode === mode.id ? `${mode.color}20` : "transparent",
+                border: `1px solid ${transportMode === mode.id ? mode.color : "transparent"}`,
+              }}
+            >
+              <span
+                className="material-symbols-outlined text-[18px]"
+                style={{ color: transportMode === mode.id ? mode.color : "#c0c6d6" }}
+              >
+                {mode.icon}
+              </span>
+              <span
+                className="text-[11px] font-medium hidden sm:inline"
+                style={{ color: transportMode === mode.id ? mode.color : "#c0c6d6" }}
+              >
+                {mode.label}
+              </span>
+            </motion.button>
+          ))}
+        </div>
+      </div>
+
+      {/* Route summary card */}
+      {routeSummary && !isLoadingRoute && (
+        <div
+          className="absolute top-28 right-4 p-3 rounded-xl z-20"
+          style={{ background: "rgba(19,19,21,0.95)", backdropFilter: "blur(20px)", border: "1px solid rgba(255,255,255,0.1)" }}
+        >
+          <div className="flex items-center gap-3">
+            <div className="flex flex-col items-center">
+              <span className="material-symbols-outlined text-[20px]" style={{ color: TRANSPORT_MODES.find(m => m.id === transportMode)?.color }}>
+                {TRANSPORT_MODES.find(m => m.id === transportMode)?.icon}
+              </span>
+            </div>
+            <div>
+              <p className="text-[14px] font-semibold text-white">{formatDuration(routeSummary.totalDuration)}</p>
+              <p className="text-[11px] text-[#c0c6d6]">{formatDistance(routeSummary.totalDistance)}</p>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {isLoadingRoute && (
+        <div
+          className="absolute top-28 right-4 p-3 rounded-xl z-20"
+          style={{ background: "rgba(19,19,21,0.95)", backdropFilter: "blur(20px)", border: "1px solid rgba(255,255,255,0.1)" }}
+        >
+          <div className="w-5 h-5 border-2 border-[#0A84FF] border-t-transparent rounded-full animate-spin" />
         </div>
       )}
 
@@ -236,8 +366,8 @@ export function AnimatedMapWithControls({
               style={{
                 background: animation.state === "finished" 
                   ? "linear-gradient(135deg, #30D158, #00C853)"
-                  : "linear-gradient(135deg, #0A84FF, #5856D6)",
-                boxShadow: "0 4px 20px rgba(10,132,255,0.4)",
+                  : `linear-gradient(135deg, ${TRANSPORT_MODES.find(m => m.id === transportMode)?.color || "#0A84FF"}, #5856D6)`,
+                boxShadow: `0 4px 20px ${TRANSPORT_MODES.find(m => m.id === transportMode)?.color || "#0A84FF"}40`,
               }}
             >
               <span className="material-symbols-outlined text-[28px] text-white">
@@ -248,7 +378,7 @@ export function AnimatedMapWithControls({
             <div className="flex-1 h-2 rounded-full bg-white/10 overflow-hidden min-w-[80px]">
               <motion.div
                 className="h-full rounded-full"
-                style={{ background: "linear-gradient(90deg, #0A84FF, #5856D6)" }}
+                style={{ background: `linear-gradient(90deg, ${TRANSPORT_MODES.find(m => m.id === transportMode)?.color || "#0A84FF"}, #5856D6)` }}
                 animate={{ width: `${animation.progress * 100}%` }}
               />
             </div>
@@ -263,7 +393,9 @@ export function AnimatedMapWithControls({
       {/* Stats badge */}
       <div className="absolute bottom-36 right-4 p-3 rounded-xl z-10" style={{ background: "rgba(19,19,21,0.9)", backdropFilter: "blur(12px)", border: "1px solid rgba(255,255,255,0.1)" }}>
         <div className="flex items-center gap-2">
-          <span className="material-symbols-outlined text-[16px] text-[#0A84FF]">hiking</span>
+          <span className="material-symbols-outlined text-[16px]" style={{ color: TRANSPORT_MODES.find(m => m.id === transportMode)?.color }}>
+            {TRANSPORT_MODES.find(m => m.id === transportMode)?.icon}
+          </span>
           <span className="text-[13px] font-semibold text-white">{activities.length}</span>
           <span className="text-[11px] text-[#c0c6d6]">paradas</span>
         </div>
@@ -281,33 +413,58 @@ export function AnimatedMapWithControls({
           >
             <div className="flex items-center justify-between p-4 border-b border-white/5">
               <p className="text-[14px] font-semibold text-white">Día {selectedDay} · {activities.length} paradas</p>
+              {routeSummary && (
+                <div className="flex items-center gap-2 px-2 py-1 rounded-full" style={{ background: `${TRANSPORT_MODES.find(m => m.id === transportMode)?.color}15` }}>
+                  <span className="material-symbols-outlined text-[12px]" style={{ color: TRANSPORT_MODES.find(m => m.id === transportMode)?.color }}>schedule</span>
+                  <span className="text-[11px] font-medium" style={{ color: TRANSPORT_MODES.find(m => m.id === transportMode)?.color }}>{formatDuration(routeSummary.totalDuration)}</span>
+                </div>
+              )}
             </div>
-            <div className="p-3 space-y-2 overflow-y-auto max-h-[calc(40vh-50px)]">
-              {activities.map((activity, i) => (
-                <button
-                  key={activity.id}
-                  onClick={() => {
-                    animation.jumpToActivity(i)
-                    setSelectedActivity(activity)
-                  }}
-                  className="w-full flex items-center gap-3 p-3 rounded-xl transition-all"
-                  style={{
-                    background: animation.currentActivityIndex === i ? `${getActivityColor(activity.type)}15` : "rgba(42,42,44,0.5)",
-                    border: `1px solid ${animation.currentActivityIndex === i ? `${getActivityColor(activity.type)}40` : "transparent"}`,
-                  }}
-                >
-                  <div
-                    className="w-8 h-8 rounded-lg flex items-center justify-center text-white font-bold text-[13px]"
-                    style={{ background: animation.currentActivityIndex === i ? getActivityColor(activity.type) : i < animation.currentActivityIndex ? "#30D158" : "rgba(255,255,255,0.1)" }}
-                  >
-                    {i < animation.currentActivityIndex && animation.currentActivityIndex !== i ? "✓" : i + 1}
+            <div className="p-3 space-y-2 overflow-y-auto max-h-[calc(35vh-50px)]">
+              {activities.map((activity, i) => {
+                const segmentInfo = routeSummary?.segments[i - 1]
+                return (
+                  <div key={activity.id}>
+                    {/* Segment info between activities */}
+                    {i > 0 && segmentInfo && (
+                      <div className="flex items-center gap-2 py-2 px-3 mb-2">
+                        <div className="flex-1 h-px bg-white/10" />
+                        <div className="flex items-center gap-1.5 text-[10px] text-[#c0c6d6]">
+                          <span className="material-symbols-outlined text-[12px]" style={{ color: TRANSPORT_MODES.find(m => m.id === transportMode)?.color }}>
+                            {TRANSPORT_MODES.find(m => m.id === transportMode)?.icon}
+                          </span>
+                          <span>{formatDuration(segmentInfo.duration)}</span>
+                          <span>·</span>
+                          <span>{formatDistance(segmentInfo.distance)}</span>
+                        </div>
+                        <div className="flex-1 h-px bg-white/10" />
+                      </div>
+                    )}
+                    <button
+                      onClick={() => {
+                        animation.jumpToActivity(i)
+                        setSelectedActivity(activity)
+                      }}
+                      className="w-full flex items-center gap-3 p-3 rounded-xl transition-all"
+                      style={{
+                        background: animation.currentActivityIndex === i ? `${getActivityColor(activity.type)}15` : "rgba(42,42,44,0.5)",
+                        border: `1px solid ${animation.currentActivityIndex === i ? `${getActivityColor(activity.type)}40` : "transparent"}`,
+                      }}
+                    >
+                      <div
+                        className="w-8 h-8 rounded-lg flex items-center justify-center text-white font-bold text-[13px]"
+                        style={{ background: animation.currentActivityIndex === i ? getActivityColor(activity.type) : i < animation.currentActivityIndex ? "#30D158" : "rgba(255,255,255,0.1)" }}
+                      >
+                        {i < animation.currentActivityIndex && animation.currentActivityIndex !== i ? "✓" : i + 1}
+                      </div>
+                      <div className="flex-1 text-left">
+                        <p className="text-[13px] font-medium text-white truncate">{activity.name}</p>
+                        <p className="text-[11px] text-[#c0c6d6]">{activity.time} · {activity.duration}min</p>
+                      </div>
+                    </button>
                   </div>
-                  <div className="flex-1 text-left">
-                    <p className="text-[13px] font-medium text-white truncate">{activity.name}</p>
-                    <p className="text-[11px] text-[#c0c6d6]">{activity.time}</p>
-                  </div>
-                </button>
-              ))}
+                )
+              })}
             </div>
           </motion.div>
         )}
@@ -345,11 +502,18 @@ function createMarker(activity: TimelineActivity, index: number): HTMLDivElement
   return el
 }
 
-function createPopup(activity: TimelineActivity): string {
+function createPopup(activity: TimelineActivity, index: number, routeSummary: RouteSummary | null): string {
   const color = getActivityColor(activity.type)
+  const segmentInfo = index > 0 && routeSummary?.segments[index - 1]
+  
   return `<div style="font-family:Inter,system-ui;padding:12px;min-width:180px;">
     <div style="font-weight:600;font-size:14px;color:#131315;margin-bottom:4px;">${activity.name}</div>
     <div style="font-size:11px;color:#666;">${activity.time} · ${activity.duration}min · ${activity.location}</div>
     ${activity.cost > 0 ? `<div style="margin-top:6px;color:#22C55E;font-weight:500;">€${activity.cost}</div>` : ""}
+    ${segmentInfo ? `
+      <div style="margin-top:8px;padding-top:8px;border-top:1px solid #eee;font-size:11px;color:#666;">
+        <span style="color:${color};">↑</span> ${formatDuration(segmentInfo.duration)} · ${formatDistance(segmentInfo.distance)} desde anterior
+      </div>
+    ` : ""}
   </div>`
 }

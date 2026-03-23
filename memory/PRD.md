@@ -113,6 +113,10 @@ Complete implementation of the interactive map with route visualization and anim
 10. Jump to activity functionality
 11. Camera follows avatar during animation
 12. Stats badge showing number of stops
+13. **Transport mode selector** (Walking, Cycling, Driving)
+14. **Real route directions** via Mapbox Directions API
+15. **Time/distance estimates** for total route and between stops
+16. **Dynamic colors** matching transport mode
 
 **Testing Status:**
 - Frontend: 90% passing
