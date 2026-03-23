@@ -327,21 +327,23 @@ export function DiaryConversation({
         </AnimatePresence>
 
         {/* Interactive elements based on current step */}
-        {currentStepData?.type === "mood" && !diaryState.mood && (
+        {currentStep === 1 && !diaryState.mood && (
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             className="mt-4"
+            data-testid="mood-selector-container"
           >
             <MoodSelector value={diaryState.mood} onChange={handleMoodSelect} />
           </motion.div>
         )}
 
-        {currentStepData?.type === "energy" && (
+        {currentStep === 2 && (
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             className="mt-4 space-y-4"
+            data-testid="energy-pace-container"
           >
             <EnergyPaceSlider
               energyValue={diaryState.energyScore}
@@ -360,11 +362,12 @@ export function DiaryConversation({
           </motion.div>
         )}
 
-        {currentStepData?.type === "activities" && (
+        {currentStep === 3 && (
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             className="mt-4 space-y-3"
+            data-testid="activities-container"
           >
             {activities.map((activity) => (
               <ActivityFeedbackCard
