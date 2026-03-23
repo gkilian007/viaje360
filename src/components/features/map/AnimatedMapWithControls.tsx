@@ -7,7 +7,6 @@ import { ACTIVITY_ICONS } from "@/lib/constants"
 import {
   type ActivityWithCoords,
   type AvatarPosition,
-  type AnimationState,
   getActivityCoordinates,
   getActivityColor,
 } from "./types"
@@ -16,11 +15,13 @@ import { createAvatarMarkerElement, updateAvatarMarker } from "./TravelerAvatar"
 import {
   type TransportMode,
   type RouteSummary,
+  type DirectionStep,
   TRANSPORT_MODES,
   fetchDirections,
   formatDuration,
   formatDistance,
   estimateTime,
+  getManeuverIcon,
 } from "./directions"
 
 interface AnimatedMapWithControlsProps {
@@ -30,6 +31,95 @@ interface AnimatedMapWithControlsProps {
   accessToken: string
   showList: boolean
   onToggleList: () => void
+}
+
+// Direction step component
+function DirectionStepItem({ step, isLast }: { step: DirectionStep; isLast: boolean }) {
+  const icon = getManeuverIcon(step.maneuver)
+  
+  return (
+    <div className="flex items-start gap-2 py-1.5">
+      <div className="w-6 h-6 rounded-md flex items-center justify-center shrink-0 bg-white/5">
+        <span className="material-symbols-outlined text-[14px] text-[#c0c6d6]">{icon}</span>
+      </div>
+      <div className="flex-1 min-w-0">
+        <p className="text-[11px] text-[#e4e2e4] leading-relaxed">{step.instruction}</p>
+        {!isLast && step.distance > 0 && (
+          <p className="text-[10px] text-[#c0c6d6]/70 mt-0.5">
+            {formatDistance(step.distance)} · {formatDuration(step.duration)}
+          </p>
+        )}
+      </div>
+    </div>
+  )
+}
+
+// Expandable directions panel
+function DirectionsPanel({
+  steps,
+  isExpanded,
+  onToggle,
+  modeColor,
+}: {
+  steps: DirectionStep[]
+  isExpanded: boolean
+  onToggle: () => void
+  modeColor: string
+}) {
+  // Filter out very short steps and limit display
+  const significantSteps = steps.filter((s) => s.distance > 20 || s.maneuver.type === "arrive")
+  const displaySteps = significantSteps.slice(0, isExpanded ? undefined : 3)
+  const hasMore = significantSteps.length > 3
+
+  if (steps.length === 0) return null
+
+  return (
+    <div className="mt-2 pt-2 border-t border-white/5">
+      <button
+        onClick={onToggle}
+        className="flex items-center gap-2 w-full text-left mb-2"
+      >
+        <span className="material-symbols-outlined text-[14px]" style={{ color: modeColor }}>
+          directions
+        </span>
+        <span className="text-[11px] font-medium" style={{ color: modeColor }}>
+          Indicaciones ({significantSteps.length} pasos)
+        </span>
+        <span
+          className="material-symbols-outlined text-[14px] ml-auto transition-transform"
+          style={{ color: modeColor, transform: isExpanded ? "rotate(180deg)" : "rotate(0)" }}
+        >
+          expand_more
+        </span>
+      </button>
+      
+      <AnimatePresence>
+        {(isExpanded || displaySteps.length <= 3) && (
+          <motion.div
+            initial={{ height: 0, opacity: 0 }}
+            animate={{ height: "auto", opacity: 1 }}
+            exit={{ height: 0, opacity: 0 }}
+            className="overflow-hidden"
+          >
+            <div className="space-y-0.5 pl-1">
+              {displaySteps.map((step, i) => (
+                <DirectionStepItem
+                  key={i}
+                  step={step}
+                  isLast={i === displaySteps.length - 1}
+                />
+              ))}
+              {!isExpanded && hasMore && (
+                <p className="text-[10px] text-[#c0c6d6]/50 py-1 pl-8">
+                  +{significantSteps.length - 3} pasos más...
+                </p>
+              )}
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </div>
+  )
 }
 
 export function AnimatedMapWithControls({
@@ -52,6 +142,7 @@ export function AnimatedMapWithControls({
   const [transportMode, setTransportMode] = useState<TransportMode>("walking")
   const [routeSummary, setRouteSummary] = useState<RouteSummary | null>(null)
   const [isLoadingRoute, setIsLoadingRoute] = useState(false)
+  const [expandedDirections, setExpandedDirections] = useState<number | null>(null)
 
   const dayData = itinerary[selectedDay - 1]
   const rawActivities = dayData?.activities ?? []
@@ -168,6 +259,7 @@ export function AnimatedMapWithControls({
             distance: est.distance,
             duration: est.duration,
             geometry: [[coords[i].lng, coords[i].lat], [coords[i + 1].lng, coords[i + 1].lat]] as [number, number][],
+            steps: est.steps,
           })
           totalDistance += est.distance
           totalDuration += est.duration
@@ -206,10 +298,8 @@ export function AnimatedMapWithControls({
     let routeCoordinates: [number, number][]
     
     if (routeSummary && routeSummary.segments.length > 0) {
-      // Combine all segment geometries
       routeCoordinates = routeSummary.segments.flatMap((seg) => seg.geometry)
     } else {
-      // Fallback to straight lines
       routeCoordinates = activities.map((a) => [a.coordinates.lng, a.coordinates.lat])
     }
 
@@ -266,6 +356,7 @@ export function AnimatedMapWithControls({
   }, [activities, isLoaded, mapboxgl, onActivityClick, routeSummary, transportMode])
 
   const canAnimate = activities.length >= 2
+  const modeColor = TRANSPORT_MODES.find((m) => m.id === transportMode)?.color || "#0A84FF"
 
   return (
     <div className="relative w-full h-full">
@@ -300,12 +391,6 @@ export function AnimatedMapWithControls({
               >
                 {mode.icon}
               </span>
-              <span
-                className="text-[11px] font-medium hidden sm:inline"
-                style={{ color: transportMode === mode.id ? mode.color : "#c0c6d6" }}
-              >
-                {mode.label}
-              </span>
             </motion.button>
           ))}
         </div>
@@ -319,7 +404,7 @@ export function AnimatedMapWithControls({
         >
           <div className="flex items-center gap-3">
             <div className="flex flex-col items-center">
-              <span className="material-symbols-outlined text-[20px]" style={{ color: TRANSPORT_MODES.find(m => m.id === transportMode)?.color }}>
+              <span className="material-symbols-outlined text-[20px]" style={{ color: modeColor }}>
                 {TRANSPORT_MODES.find(m => m.id === transportMode)?.icon}
               </span>
             </div>
@@ -366,8 +451,8 @@ export function AnimatedMapWithControls({
               style={{
                 background: animation.state === "finished" 
                   ? "linear-gradient(135deg, #30D158, #00C853)"
-                  : `linear-gradient(135deg, ${TRANSPORT_MODES.find(m => m.id === transportMode)?.color || "#0A84FF"}, #5856D6)`,
-                boxShadow: `0 4px 20px ${TRANSPORT_MODES.find(m => m.id === transportMode)?.color || "#0A84FF"}40`,
+                  : `linear-gradient(135deg, ${modeColor}, #5856D6)`,
+                boxShadow: `0 4px 20px ${modeColor}40`,
               }}
             >
               <span className="material-symbols-outlined text-[28px] text-white">
@@ -378,7 +463,7 @@ export function AnimatedMapWithControls({
             <div className="flex-1 h-2 rounded-full bg-white/10 overflow-hidden min-w-[80px]">
               <motion.div
                 className="h-full rounded-full"
-                style={{ background: `linear-gradient(90deg, ${TRANSPORT_MODES.find(m => m.id === transportMode)?.color || "#0A84FF"}, #5856D6)` }}
+                style={{ background: `linear-gradient(90deg, ${modeColor}, #5856D6)` }}
                 animate={{ width: `${animation.progress * 100}%` }}
               />
             </div>
@@ -393,7 +478,7 @@ export function AnimatedMapWithControls({
       {/* Stats badge */}
       <div className="absolute bottom-36 right-4 p-3 rounded-xl z-10" style={{ background: "rgba(19,19,21,0.9)", backdropFilter: "blur(12px)", border: "1px solid rgba(255,255,255,0.1)" }}>
         <div className="flex items-center gap-2">
-          <span className="material-symbols-outlined text-[16px]" style={{ color: TRANSPORT_MODES.find(m => m.id === transportMode)?.color }}>
+          <span className="material-symbols-outlined text-[16px]" style={{ color: modeColor }}>
             {TRANSPORT_MODES.find(m => m.id === transportMode)?.icon}
           </span>
           <span className="text-[13px] font-semibold text-white">{activities.length}</span>
@@ -401,45 +486,67 @@ export function AnimatedMapWithControls({
         </div>
       </div>
 
-      {/* Activity list */}
+      {/* Activity list with directions */}
       <AnimatePresence>
         {showList && (
           <motion.div
             initial={{ y: "100%" }}
             animate={{ y: 0 }}
             exit={{ y: "100%" }}
-            className="absolute bottom-40 left-4 right-4 max-h-[35vh] rounded-2xl overflow-hidden z-10"
+            className="absolute bottom-40 left-4 right-4 max-h-[45vh] rounded-2xl overflow-hidden z-10"
             style={{ background: "rgba(19,19,21,0.98)", backdropFilter: "blur(20px)", border: "1px solid rgba(255,255,255,0.1)" }}
           >
             <div className="flex items-center justify-between p-4 border-b border-white/5">
               <p className="text-[14px] font-semibold text-white">Día {selectedDay} · {activities.length} paradas</p>
               {routeSummary && (
-                <div className="flex items-center gap-2 px-2 py-1 rounded-full" style={{ background: `${TRANSPORT_MODES.find(m => m.id === transportMode)?.color}15` }}>
-                  <span className="material-symbols-outlined text-[12px]" style={{ color: TRANSPORT_MODES.find(m => m.id === transportMode)?.color }}>schedule</span>
-                  <span className="text-[11px] font-medium" style={{ color: TRANSPORT_MODES.find(m => m.id === transportMode)?.color }}>{formatDuration(routeSummary.totalDuration)}</span>
+                <div className="flex items-center gap-2 px-2 py-1 rounded-full" style={{ background: `${modeColor}15` }}>
+                  <span className="material-symbols-outlined text-[12px]" style={{ color: modeColor }}>schedule</span>
+                  <span className="text-[11px] font-medium" style={{ color: modeColor }}>{formatDuration(routeSummary.totalDuration)}</span>
                 </div>
               )}
             </div>
-            <div className="p-3 space-y-2 overflow-y-auto max-h-[calc(35vh-50px)]">
+            <div className="p-3 space-y-2 overflow-y-auto max-h-[calc(45vh-50px)]">
               {activities.map((activity, i) => {
                 const segmentInfo = routeSummary?.segments[i - 1]
+                const isCurrentlyExpanded = expandedDirections === i
+                
                 return (
                   <div key={activity.id}>
-                    {/* Segment info between activities */}
+                    {/* Segment info with directions between activities */}
                     {i > 0 && segmentInfo && (
-                      <div className="flex items-center gap-2 py-2 px-3 mb-2">
-                        <div className="flex-1 h-px bg-white/10" />
-                        <div className="flex items-center gap-1.5 text-[10px] text-[#c0c6d6]">
-                          <span className="material-symbols-outlined text-[12px]" style={{ color: TRANSPORT_MODES.find(m => m.id === transportMode)?.color }}>
-                            {TRANSPORT_MODES.find(m => m.id === transportMode)?.icon}
-                          </span>
-                          <span>{formatDuration(segmentInfo.duration)}</span>
-                          <span>·</span>
-                          <span>{formatDistance(segmentInfo.distance)}</span>
+                      <div
+                        className="mb-2 p-3 rounded-xl"
+                        style={{ background: `${modeColor}08`, border: `1px solid ${modeColor}15` }}
+                      >
+                        {/* Summary row */}
+                        <div className="flex items-center gap-2">
+                          <div className="flex items-center gap-1.5">
+                            <span className="material-symbols-outlined text-[14px]" style={{ color: modeColor }}>
+                              {TRANSPORT_MODES.find(m => m.id === transportMode)?.icon}
+                            </span>
+                            <span className="text-[12px] font-medium" style={{ color: modeColor }}>
+                              {formatDuration(segmentInfo.duration)}
+                            </span>
+                            <span className="text-[10px] text-[#c0c6d6]">·</span>
+                            <span className="text-[11px] text-[#c0c6d6]">
+                              {formatDistance(segmentInfo.distance)}
+                            </span>
+                          </div>
                         </div>
-                        <div className="flex-1 h-px bg-white/10" />
+                        
+                        {/* Turn-by-turn directions */}
+                        {segmentInfo.steps && segmentInfo.steps.length > 0 && (
+                          <DirectionsPanel
+                            steps={segmentInfo.steps}
+                            isExpanded={isCurrentlyExpanded}
+                            onToggle={() => setExpandedDirections(isCurrentlyExpanded ? null : i)}
+                            modeColor={modeColor}
+                          />
+                        )}
                       </div>
                     )}
+                    
+                    {/* Activity card */}
                     <button
                       onClick={() => {
                         animation.jumpToActivity(i)
@@ -460,6 +567,17 @@ export function AnimatedMapWithControls({
                       <div className="flex-1 text-left">
                         <p className="text-[13px] font-medium text-white truncate">{activity.name}</p>
                         <p className="text-[11px] text-[#c0c6d6]">{activity.time} · {activity.duration}min</p>
+                      </div>
+                      <div
+                        className="w-8 h-8 rounded-lg flex items-center justify-center"
+                        style={{ background: `${getActivityColor(activity.type)}20` }}
+                      >
+                        <span
+                          className="material-symbols-outlined text-[16px]"
+                          style={{ color: getActivityColor(activity.type), fontVariationSettings: "'FILL' 1" }}
+                        >
+                          {activity.icon ?? ACTIVITY_ICONS[activity.type] ?? "place"}
+                        </span>
                       </div>
                     </button>
                   </div>
