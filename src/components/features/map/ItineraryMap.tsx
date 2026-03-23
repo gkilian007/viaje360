@@ -1,17 +1,9 @@
 "use client"
 
-import { useRef, useEffect, useState, useCallback } from "react"
-import mapboxgl from "mapbox-gl"
-import "mapbox-gl/dist/mapbox-gl.css"
+import { useRef, useEffect, useState } from "react"
+import dynamic from "next/dynamic"
 import type { DayItinerary, TimelineActivity } from "@/lib/types"
 import { ACTIVITY_ICONS } from "@/lib/constants"
-
-interface ItineraryMapProps {
-  itinerary: DayItinerary[]
-  selectedDay: number
-  onActivityClick?: (activity: TimelineActivity) => void
-  accessToken: string
-}
 
 // Activity type to color mapping
 const ACTIVITY_COLORS: Record<string, string> = {
@@ -30,81 +22,6 @@ function getActivityColor(type: string): string {
   return ACTIVITY_COLORS[type] || ACTIVITY_COLORS.default
 }
 
-// Create custom marker element
-function createMarkerElement(activity: TimelineActivity, index: number): HTMLDivElement {
-  const el = document.createElement("div")
-  el.className = "map-marker"
-  el.style.cssText = `
-    width: 36px;
-    height: 36px;
-    border-radius: 50%;
-    background: ${getActivityColor(activity.type)};
-    border: 3px solid white;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.3);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    cursor: pointer;
-    transition: transform 0.2s ease;
-    position: relative;
-  `
-  
-  // Add order badge
-  const badge = document.createElement("span")
-  badge.style.cssText = `
-    position: absolute;
-    top: -8px;
-    right: -8px;
-    width: 20px;
-    height: 20px;
-    border-radius: 50%;
-    background: white;
-    color: #131315;
-    font-size: 11px;
-    font-weight: 700;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    box-shadow: 0 1px 3px rgba(0,0,0,0.2);
-  `
-  badge.textContent = String(index + 1)
-  el.appendChild(badge)
-
-  el.addEventListener("mouseenter", () => {
-    el.style.transform = "scale(1.15)"
-  })
-  el.addEventListener("mouseleave", () => {
-    el.style.transform = "scale(1)"
-  })
-
-  return el
-}
-
-// Create popup content
-function createPopupContent(activity: TimelineActivity): string {
-  const icon = activity.icon ?? ACTIVITY_ICONS[activity.type] ?? "place"
-  return `
-    <div style="font-family: 'Inter', system-ui, sans-serif; padding: 8px; min-width: 180px;">
-      <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 8px;">
-        <span class="material-symbols-outlined" style="font-size: 20px; color: ${getActivityColor(activity.type)};">${icon}</span>
-        <div>
-          <div style="font-weight: 600; font-size: 14px; color: #131315;">${activity.name}</div>
-          <div style="font-size: 11px; color: #666;">${activity.time} · ${activity.duration} min</div>
-        </div>
-      </div>
-      <div style="font-size: 12px; color: #666; display: flex; align-items: center; gap: 4px;">
-        <span class="material-symbols-outlined" style="font-size: 14px;">location_on</span>
-        ${activity.location}
-      </div>
-      ${activity.cost > 0 ? `
-        <div style="margin-top: 6px; font-size: 12px; color: #22C55E; font-weight: 500;">
-          €${activity.cost}
-        </div>
-      ` : ""}
-    </div>
-  `
-}
-
 // Sample coordinates for Barcelona activities (in real app would come from geocoding or DB)
 const SAMPLE_COORDS: Record<string, [number, number]> = {
   "Check-in Hotel Arts": [2.1970, 41.3879],
@@ -120,33 +37,48 @@ const SAMPLE_COORDS: Record<string, [number, number]> = {
 }
 
 function getActivityCoords(activity: TimelineActivity): [number, number] {
-  // Check if we have predefined coords for this activity
   const coords = SAMPLE_COORDS[activity.name]
   if (coords) return coords
-  
-  // Otherwise return default with slight random offset for demo
   const [lng, lat] = SAMPLE_COORDS.default
   const offset = Math.random() * 0.02 - 0.01
   return [lng + offset, lat + offset]
 }
 
-export function ItineraryMap({
+interface ItineraryMapProps {
+  itinerary: DayItinerary[]
+  selectedDay: number
+  onActivityClick?: (activity: TimelineActivity) => void
+  accessToken: string
+}
+
+function ItineraryMapInner({
   itinerary,
   selectedDay,
   onActivityClick,
   accessToken,
 }: ItineraryMapProps) {
   const mapContainer = useRef<HTMLDivElement>(null)
-  const map = useRef<mapboxgl.Map | null>(null)
-  const markersRef = useRef<mapboxgl.Marker[]>([])
+  const map = useRef<any>(null)
+  const markersRef = useRef<any[]>([])
   const [isLoaded, setIsLoaded] = useState(false)
+  const [mapboxgl, setMapboxgl] = useState<any>(null)
 
   const dayData = itinerary[selectedDay - 1]
   const activities = dayData?.activities ?? []
 
+  // Load mapbox-gl dynamically on client
+  useEffect(() => {
+    import("mapbox-gl").then((module) => {
+      setMapboxgl(module.default)
+    })
+  }, [])
+
   // Initialize map
   useEffect(() => {
-    if (!mapContainer.current || map.current) return
+    if (!mapContainer.current || !mapboxgl || map.current) return
+
+    // Import CSS
+    import("mapbox-gl/dist/mapbox-gl.css")
 
     mapboxgl.accessToken = accessToken
 
@@ -171,11 +103,11 @@ export function ItineraryMap({
         map.current = null
       }
     }
-  }, [accessToken])
+  }, [accessToken, mapboxgl])
 
   // Update markers and route when day changes
   useEffect(() => {
-    if (!map.current || !isLoaded) return
+    if (!map.current || !isLoaded || !mapboxgl) return
 
     // Clear existing markers
     markersRef.current.forEach((marker) => marker.remove())
@@ -248,13 +180,80 @@ export function ItineraryMap({
     // Add markers
     activities.forEach((activity, index) => {
       const coords = getActivityCoords(activity)
-      const el = createMarkerElement(activity, index)
+      
+      // Create custom marker element
+      const el = document.createElement("div")
+      el.style.cssText = `
+        width: 36px;
+        height: 36px;
+        border-radius: 50%;
+        background: ${getActivityColor(activity.type)};
+        border: 3px solid white;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        transition: transform 0.2s ease;
+        position: relative;
+      `
+      
+      // Add order badge
+      const badge = document.createElement("span")
+      badge.style.cssText = `
+        position: absolute;
+        top: -8px;
+        right: -8px;
+        width: 20px;
+        height: 20px;
+        border-radius: 50%;
+        background: white;
+        color: #131315;
+        font-size: 11px;
+        font-weight: 700;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+      `
+      badge.textContent = String(index + 1)
+      el.appendChild(badge)
+
+      el.addEventListener("mouseenter", () => {
+        el.style.transform = "scale(1.15)"
+      })
+      el.addEventListener("mouseleave", () => {
+        el.style.transform = "scale(1)"
+      })
+
+      // Create popup content
+      const icon = activity.icon ?? ACTIVITY_ICONS[activity.type] ?? "place"
+      const popupContent = `
+        <div style="font-family: 'Inter', system-ui, sans-serif; padding: 8px; min-width: 180px;">
+          <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 8px;">
+            <span class="material-symbols-outlined" style="font-size: 20px; color: ${getActivityColor(activity.type)};">${icon}</span>
+            <div>
+              <div style="font-weight: 600; font-size: 14px; color: #131315;">${activity.name}</div>
+              <div style="font-size: 11px; color: #666;">${activity.time} · ${activity.duration} min</div>
+            </div>
+          </div>
+          <div style="font-size: 12px; color: #666; display: flex; align-items: center; gap: 4px;">
+            <span class="material-symbols-outlined" style="font-size: 14px;">location_on</span>
+            ${activity.location}
+          </div>
+          ${activity.cost > 0 ? `
+            <div style="margin-top: 6px; font-size: 12px; color: #22C55E; font-weight: 500;">
+              €${activity.cost}
+            </div>
+          ` : ""}
+        </div>
+      `
 
       const popup = new mapboxgl.Popup({
         offset: 25,
         closeButton: false,
         maxWidth: "280px",
-      }).setHTML(createPopupContent(activity))
+      }).setHTML(popupContent)
 
       const marker = new mapboxgl.Marker(el)
         .setLngLat(coords)
@@ -278,39 +277,53 @@ export function ItineraryMap({
         duration: 1000,
       })
     }
-  }, [activities, isLoaded, onActivityClick])
+  }, [activities, isLoaded, onActivityClick, mapboxgl])
 
   return (
     <div className="relative w-full h-full">
       <div ref={mapContainer} className="w-full h-full" />
       
-      {/* Map legend */}
-      <div
-        className="absolute bottom-4 left-4 p-3 rounded-xl z-10"
-        style={{
-          background: "rgba(19, 19, 21, 0.9)",
-          backdropFilter: "blur(12px)",
-          border: "1px solid rgba(255,255,255,0.1)",
-        }}
-      >
-        <p className="text-[10px] uppercase tracking-widest text-[#c0c6d6] font-medium mb-2">
-          Día {selectedDay}
-        </p>
-        <div className="flex flex-wrap gap-2">
-          {Object.entries(ACTIVITY_COLORS)
-            .filter(([key]) => key !== "default")
-            .slice(0, 4)
-            .map(([type, color]) => (
-              <div key={type} className="flex items-center gap-1.5">
-                <div
-                  className="w-3 h-3 rounded-full"
-                  style={{ background: color }}
-                />
-                <span className="text-[10px] text-[#c0c6d6] capitalize">{type}</span>
-              </div>
-            ))}
+      {!isLoaded && (
+        <div className="absolute inset-0 flex items-center justify-center bg-[#0f1117]">
+          <div className="text-[#c0c6d6] text-sm">Cargando mapa...</div>
         </div>
-      </div>
+      )}
+      
+      {/* Map legend */}
+      {isLoaded && (
+        <div
+          className="absolute bottom-4 left-4 p-3 rounded-xl z-10"
+          style={{
+            background: "rgba(19, 19, 21, 0.9)",
+            backdropFilter: "blur(12px)",
+            border: "1px solid rgba(255,255,255,0.1)",
+          }}
+        >
+          <p className="text-[10px] uppercase tracking-widest text-[#c0c6d6] font-medium mb-2">
+            Día {selectedDay}
+          </p>
+          <div className="flex flex-wrap gap-2">
+            {Object.entries(ACTIVITY_COLORS)
+              .filter(([key]) => key !== "default")
+              .slice(0, 4)
+              .map(([type, color]) => (
+                <div key={type} className="flex items-center gap-1.5">
+                  <div
+                    className="w-3 h-3 rounded-full"
+                    style={{ background: color }}
+                  />
+                  <span className="text-[10px] text-[#c0c6d6] capitalize">{type}</span>
+                </div>
+              ))}
+          </div>
+        </div>
+      )}
     </div>
   )
 }
+
+// Export with dynamic loading to avoid SSR issues
+export const ItineraryMap = dynamic(
+  () => Promise.resolve(ItineraryMapInner),
+  { ssr: false }
+)

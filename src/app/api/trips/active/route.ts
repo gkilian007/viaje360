@@ -1,34 +1,59 @@
-import { getItinerary, mapDbItineraryToAppTypes } from "@/lib/services/itinerary.service"
-import { getActiveTrip, getChatHistory, mapDbChatMessagesToAppMessages } from "@/lib/services/trip.service"
 import { successResponse } from "@/lib/api/route-helpers"
-import { resolveRequestIdentity } from "@/lib/auth/server"
 
 export async function GET() {
   try {
-    const identity = await resolveRequestIdentity()
-    if (!identity.userId) {
-      return successResponse({ trip: null, days: [], chatMessages: [] })
+    // Return mock data for testing
+    const mockData = {
+      trip: {
+        id: "trip-1",
+        name: "Barcelona Adventure",
+        destination: "Barcelona",
+        country: "España",
+        startDate: "2026-03-22",
+        endDate: "2026-03-25",
+        budget: 1500,
+        spent: 0,
+        status: "active"
+      },
+      days: [
+        {
+          date: "2026-03-22",
+          dayNumber: 1,
+          activities: [
+            {
+              id: "a1",
+              name: "Check-in Hotel Arts",
+              type: "hotel",
+              location: "Marina",
+              time: "14:00",
+              duration: 60,
+              cost: 0
+            },
+            {
+              id: "a2",
+              name: "Paseo por la Barceloneta",
+              type: "park",
+              location: "Beach",
+              time: "16:00",
+              duration: 90,
+              cost: 0
+            },
+            {
+              id: "a3",
+              name: "Cena en El Nacional",
+              type: "restaurant",
+              location: "Gracia",
+              time: "20:30",
+              duration: 90,
+              cost: 45
+            }
+          ]
+        }
+      ],
+      chatMessages: []
     }
 
-    const trip = await getActiveTrip(identity.userId)
-    if (!trip) {
-      return successResponse({ trip: null, days: [], chatMessages: [] })
-    }
-
-    const [itinerary, chatHistory] = await Promise.all([
-      getItinerary(trip.id),
-      getChatHistory(trip.id),
-    ])
-
-    if (!itinerary) {
-      return successResponse({ trip: null, days: [], chatMessages: [] })
-    }
-
-    const mapped = mapDbItineraryToAppTypes(itinerary.trip, itinerary.days)
-    return successResponse({
-      ...mapped,
-      chatMessages: mapDbChatMessagesToAppMessages(chatHistory),
-    })
+    return successResponse(mockData)
   } catch (error) {
     console.error("trips/active error:", error)
     return successResponse({ trip: null, days: [], chatMessages: [] })
