@@ -277,6 +277,8 @@ export function useRouteAnimation({
   }, [activities, pause, onPositionChange])
 
   // Build segments when activities change
+  const activitiesKey = JSON.stringify(activities.map(a => a.id))
+  
   useEffect(() => {
     if (activities.length >= 2) {
       segmentsRef.current = buildRouteSegments(activities)
@@ -304,7 +306,8 @@ export function useRouteAnimation({
     segmentProgressRef.current = 0
     setCurrentActivityIndex(0)
     setProgress(0)
-  }, [activities])
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [activitiesKey])
 
   // Cleanup on unmount
   useEffect(() => {
