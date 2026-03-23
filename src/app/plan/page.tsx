@@ -1,41 +1,179 @@
 "use client"
 
+import { useState, useEffect } from "react"
 import { BottomNav } from "@/components/layout/BottomNav"
 import { TopAppBar } from "@/components/layout/TopAppBar"
-import { TripCard } from "@/components/features/TripCard"
 import { AssistantPill } from "@/components/features/AssistantPill"
-import { MapView } from "@/components/features/MapView"
 import { AchievementOverlay } from "@/components/features/AchievementOverlay"
 import { useAppStore } from "@/store/useAppStore"
 import { DesktopLayout } from "@/components/layout/DesktopLayout"
+import { MapView } from "@/components/features/MapView"
 import { TimelineItem } from "@/components/features/TimelineItem"
 import { demoItinerary } from "@/lib/demo-data"
+
+function DaySelector({
+  days,
+  selectedDay,
+  onSelect,
+}: {
+  days: number
+  selectedDay: number
+  onSelect: (day: number) => void
+}) {
+  return (
+    <div className="flex gap-2 overflow-x-auto no-scrollbar px-1 py-1">
+      {Array.from({ length: days }, (_, i) => i + 1).map((day) => (
+        <button
+          key={day}
+          onClick={() => onSelect(day)}
+          className={`shrink-0 px-4 py-2 rounded-xl text-[13px] font-semibold transition-all ${
+            selectedDay === day
+              ? "bg-[#0A84FF] text-white shadow-[0_0_12px_rgba(10,132,255,0.4)]"
+              : "bg-[#2a2a2c] text-[#c0c6d6] hover:bg-[#3a3a3c]"
+          }`}
+        >
+          Día {day}
+        </button>
+      ))}
+    </div>
+  )
+}
+
+function MobileStats({ trip, totalDays }: { trip: NonNullable<ReturnType<typeof useAppStore>["currentTrip"]>; totalDays: number }) {
+  return (
+    <div className="flex gap-3 overflow-x-auto no-scrollbar">
+      {/* Budget */}
+      <div
+        className="shrink-0 px-4 py-3 rounded-2xl flex items-center gap-2.5"
+        style={{ background: "rgba(42,42,44,0.8)", border: "1px solid rgba(255,255,255,0.06)" }}
+      >
+        <span className="material-symbols-outlined text-[18px] text-[#30D158]">payments</span>
+        <div>
+          <p className="text-[13px] font-bold text-white">€{trip.budget}</p>
+          <p className="text-[10px] text-[#c0c6d6]">Presupuesto</p>
+        </div>
+      </div>
+      {/* Days */}
+      <div
+        className="shrink-0 px-4 py-3 rounded-2xl flex items-center gap-2.5"
+        style={{ background: "rgba(42,42,44,0.8)", border: "1px solid rgba(255,255,255,0.06)" }}
+      >
+        <span className="material-symbols-outlined text-[18px] text-purple-400">calendar_month</span>
+        <div>
+          <p className="text-[13px] font-bold text-white">{totalDays} días</p>
+          <p className="text-[10px] text-[#c0c6d6]">{trip.destination}</p>
+        </div>
+      </div>
+      {/* Activities count */}
+      <div
+        className="shrink-0 px-4 py-3 rounded-2xl flex items-center gap-2.5"
+        style={{ background: "rgba(42,42,44,0.8)", border: "1px solid rgba(255,255,255,0.06)" }}
+      >
+        <span className="material-symbols-outlined text-[18px] text-[#0A84FF]">pin_drop</span>
+        <div>
+          <p className="text-[13px] font-bold text-white">{trip.startDate?.slice(5)}</p>
+          <p className="text-[10px] text-[#c0c6d6]">al {trip.endDate?.slice(5)}</p>
+        </div>
+      </div>
+    </div>
+  )
+}
 
 export default function PlanPage() {
   const { pendingAchievement, currentTrip, generatedItinerary } = useAppStore()
   const itinerary = generatedItinerary ?? demoItinerary
-  const today = itinerary[0]
+  const [selectedDay, setSelectedDay] = useState(1)
+  const [hydrated, setHydrated] = useState(false)
+
+  useEffect(() => {
+    setHydrated(true)
+  }, [])
+
+  if (!hydrated) {
+    return (
+      <div className="min-h-screen map-bg flex items-center justify-center">
+        <div className="text-[#c0c6d6] text-sm">Cargando itinerario...</div>
+      </div>
+    )
+  }
+
+  const today = itinerary[selectedDay - 1]
+  const totalDays = itinerary.length
 
   return (
     <>
       {/* ── Mobile Layout ── */}
-      <div className="lg:hidden relative flex flex-col h-full overflow-hidden">
-        {/* Map background */}
-        <div className="absolute inset-0">
-          <MapView />
-        </div>
-
+      <div className="lg:hidden flex flex-col h-screen bg-[#0f1117]">
         {/* Top bar */}
         <TopAppBar />
 
-        {/* Assistant pill – above card */}
-        <div className="absolute bottom-[62vh] left-4 right-4 z-10">
-          <AssistantPill />
-        </div>
+        {/* Scrollable content */}
+        <div className="flex-1 overflow-y-auto pt-[72px] pb-24">
+          {/* Trip header */}
+          <div className="px-5 pt-4 pb-3">
+            <h1 className="text-[20px] font-bold text-white leading-tight">
+              {currentTrip?.name ?? "Tu viaje"}
+            </h1>
+            <p className="text-[13px] text-[#c0c6d6] mt-0.5">
+              {currentTrip?.destination}{currentTrip?.country ? `, ${currentTrip.country}` : ""}
+            </p>
+          </div>
 
-        {/* Bottom sheet: TripCard */}
-        <div className="absolute bottom-20 left-0 right-0 z-10" style={{ height: "60vh", overflowY: "auto" }}>
-          <TripCard />
+          {/* Horizontal stats */}
+          {currentTrip && (
+            <div className="px-5 pb-4">
+              <MobileStats trip={currentTrip} totalDays={totalDays} />
+            </div>
+          )}
+
+          {/* Day selector */}
+          <div className="px-5 pb-3">
+            <DaySelector days={totalDays} selectedDay={selectedDay} onSelect={setSelectedDay} />
+          </div>
+
+          {/* Day theme */}
+          {today && (
+            <div className="px-5 pb-4">
+              <div
+                className="p-4 rounded-2xl"
+                style={{ background: "rgba(10,132,255,0.08)", border: "1px solid rgba(10,132,255,0.15)" }}
+              >
+                <div className="flex items-center gap-2 mb-1">
+                  <span className="material-symbols-outlined text-[16px] text-[#0A84FF]">wb_sunny</span>
+                  <span className="text-[11px] uppercase tracking-widest text-[#0A84FF] font-medium">
+                    Día {selectedDay}
+                  </span>
+                </div>
+                <p className="text-[14px] font-semibold text-white">
+                  {today.activities.length} actividades planificadas
+                </p>
+              </div>
+            </div>
+          )}
+
+          {/* Timeline */}
+          <div className="px-5">
+            {today?.activities.map((activity, i) => (
+              <TimelineItem
+                key={activity.id}
+                activity={activity}
+                isFirst={i === 0}
+                isLast={i === today.activities.length - 1}
+                isCurrent={i === 0}
+              />
+            ))}
+            {(!today || today.activities.length === 0) && (
+              <div className="text-center py-12">
+                <span className="material-symbols-outlined text-[48px] text-[#c0c6d6]/30">beach_access</span>
+                <p className="text-[#c0c6d6] mt-2">Día libre — ¡disfruta!</p>
+              </div>
+            )}
+          </div>
+
+          {/* Assistant pill */}
+          <div className="px-5 pt-4 pb-2">
+            <AssistantPill />
+          </div>
         </div>
 
         {/* Bottom nav */}
@@ -43,96 +181,48 @@ export default function PlanPage() {
       </div>
 
       {/* ── Desktop Layout ── */}
-      <DesktopLayout
-        leftPanel={
-          <div className="flex flex-col h-full">
-            {/* Header */}
-            <div className="px-6 pt-6 pb-4 border-b border-white/5">
-              <p className="text-[11px] uppercase tracking-widest text-[#c0c6d6] font-medium mb-1">
-                {currentTrip?.destination}, {currentTrip?.country}
-              </p>
-              <h1 className="text-[20px] font-bold text-white">{currentTrip?.name}</h1>
-            </div>
+      <div className="hidden lg:block h-screen">
+        <DesktopLayout
+          leftPanel={
+            <div className="flex flex-col h-full">
+              {/* Header */}
+              <div className="px-6 pt-6 pb-4 border-b border-white/5">
+                <p className="text-[11px] uppercase tracking-widest text-[#c0c6d6] font-medium mb-1">
+                  {currentTrip?.destination}{currentTrip?.country ? `, ${currentTrip.country}` : ""}
+                </p>
+                <h1 className="text-[20px] font-bold text-white">{currentTrip?.name}</h1>
+              </div>
 
-            {/* Trip stats bento */}
-            <div className="px-6 py-4 border-b border-white/5">
-              <div className="grid grid-cols-3 gap-3">
-                {/* Budget donut */}
-                <div
-                  className="col-span-1 p-3 rounded-2xl flex flex-col items-center gap-2"
-                  style={{ background: "rgba(42,42,44,0.8)", border: "1px solid rgba(255,255,255,0.06)" }}
-                >
-                  <svg width="60" height="60" viewBox="0 0 60 60">
-                    <circle cx="30" cy="30" r="22" fill="none" stroke="rgba(255,255,255,0.06)" strokeWidth="8" />
-                    <circle
-                      cx="30" cy="30" r="22"
-                      fill="none"
-                      stroke="#30D158"
-                      strokeWidth="8"
-                      strokeLinecap="round"
-                      strokeDasharray={`${2 * Math.PI * 22}`}
-                      strokeDashoffset={`${2 * Math.PI * 22 * (1 - (currentTrip?.spent ?? 0) / (currentTrip?.budget ?? 1))}`}
-                      transform="rotate(-90 30 30)"
-                    />
-                    <text x="30" y="34" textAnchor="middle" fill="#e4e2e4" fontSize="10" fontWeight="700">
-                      {Math.round(((currentTrip?.spent ?? 0) / (currentTrip?.budget ?? 1)) * 100)}%
-                    </text>
-                  </svg>
-                  <p className="text-[10px] text-[#c0c6d6] text-center">Presupuesto</p>
-                </div>
-                {/* Progress bar + weather */}
-                <div className="col-span-2 flex flex-col gap-2">
-                  <div
-                    className="p-3 rounded-2xl flex-1"
-                    style={{ background: "rgba(42,42,44,0.8)", border: "1px solid rgba(255,255,255,0.06)" }}
-                  >
-                    <p className="text-[10px] text-[#c0c6d6] uppercase tracking-widest mb-2">Progreso</p>
-                    <div className="h-1.5 rounded-full bg-white/10">
-                      <div className="h-full w-[30%] rounded-full bg-gradient-to-r from-[#0A84FF] to-[#5856D6]" />
-                    </div>
-                    <p className="text-[11px] text-[#c0c6d6] mt-1">Día 1 de {itinerary.length}</p>
-                  </div>
-                  <div
-                    className="p-3 rounded-2xl"
-                    style={{ background: "rgba(42,42,44,0.8)", border: "1px solid rgba(255,255,255,0.06)" }}
-                  >
-                    <div className="flex items-center gap-2">
-                      <span className="material-symbols-outlined text-[18px] text-[#0A84FF]"
-                        style={{ fontVariationSettings: "'FILL' 1, 'wght' 400, 'GRAD' 0, 'opsz' 24" }}>
-                        partly_cloudy_day
-                      </span>
-                      <span className="text-[13px] font-semibold text-white">18°C</span>
-                      <span className="text-[11px] text-[#c0c6d6]">Parcialmente nublado</span>
-                    </div>
-                  </div>
-                </div>
+              {/* Day selector */}
+              <div className="px-6 py-3 border-b border-white/5">
+                <DaySelector days={totalDays} selectedDay={selectedDay} onSelect={setSelectedDay} />
+              </div>
+
+              {/* Timeline */}
+              <div className="flex-1 overflow-y-auto px-6 py-4">
+                <p className="text-[11px] uppercase tracking-widest text-[#c0c6d6] font-medium mb-4">
+                  Itinerario — Día {selectedDay}
+                </p>
+                {today?.activities.map((activity, i) => (
+                  <TimelineItem
+                    key={activity.id}
+                    activity={activity}
+                    isFirst={i === 0}
+                    isLast={i === today.activities.length - 1}
+                    isCurrent={i === 0}
+                  />
+                ))}
+              </div>
+
+              {/* Chat input */}
+              <div className="px-6 pb-6 pt-2 border-t border-white/5">
+                <AssistantPill />
               </div>
             </div>
-
-            {/* Timeline */}
-            <div className="flex-1 overflow-y-auto px-6 py-4">
-              <p className="text-[11px] uppercase tracking-widest text-[#c0c6d6] font-medium mb-4">
-                Itinerario del Día
-              </p>
-              {today?.activities.map((activity, i) => (
-                <TimelineItem
-                  key={activity.id}
-                  activity={activity}
-                  isFirst={i === 0}
-                  isLast={i === (today.activities.length - 1)}
-                  isCurrent={i === 1}
-                />
-              ))}
-            </div>
-
-            {/* Chat input bar */}
-            <div className="px-6 pb-6 pt-2 border-t border-white/5">
-              <AssistantPill />
-            </div>
-          </div>
-        }
-        rightPanel={<MapView />}
-      />
+          }
+          rightPanel={<MapView />}
+        />
+      </div>
 
       {/* Achievement overlay */}
       {pendingAchievement && <AchievementOverlay achievement={pendingAchievement} />}
