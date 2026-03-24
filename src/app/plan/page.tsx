@@ -12,6 +12,7 @@ import { MapView } from "@/components/features/MapView"
 import { TimelineItem } from "@/components/features/TimelineItem"
 import { ActivityDetailModal } from "@/components/features/ActivityDetailModal"
 import { DiaryPromptCard } from "@/components/features/diary"
+import { useActivityEventTracker } from "@/lib/hooks/useActivityEventTracker"
 import type { TimelineActivity, Trip } from "@/lib/types"
 
 function DaySelector({
@@ -90,6 +91,12 @@ function PlanPageContent() {
   const [hydrated, setHydrated] = useState(false)
   const [selectedActivity, setSelectedActivity] = useState<TimelineActivity | null>(null)
   const [showDiarySaved, setShowDiarySaved] = useState(false)
+  const { trackEvent } = useActivityEventTracker()
+
+  const handleActivityClick = (activity: TimelineActivity) => {
+    setSelectedActivity(activity)
+    trackEvent(activity.id, "detail_opened", { source: "timeline-card", dayNumber: selectedDay })
+  }
 
   useEffect(() => {
     setHydrated(true)
@@ -197,7 +204,7 @@ function PlanPageContent() {
                 isFirst={i === 0}
                 isLast={i === today.activities.length - 1}
                 isCurrent={i === 0}
-                onClick={setSelectedActivity}
+                onClick={handleActivityClick}
               />
             ))}
             {(!today || today.activities.length === 0) && (
@@ -253,7 +260,7 @@ function PlanPageContent() {
                     isFirst={i === 0}
                     isLast={i === today.activities.length - 1}
                     isCurrent={i === 0}
-                    onClick={setSelectedActivity}
+                    onClick={handleActivityClick}
                   />
                 ))}
               </div>
@@ -272,6 +279,9 @@ function PlanPageContent() {
       <ActivityDetailModal
         activity={selectedActivity}
         onClose={() => setSelectedActivity(null)}
+        onExternalLinkClick={(activityId, linkKind) => {
+          trackEvent(activityId, "external_link_clicked", { linkKind })
+        }}
       />
 
       {/* Achievement overlay */}

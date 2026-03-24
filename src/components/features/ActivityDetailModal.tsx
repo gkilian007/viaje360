@@ -8,6 +8,7 @@ import { ACTIVITY_ICONS } from "@/lib/constants"
 interface ActivityDetailModalProps {
   activity: TimelineActivity | null
   onClose: () => void
+  onExternalLinkClick?: (activityId: string, linkKind: string) => void
 }
 
 function ActivityImage({ query, name }: { query?: string; name: string }) {
@@ -48,7 +49,7 @@ function ActivityImage({ query, name }: { query?: string; name: string }) {
   )
 }
 
-export function ActivityDetailModal({ activity, onClose }: ActivityDetailModalProps) {
+export function ActivityDetailModal({ activity, onClose, onExternalLinkClick }: ActivityDetailModalProps) {
   // Close on escape
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {
@@ -180,6 +181,10 @@ export function ActivityDetailModal({ activity, onClose }: ActivityDetailModalPr
                     href={activity.url}
                     target="_blank"
                     rel="noopener noreferrer"
+                    onClick={() => {
+                      const linkKind = isRestaurant ? "menu" : "tickets"
+                      onExternalLinkClick?.(activity.id, linkKind)
+                    }}
                     className="flex-1 flex items-center justify-center gap-2 px-4 py-3.5 rounded-2xl font-semibold text-[14px] text-white transition-all hover:scale-[1.02] active:scale-[0.98]"
                     style={{
                       background: isRestaurant
