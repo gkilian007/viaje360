@@ -8,7 +8,7 @@ export function BottomNav() {
   const pathname = usePathname()
 
   return (
-    <div className="fixed bottom-0 left-0 right-0 z-30 lg:hidden px-4 pb-4 safe-area-bottom">
+    <div className="fixed bottom-0 left-0 right-0 z-[2000] lg:hidden px-4 pb-4 safe-area-bottom">
       <div
         className="flex items-center justify-around px-2 py-2 rounded-2xl"
         style={{
