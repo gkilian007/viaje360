@@ -4,6 +4,7 @@ import { useState, useEffect, Suspense } from "react"
 import { useRouter, useSearchParams } from "next/navigation"
 import { motion } from "framer-motion"
 import { useAppStore } from "@/store/useAppStore"
+import { useExistingDiary } from "@/lib/hooks/useExistingDiary"
 import { DiaryConversation } from "@/components/features/diary"
 
 interface DiaryData {
@@ -43,7 +44,23 @@ function DiaryPageContent() {
   const dayItinerary = generatedItinerary?.[dayNumber - 1]
   const activities = dayItinerary?.activities ?? []
 
-  if (!hydrated) {
+  const { data: existingDiaryData, loading: diaryLoading } = useExistingDiary(
+    currentTrip?.id ?? null,
+    dayNumber
+  )
+
+  const existingDiaryState = existingDiaryData?.journal
+    ? {
+        mood: existingDiaryData.journal.mood,
+        energyScore: existingDiaryData.journal.energy_score,
+        paceScore: existingDiaryData.journal.pace_score,
+        freeTextSummary: existingDiaryData.journal.free_text_summary,
+        wouldRepeat: existingDiaryData.journal.would_repeat,
+        activityFeedback: existingDiaryData.activityFeedback,
+      }
+    : null
+
+  if (!hydrated || diaryLoading) {
     return (
       <div className="min-h-screen bg-[#0f1117] flex items-center justify-center">
         <div className="text-[#c0c6d6] text-sm">Cargando...</div>
@@ -139,6 +156,7 @@ function DiaryPageContent() {
           onComplete={handleComplete}
           onCancel={handleCancel}
           isLoading={isLoading}
+          existingDiary={existingDiaryState}
         />
         {error && (
           <motion.div
@@ -161,6 +179,7 @@ function DiaryPageContent() {
             onComplete={handleComplete}
             onCancel={handleCancel}
             isLoading={isLoading}
+            existingDiary={existingDiaryState}
           />
         </div>
       </div>

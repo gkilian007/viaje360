@@ -30,6 +30,15 @@ interface DiaryState {
   wouldRepeat: boolean | null
 }
 
+interface ExistingDiaryState {
+  mood: string | null
+  energyScore: number | null
+  paceScore: number | null
+  freeTextSummary: string | null
+  wouldRepeat: boolean | null
+  activityFeedback: ActivityFeedback[]
+}
+
 interface DiaryConversationProps {
   dayNumber: number
   date: string
@@ -37,6 +46,7 @@ interface DiaryConversationProps {
   onComplete: (data: DiaryState & { conversation: DiaryMessage[] }) => void
   onCancel: () => void
   isLoading?: boolean
+  existingDiary?: ExistingDiaryState | null
 }
 
 const DIARY_STEPS = [
@@ -55,16 +65,18 @@ export function DiaryConversation({
   onComplete,
   onCancel,
   isLoading = false,
+  existingDiary,
 }: DiaryConversationProps) {
-  const [currentStep, setCurrentStep] = useState(0)
+  const isEdit = Boolean(existingDiary?.mood)
+  const [currentStep, setCurrentStep] = useState(isEdit ? 5 : 0)
   const [messages, setMessages] = useState<DiaryMessage[]>([])
   const [diaryState, setDiaryState] = useState<DiaryState>({
-    mood: null,
-    energyScore: 3,
-    paceScore: 3,
-    activityFeedback: [],
-    freeTextSummary: "",
-    wouldRepeat: null,
+    mood: existingDiary?.mood ?? null,
+    energyScore: existingDiary?.energyScore ?? 3,
+    paceScore: existingDiary?.paceScore ?? 3,
+    activityFeedback: existingDiary?.activityFeedback ?? [],
+    freeTextSummary: existingDiary?.freeTextSummary ?? "",
+    wouldRepeat: existingDiary?.wouldRepeat ?? null,
   })
   const [showInput, setShowInput] = useState(false)
   const messagesEndRef = useRef<HTMLDivElement>(null)
@@ -83,6 +95,21 @@ export function DiaryConversation({
   useEffect(() => {
     // Avoid duplicate initialization
     if (messages.length > 0) return
+
+    if (isEdit) {
+      // Show summary of existing entry for editing
+      const moodLabel = diaryState.mood ? getMoodLabel(diaryState.mood) : "Sin mood"
+      const feedbackCount = diaryState.activityFeedback.filter((f) => f.liked !== null).length
+      const editGreeting: DiaryMessage = {
+        id: "edit-greeting",
+        role: "assistant",
+        content: `Ya tienes una entrada para el Día ${dayNumber} (${formattedDate}).\n\n📝 Mood: ${moodLabel}\n⚡ Energía: ${diaryState.energyScore}/5 · Ritmo: ${diaryState.paceScore}/5\n🎯 Feedback: ${feedbackCount} actividad${feedbackCount !== 1 ? "es" : ""}\n${diaryState.freeTextSummary ? `💬 "${diaryState.freeTextSummary}"` : ""}\n\nPuedes guardar de nuevo para actualizar tus impresiones.`,
+        type: "text",
+      }
+      setMessages([editGreeting])
+      setCurrentStep(5)
+      return
+    }
     
     const greeting: DiaryMessage = {
       id: "greeting",
@@ -107,7 +134,7 @@ export function DiaryConversation({
       })
       setCurrentStep(1)
     }, 1500)
-  }, [dayNumber, formattedDate, messages.length])
+  }, [dayNumber, formattedDate, messages.length, isEdit, diaryState])
 
   const handleMoodSelect = (mood: string) => {
     setDiaryState((prev) => ({ ...prev, mood }))

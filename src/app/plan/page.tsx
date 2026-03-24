@@ -13,6 +13,7 @@ import { TimelineItem } from "@/components/features/TimelineItem"
 import { ActivityDetailModal } from "@/components/features/ActivityDetailModal"
 import { DiaryPromptCard } from "@/components/features/diary"
 import { useActivityEventTracker } from "@/lib/hooks/useActivityEventTracker"
+import { useExistingDiary } from "@/lib/hooks/useExistingDiary"
 import type { TimelineActivity, Trip } from "@/lib/types"
 
 function DaySelector({
@@ -92,6 +93,7 @@ function PlanPageContent() {
   const [selectedActivity, setSelectedActivity] = useState<TimelineActivity | null>(null)
   const [showDiarySaved, setShowDiarySaved] = useState(false)
   const { trackEvent } = useActivityEventTracker()
+  const { hasExistingDiary } = useExistingDiary(currentTrip?.id ?? null, selectedDay)
 
   const handleActivityClick = (activity: TimelineActivity) => {
     setSelectedActivity(activity)
@@ -217,7 +219,7 @@ function PlanPageContent() {
 
           {/* Diary Prompt */}
           {today && (
-            <DiaryPromptCard dayNumber={selectedDay} />
+            <DiaryPromptCard dayNumber={selectedDay} hasExistingDiary={hasExistingDiary} />
           )}
 
           {/* Assistant pill */}
