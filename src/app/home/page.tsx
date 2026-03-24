@@ -1,10 +1,13 @@
 "use client"
 
+import { useEffect, useState } from "react"
 import { useRouter } from "next/navigation"
 import { useAppStore } from "@/store/useAppStore"
 import { useOnboardingStore } from "@/store/useOnboardingStore"
+import { createClient, isSupabaseBrowserConfigured } from "@/lib/supabase/client"
 import { BottomNav } from "@/components/layout/BottomNav"
 import { motion } from "framer-motion"
+import type { User as SupabaseUser } from "@supabase/supabase-js"
 
 const QUICK_PRESETS = [
   { emoji: "👨‍👩‍👧‍👦", label: "Familia", desc: "Con niños" },
@@ -19,6 +22,22 @@ export default function HomePage() {
   const router = useRouter()
   const currentTrip = useAppStore((s) => s.currentTrip)
   const resetOnboarding = useOnboardingStore((s) => s.reset)
+  const [authUser, setAuthUser] = useState<SupabaseUser | null>(null)
+  const [loadingAuth, setLoadingAuth] = useState(true)
+
+  useEffect(() => {
+    async function loadUser() {
+      if (!isSupabaseBrowserConfigured()) {
+        setLoadingAuth(false)
+        return
+      }
+      const supabase = createClient()
+      const { data } = await supabase.auth.getUser()
+      setAuthUser(data.user ?? null)
+      setLoadingAuth(false)
+    }
+    void loadUser()
+  }, [])
 
   function handleNewTrip() {
     resetOnboarding()
@@ -29,22 +48,66 @@ export default function HomePage() {
     router.push("/plan")
   }
 
+  async function handleLogout() {
+    if (isSupabaseBrowserConfigured()) {
+      const supabase = createClient()
+      await supabase.auth.signOut()
+    }
+    router.replace("/login")
+  }
+
+  const displayName =
+    authUser?.user_metadata?.full_name ??
+    authUser?.email?.split("@")[0] ??
+    "Viajero"
+
+  const initials = displayName
+    .split(" ")
+    .map((w: string) => w[0])
+    .join("")
+    .toUpperCase()
+    .slice(0, 2)
+
+  if (loadingAuth) {
+    return (
+      <div className="flex items-center justify-center h-screen" style={{ background: "#131315" }}>
+        <div className="w-10 h-10 border-2 border-[#0A84FF] border-t-transparent rounded-full animate-spin" />
+      </div>
+    )
+  }
+
   return (
     <div className="flex flex-col h-full overflow-y-auto pb-28" style={{ background: "#131315" }}>
-      {/* Header */}
+      {/* Profile header */}
       <div className="px-5 pt-14 pb-2">
-        <p className="text-[12px] uppercase tracking-widest text-[#0A84FF] font-semibold mb-1">
-          Viaje360
-        </p>
-        <h1 className="text-[28px] font-bold text-white leading-tight">
-          ¿A dónde vamos?
-        </h1>
-        <p className="text-[14px] text-[#9ca3af] mt-1">
-          Tu compañero de viaje inteligente
-        </p>
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <div
+              className="w-12 h-12 rounded-full flex items-center justify-center text-[16px] font-bold text-white"
+              style={{
+                background: "linear-gradient(135deg, #0A84FF, #5856D6)",
+              }}
+            >
+              {initials}
+            </div>
+            <div>
+              <h1 className="text-[20px] font-bold text-white">Hola, {displayName}</h1>
+              <p className="text-[12px] text-[#9ca3af]">
+                {authUser?.email ?? "Modo demo"}
+              </p>
+            </div>
+          </div>
+          <button
+            onClick={handleLogout}
+            className="w-10 h-10 rounded-xl flex items-center justify-center"
+            style={{ background: "rgba(42,42,44,0.8)", border: "1px solid rgba(255,255,255,0.08)" }}
+          >
+            <span className="material-symbols-outlined text-[20px] text-[#9ca3af]">logout</span>
+          </button>
+        </div>
       </div>
 
-      {/* Current trip card */}
+      {/* Current trip */}
       {currentTrip && (
         <div className="px-5 mt-6">
           <p className="text-[11px] uppercase tracking-widest text-[#c0c6d6] font-medium mb-3">
@@ -74,7 +137,11 @@ export default function HomePage() {
                     </h3>
                     <p className="text-[12px] text-[#9ca3af]">
                       {currentTrip.country ? `${currentTrip.country} · ` : ""}
-                      {currentTrip.status === "active" ? "En curso" : currentTrip.status === "planning" ? "Planificando" : "Completado"}
+                      {currentTrip.status === "active"
+                        ? "En curso"
+                        : currentTrip.status === "planning"
+                        ? "Planificando"
+                        : "Completado"}
                     </p>
                   </div>
                 </div>
@@ -82,24 +149,35 @@ export default function HomePage() {
                   arrow_forward_ios
                 </span>
               </div>
-              <div className="flex items-center gap-2">
-                <div
-                  className="px-3 py-1 rounded-full text-[11px] font-medium text-[#0A84FF]"
-                  style={{ background: "rgba(10,132,255,0.15)" }}
-                >
-                  Continuar viaje →
-                </div>
+              <div
+                className="inline-block px-3 py-1 rounded-full text-[11px] font-medium text-[#0A84FF]"
+                style={{ background: "rgba(10,132,255,0.15)" }}
+              >
+                Continuar viaje →
               </div>
             </div>
           </motion.button>
         </div>
       )}
 
+      {/* Empty state if no trips */}
+      {!currentTrip && (
+        <div className="px-5 mt-6">
+          <div
+            className="p-6 rounded-2xl text-center"
+            style={{ background: "rgba(31,31,33,0.9)", border: "1px solid rgba(255,255,255,0.06)" }}
+          >
+            <span className="text-[48px] block mb-3">🗺️</span>
+            <h3 className="text-[16px] font-bold text-white mb-1">Sin viajes todavía</h3>
+            <p className="text-[13px] text-[#9ca3af]">
+              Crea tu primer itinerario personalizado con IA
+            </p>
+          </div>
+        </div>
+      )}
+
       {/* New trip CTA */}
-      <div className="px-5 mt-8">
-        <p className="text-[11px] uppercase tracking-widest text-[#c0c6d6] font-medium mb-3">
-          {currentTrip ? "Nuevo viaje" : "Empieza aquí"}
-        </p>
+      <div className="px-5 mt-6">
         <motion.button
           whileTap={{ scale: 0.97 }}
           onClick={handleNewTrip}
@@ -111,10 +189,12 @@ export default function HomePage() {
         >
           <div className="flex items-center gap-4">
             <div className="w-14 h-14 rounded-2xl bg-white/20 flex items-center justify-center">
-              <span className="material-symbols-outlined text-[32px] text-white">add_location_alt</span>
+              <span className="material-symbols-outlined text-[32px] text-white">
+                add_location_alt
+              </span>
             </div>
             <div>
-              <h3 className="text-[18px] font-bold text-white">Crear nuevo viaje</h3>
+              <h3 className="text-[18px] font-bold text-white">Crear nuevo plan</h3>
               <p className="text-[13px] text-white/70 mt-0.5">
                 Destino, compañeros, presupuesto, estilo…
               </p>
@@ -148,26 +228,18 @@ export default function HomePage() {
         </div>
       </div>
 
-      {/* Tips section */}
+      {/* Tips */}
       <div className="px-5 mt-8 mb-4">
-        <p className="text-[11px] uppercase tracking-widest text-[#c0c6d6] font-medium mb-3">
-          Consejos
-        </p>
         <div
           className="p-4 rounded-2xl"
-          style={{
-            background: "rgba(31,31,33,0.9)",
-            border: "1px solid rgba(255,255,255,0.06)",
-          }}
+          style={{ background: "rgba(31,31,33,0.9)", border: "1px solid rgba(255,255,255,0.06)" }}
         >
           <div className="flex items-start gap-3">
             <span className="text-[24px]">💡</span>
             <div>
-              <h4 className="text-[14px] font-semibold text-white mb-1">
-                La IA adapta tu viaje
-              </h4>
+              <h4 className="text-[14px] font-semibold text-white mb-1">La IA adapta tu viaje</h4>
               <p className="text-[12px] text-[#9ca3af] leading-relaxed">
-                Cuantos más detalles des en la configuración, mejor será tu itinerario personalizado. Puedes modificarlo después.
+                Cuantos más detalles des en la configuración, mejor será tu itinerario. Puedes modificarlo después.
               </p>
             </div>
           </div>

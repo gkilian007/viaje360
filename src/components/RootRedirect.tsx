@@ -1,20 +1,35 @@
 "use client"
 
-import { useEffect } from "react"
+import { useEffect, useState } from "react"
 import { useRouter } from "next/navigation"
-import { useOnboardingStore } from "@/store/useOnboardingStore"
+import { createClient, isSupabaseBrowserConfigured } from "@/lib/supabase/client"
 
 export function RootRedirect() {
   const router = useRouter()
-  const onboardingComplete = useOnboardingStore((s) => s.onboardingComplete)
+  const [checked, setChecked] = useState(false)
 
   useEffect(() => {
-    if (onboardingComplete) {
-      router.replace("/home")
-    } else {
-      router.replace("/onboarding")
-    }
-  }, [onboardingComplete, router])
+    async function check() {
+      if (!isSupabaseBrowserConfigured()) {
+        // No Supabase → go to login
+        router.replace("/login")
+        return
+      }
 
+      const supabase = createClient()
+      const { data } = await supabase.auth.getUser()
+
+      if (data.user) {
+        router.replace("/home")
+      } else {
+        router.replace("/login")
+      }
+      setChecked(true)
+    }
+
+    void check()
+  }, [router])
+
+  if (!checked) return null
   return null
 }
