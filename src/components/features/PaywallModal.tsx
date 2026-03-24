@@ -116,31 +116,33 @@ export function PaywallModal({
               {/* Annual subscription */}
               <button
                 onClick={() => setView("pay-annual")}
-                className="w-full p-4 rounded-2xl text-left relative overflow-hidden transition-all hover:scale-[1.01] active:scale-[0.99]"
+                className="w-full p-4 rounded-2xl text-left overflow-hidden transition-all hover:scale-[1.01] active:scale-[0.99]"
                 style={{
                   background: "linear-gradient(135deg, rgba(10,132,255,0.15), rgba(88,86,214,0.15))",
                   border: "1px solid rgba(10,132,255,0.3)",
                 }}
               >
-                <div
-                  className="absolute top-3 right-3 px-2 py-0.5 rounded-full text-[10px] font-bold text-white"
-                  style={{ background: "linear-gradient(135deg, #0A84FF, #5856D6)" }}
-                >
-                  AHORRA 60%
+                <div className="flex justify-end mb-2">
+                  <div
+                    className="px-2 py-0.5 rounded-full text-[10px] font-bold text-white whitespace-nowrap"
+                    style={{ background: "linear-gradient(135deg, #0A84FF, #5856D6)" }}
+                  >
+                    AHORRA 60%
+                  </div>
                 </div>
-                <div className="flex items-center justify-between mb-2">
-                  <div className="flex items-center gap-2">
-                    <span className="text-[20px]">🌍</span>
-                    <span className="text-[15px] font-semibold text-white">
+                <div className="flex items-start justify-between gap-3 mb-2">
+                  <div className="flex items-center gap-2 min-w-0">
+                    <span className="text-[20px] shrink-0">🌍</span>
+                    <span className="text-[15px] font-semibold text-white leading-tight">
                       Todos los destinos
                     </span>
                   </div>
-                  <div className="text-right">
-                    <span className="text-[18px] font-bold text-white">€29.99</span>
-                    <span className="text-[11px] text-[#888] block">/año</span>
+                  <div className="text-right shrink-0">
+                    <span className="text-[18px] font-bold text-white block leading-none">€29.99</span>
+                    <span className="text-[11px] text-[#888] block mt-1">/año</span>
                   </div>
                 </div>
-                <p className="text-[12px] text-[#0A84FF]">
+                <p className="text-[12px] text-[#0A84FF] pr-2">
                   Viajes ilimitados · Sin trials · IA completa siempre
                 </p>
               </button>
