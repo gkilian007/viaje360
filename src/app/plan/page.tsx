@@ -383,15 +383,9 @@ function PlanPageContent() {
         <PaywallModal
           destination={currentTrip.destination}
           onClose={() => setShowPaywall(false)}
-          onPurchaseTrip={() => {
-            // Phase 2: Stripe integration
-            alert("Stripe integration coming soon — per-trip purchase €4.99")
+          onPaymentComplete={() => {
             setShowPaywall(false)
-          }}
-          onSubscribeAnnual={() => {
-            // Phase 2: Stripe integration
-            alert("Stripe integration coming soon — annual €29.99/year")
-            setShowPaywall(false)
+            access.refresh()
           }}
         />
       )}
