@@ -8,7 +8,7 @@ import { AssistantPill } from "@/components/features/AssistantPill"
 import { AchievementOverlay } from "@/components/features/AchievementOverlay"
 import { useAppStore } from "@/store/useAppStore"
 import { DesktopLayout } from "@/components/layout/DesktopLayout"
-import { MapView } from "@/components/features/MapView"
+import { DynamicMapView } from "@/components/features/DynamicMapView"
 import { TimelineItem } from "@/components/features/TimelineItem"
 import { ActivityDetailModal } from "@/components/features/ActivityDetailModal"
 import { DiaryPromptCard } from "@/components/features/diary"
@@ -273,7 +273,17 @@ function PlanPageContent() {
               </div>
             </div>
           }
-          rightPanel={<MapView />}
+          rightPanel={
+            <DynamicMapView
+              activities={today?.activities ?? []}
+              destination={currentTrip?.destination ?? ""}
+              selectedActivityId={selectedActivity?.id}
+              onMarkerClick={(activityId) => {
+                const activity = today?.activities.find((a) => a.id === activityId)
+                if (activity) handleActivityClick(activity)
+              }}
+            />
+          }
         />
       </div>
 
