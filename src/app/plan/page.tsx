@@ -12,8 +12,11 @@ import { DynamicMapView } from "@/components/features/DynamicMapView"
 import { TimelineItem } from "@/components/features/TimelineItem"
 import { ActivityDetailModal } from "@/components/features/ActivityDetailModal"
 import { DiaryPromptCard } from "@/components/features/diary"
+import { PaywallModal } from "@/components/features/PaywallModal"
+import { TrialBanner } from "@/components/features/TrialBanner"
 import { useActivityEventTracker } from "@/lib/hooks/useActivityEventTracker"
 import { useExistingDiary } from "@/lib/hooks/useExistingDiary"
+import { useAccess } from "@/lib/hooks/useAccess"
 import type { TimelineActivity, Trip } from "@/lib/types"
 
 function DaySelector({
@@ -94,6 +97,8 @@ function PlanPageContent() {
   const [showDiarySaved, setShowDiarySaved] = useState(false)
   const { trackEvent } = useActivityEventTracker()
   const { hasExistingDiary } = useExistingDiary(currentTrip?.id ?? null, selectedDay)
+  const access = useAccess(currentTrip?.destination)
+  const [showPaywall, setShowPaywall] = useState(false)
 
   const handleActivityClick = (activity: TimelineActivity) => {
     setSelectedActivity(activity)
@@ -217,18 +222,43 @@ function PlanPageContent() {
             )}
           </div>
 
+          {/* Trial banner */}
+          {!access.loading && (
+            <TrialBanner
+              destination={currentTrip?.destination ?? ""}
+              daysRemaining={access.daysRemaining}
+              reason={access.reason}
+            />
+          )}
+
           {/* Diary Prompt */}
-          {today && (
+          {today && access.canDiary && (
             <DiaryPromptCard dayNumber={selectedDay} hasExistingDiary={hasExistingDiary} />
           )}
 
           {/* Adapt input */}
           <div className="px-5 pt-4 pb-2">
-            <AdaptInput
-              tripId={currentTrip?.id ?? ""}
-              onAdapted={(days) => setGeneratedItinerary(days)}
-              disabled={!currentTrip?.id}
-            />
+            {access.canAdapt ? (
+              <AdaptInput
+                tripId={currentTrip?.id ?? ""}
+                onAdapted={(days) => setGeneratedItinerary(days)}
+                disabled={!currentTrip?.id}
+              />
+            ) : (
+              <button
+                onClick={() => setShowPaywall(true)}
+                className="w-full flex items-center gap-3 px-4 py-3 rounded-full"
+                style={{
+                  background: "rgba(19, 19, 21, 0.9)",
+                  border: "1px solid rgba(255,255,255,0.08)",
+                }}
+              >
+                <span className="text-[20px]">🔒</span>
+                <span className="text-[13px] text-[#666]">
+                  Desbloquea para adaptar tu itinerario con IA
+                </span>
+              </button>
+            )}
           </div>
         </div>
 
@@ -273,11 +303,27 @@ function PlanPageContent() {
 
               {/* Adapt input */}
               <div className="px-6 pb-6 pt-2 border-t border-white/5">
-                <AdaptInput
-                  tripId={currentTrip?.id ?? ""}
-                  onAdapted={(days) => setGeneratedItinerary(days)}
-                  disabled={!currentTrip?.id}
-                />
+                {access.canAdapt ? (
+                  <AdaptInput
+                    tripId={currentTrip?.id ?? ""}
+                    onAdapted={(days) => setGeneratedItinerary(days)}
+                    disabled={!currentTrip?.id}
+                  />
+                ) : (
+                  <button
+                    onClick={() => setShowPaywall(true)}
+                    className="w-full flex items-center gap-3 px-4 py-3 rounded-full"
+                    style={{
+                      background: "rgba(19, 19, 21, 0.9)",
+                      border: "1px solid rgba(255,255,255,0.08)",
+                    }}
+                  >
+                    <span className="text-[20px]">🔒</span>
+                    <span className="text-[13px] text-[#666]">
+                      Desbloquea para adaptar tu itinerario
+                    </span>
+                  </button>
+                )}
               </div>
             </div>
           }
@@ -330,6 +376,24 @@ function PlanPageContent() {
             </div>
           </div>
         </div>
+      )}
+
+      {/* Paywall modal */}
+      {showPaywall && currentTrip && (
+        <PaywallModal
+          destination={currentTrip.destination}
+          onClose={() => setShowPaywall(false)}
+          onPurchaseTrip={() => {
+            // Phase 2: Stripe integration
+            alert("Stripe integration coming soon — per-trip purchase €4.99")
+            setShowPaywall(false)
+          }}
+          onSubscribeAnnual={() => {
+            // Phase 2: Stripe integration
+            alert("Stripe integration coming soon — annual €29.99/year")
+            setShowPaywall(false)
+          }}
+        />
       )}
     </>
   )
