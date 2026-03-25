@@ -5,6 +5,11 @@ import Link from "next/link"
 import dynamic from "next/dynamic"
 // import { DesertDrift } from "@/components/ui/desert-drift"
 
+const StarfieldBg = dynamic(
+  () => import("@/components/ui/starfield-bg"),
+  { ssr: false }
+)
+
 const HorizonHero = dynamic(
   () => import("@/components/ui/horizon-hero-section").then((m) => m.Component),
   { ssr: false }
@@ -348,6 +353,9 @@ export default function LandingPage() {
 
   return (
     <div className="bg-[#0a0a0c] text-[#e4e2e4] min-h-screen overflow-x-hidden scroll-smooth">
+      {/* ─── Fixed starfield background — stays behind everything ─── */}
+      <StarfieldBg />
+
       {/* ─── Sticky Nav ─── */}
       <nav
         className="fixed top-0 left-0 right-0 z-50 transition-all duration-300"
@@ -404,7 +412,7 @@ export default function LandingPage() {
       </section>
 
       {/* ─── Features ─── */}
-      <section id="features" className="relative pt-8 pb-12 px-6" style={{ background: 'linear-gradient(180deg, rgba(10,10,12,1) 0%, rgba(16,16,20,1) 50%, rgba(10,10,12,1) 100%)' }}>
+      <section id="features" className="relative pt-8 pb-12 px-6 z-[1]" style={{ background: 'linear-gradient(180deg, rgba(10,10,12,0.85) 0%, rgba(16,16,20,0.9) 50%, rgba(10,10,12,0.85) 100%)' }}>
         <div className="max-w-6xl mx-auto">
           <Reveal className="text-center mb-12">
             <p className="text-[12px] font-semibold tracking-widest uppercase text-[#0A84FF] mb-3">Producto</p>
@@ -448,7 +456,7 @@ export default function LandingPage() {
       </section>
 
       {/* ─── Phone showcase with second video ─── */}
-      <section className="relative pt-8 pb-12 px-6 overflow-hidden">
+      <section className="relative pt-8 pb-12 px-6 overflow-hidden z-[1]" style={{ background: 'rgba(10,10,12,0.8)' }}>
         <div className="max-w-6xl mx-auto flex flex-col lg:flex-row items-center gap-16">
           {/* Video in phone frame */}
           <Reveal className="flex-1 flex justify-center">
@@ -504,7 +512,7 @@ export default function LandingPage() {
       </section>
 
       {/* ─── How it works ─── */}
-      <section id="how-it-works" className="pt-8 pb-12 px-6" style={{ background: 'linear-gradient(180deg, rgba(10,10,12,1) 0%, rgba(16,16,20,1) 50%, rgba(10,10,12,1) 100%)' }}>
+      <section id="how-it-works" className="pt-8 pb-12 px-6 z-[1]" style={{ background: 'linear-gradient(180deg, rgba(10,10,12,0.85) 0%, rgba(16,16,20,0.9) 50%, rgba(10,10,12,0.85) 100%)' }}>
         <div className="max-w-4xl mx-auto">
           <Reveal className="text-center mb-12">
             <p className="text-[12px] font-semibold tracking-widest uppercase text-[#30D158] mb-3">Cómo funciona</p>
@@ -535,7 +543,7 @@ export default function LandingPage() {
       </section>
 
       {/* ─── Reviews ─── */}
-      <section id="testimonials" className="pt-8 pb-12 px-6">
+      <section id="testimonials" className="pt-8 pb-12 px-6 z-[1]" style={{ background: 'rgba(10,10,12,0.8)' }}>
         <div className="max-w-6xl mx-auto">
           <Reveal className="text-center mb-16">
             <p className="text-[12px] font-semibold tracking-widest uppercase text-[#FF9F0A] mb-3">Reviews</p>
@@ -571,7 +579,7 @@ export default function LandingPage() {
       </section>
 
       {/* ─── FAQ ─── */}
-      <section id="faq" className="pt-8 pb-12 px-6">
+      <section id="faq" className="pt-8 pb-12 px-6 z-[1]" style={{ background: 'rgba(10,10,12,0.85)' }}>
         <div className="max-w-2xl mx-auto">
           <Reveal className="text-center mb-16">
             <p className="text-[12px] font-semibold tracking-widest uppercase text-[#BF5AF2] mb-3">FAQ</p>
@@ -591,7 +599,7 @@ export default function LandingPage() {
       </section>
 
       {/* ─── Final CTA ─── */}
-      <section className="pt-8 pb-16 px-6">
+      <section className="pt-8 pb-16 px-6 z-[1]" style={{ background: 'rgba(10,10,12,0.8)' }}>
         <Reveal>
           <div
             className="max-w-3xl mx-auto text-center p-14 rounded-[2rem] relative overflow-hidden"
