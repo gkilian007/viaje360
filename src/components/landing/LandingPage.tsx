@@ -181,8 +181,7 @@ function ScrollVideo({ src, className }: { src: string; className?: string }) {
         muted
         playsInline
         preload="auto"
-        className="w-full h-full object-cover"
-        style={{ objectPosition: "center top" }}
+        className="w-full block"
       />
     </div>
   )
@@ -385,17 +384,35 @@ export default function LandingPage() {
       <section id="hero" className="relative min-h-[180vh]">
         {/* Sticky viewport container */}
         <div className="sticky top-0 h-screen overflow-hidden">
-          {/* Video background */}
-          <ScrollVideo
-            src="/hero-video1.mp4"
-            className="absolute inset-0 w-full h-full"
-          />
-
-          {/* Dark overlay gradient */}
+          {/* Animated gradient background */}
           <div
             className="absolute inset-0"
             style={{
-              background: "linear-gradient(180deg, rgba(10,10,12,0.3) 0%, rgba(10,10,12,0.6) 50%, rgba(10,10,12,0.95) 100%)",
+              background: "radial-gradient(ellipse 80% 60% at 50% 40%, rgba(10,132,255,0.12) 0%, rgba(88,86,214,0.06) 40%, rgba(10,10,12,1) 80%)",
+            }}
+          />
+
+          {/* Scroll-driven phone mockup — centered */}
+          <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+            <div
+              className="w-[260px] sm:w-[300px] rounded-[3rem] overflow-hidden opacity-40"
+              style={{
+                border: "3px solid rgba(255,255,255,0.06)",
+                boxShadow: "0 40px 120px rgba(10,132,255,0.2)",
+              }}
+            >
+              <ScrollVideo
+                src="/hero-video1.mp4"
+                className="w-full"
+              />
+            </div>
+          </div>
+
+          {/* Dark overlay for text readability */}
+          <div
+            className="absolute inset-0"
+            style={{
+              background: "linear-gradient(180deg, rgba(10,10,12,0.4) 0%, rgba(10,10,12,0.5) 50%, rgba(10,10,12,0.95) 100%)",
             }}
           />
 
