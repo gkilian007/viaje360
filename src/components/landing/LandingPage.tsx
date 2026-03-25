@@ -302,15 +302,23 @@ export default function LandingPage() {
   const handleLoaded = useCallback(() => setLoaded(true), [])
 
 
-  // Override body overflow-hidden from root layout
+  // Override body overflow-hidden from root layout (required for sticky + GSAP ScrollTrigger)
   useEffect(() => {
-    document.body.style.overflow = "auto"
-    document.body.style.height = "auto"
-    document.documentElement.style.height = "auto"
+    const body = document.body
+    const html = document.documentElement
+    body.style.overflow = "auto"
+    body.style.height = "auto"
+    body.style.overflowX = "hidden"
+    html.style.height = "auto"
+    html.style.overflow = "auto"
+    html.style.overflowX = "hidden"
     return () => {
-      document.body.style.overflow = ""
-      document.body.style.height = ""
-      document.documentElement.style.height = ""
+      body.style.overflow = ""
+      body.style.height = ""
+      body.style.overflowX = ""
+      html.style.height = ""
+      html.style.overflow = ""
+      html.style.overflowX = ""
     }
   }, [])
 
