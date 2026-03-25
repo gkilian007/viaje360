@@ -131,60 +131,50 @@ function Loader({ onDone }: { onDone: () => void }) {
   )
 }
 
-// ─── Scroll-driven Video ───
+// ─── Scroll-driven Video Hero ───
 
-function ScrollVideo({ src, className }: { src: string; className?: string }) {
+function useScrollVideo(sectionRef: React.RefObject<HTMLElement | null>) {
   const videoRef = useRef<HTMLVideoElement>(null)
-  const containerRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
     const video = videoRef.current
-    const container = containerRef.current
-    if (!video || !container) return
+    const section = sectionRef.current
+    if (!video || !section) return
+
+    // Ensure video metadata is loaded
+    function syncTime() {
+      if (!video || !section || !video.duration || !isFinite(video.duration)) return
+
+      const rect = section.getBoundingClientRect()
+      // Progress: 0 at top of section, 1 when section bottom reaches viewport top
+      const scrollable = rect.height - window.innerHeight
+      const scrolled = -rect.top
+      const progress = Math.max(0, Math.min(1, scrolled / scrollable))
+
+      video.currentTime = progress * video.duration
+    }
 
     let ticking = false
-
     function onScroll() {
       if (ticking) return
       ticking = true
-
       requestAnimationFrame(() => {
-        if (!video || !container) { ticking = false; return }
-
-        const rect = container.getBoundingClientRect()
-        const windowH = window.innerHeight
-        // Progress: 0 when top enters viewport, 1 when bottom exits
-        const totalScroll = rect.height + windowH
-        const scrolled = windowH - rect.top
-        const progress = Math.max(0, Math.min(1, scrolled / totalScroll))
-
-        if (video.duration && isFinite(video.duration)) {
-          video.currentTime = progress * video.duration
-        }
-
+        syncTime()
         ticking = false
       })
     }
 
     window.addEventListener("scroll", onScroll, { passive: true })
-    // Initial sync
-    onScroll()
+    video.addEventListener("loadedmetadata", syncTime)
+    syncTime()
 
-    return () => window.removeEventListener("scroll", onScroll)
-  }, [])
+    return () => {
+      window.removeEventListener("scroll", onScroll)
+      video.removeEventListener("loadedmetadata", syncTime)
+    }
+  }, [sectionRef])
 
-  return (
-    <div ref={containerRef} className={className}>
-      <video
-        ref={videoRef}
-        src={src}
-        muted
-        playsInline
-        preload="auto"
-        className="w-full block"
-      />
-    </div>
-  )
+  return videoRef
 }
 
 // ─── Parallax Section ───
@@ -291,6 +281,8 @@ export default function LandingPage() {
   const [navSolid, setNavSolid] = useState(false)
 
   const handleLoaded = useCallback(() => setLoaded(true), [])
+  const heroSectionRef = useRef<HTMLElement>(null)
+  const heroVideoRef = useScrollVideo(heroSectionRef)
 
   // Override body overflow-hidden from root layout
   useEffect(() => {
@@ -380,10 +372,10 @@ export default function LandingPage() {
         </div>
       </nav>
 
-      {/* ─── Hero — fullscreen with scroll-driven video ─── */}
-      <section id="hero" className="relative">
-        {/* Hero content — normal flow, not sticky */}
-        <div className="relative min-h-screen overflow-hidden">
+      {/* ─── Hero — scroll-driven video parallax ─── */}
+      <section id="hero" ref={heroSectionRef} className="relative" style={{ height: "250vh" }}>
+        {/* Sticky container: stays in viewport while section scrolls */}
+        <div className="sticky top-0 h-screen overflow-hidden">
           {/* Animated gradient background */}
           <div
             className="absolute inset-0"
@@ -392,23 +384,22 @@ export default function LandingPage() {
             }}
           />
 
-          {/* Phone mockup — centered, scroll-driven */}
+          {/* Phone mockup — scroll-driven video */}
           <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
             <div
-              className="w-[360px] sm:w-[420px] rounded-[3rem] overflow-hidden opacity-40"
+              className="w-[500px] sm:w-[580px] rounded-[3rem] overflow-hidden opacity-40"
               style={{
                 border: "3px solid rgba(255,255,255,0.06)",
                 boxShadow: "0 40px 120px rgba(10,132,255,0.2)",
               }}
             >
               <video
-                autoPlay
-                loop
+                ref={heroVideoRef}
                 muted
                 playsInline
+                preload="auto"
                 className="w-full block"
               >
-                <source src="/hero-video1.webm" type="video/webm" />
                 <source src="/hero-video1.mp4" type="video/mp4" />
               </video>
             </div>
@@ -418,7 +409,7 @@ export default function LandingPage() {
           <div
             className="absolute inset-0"
             style={{
-              background: "linear-gradient(180deg, rgba(10,10,12,0.3) 0%, rgba(10,10,12,0.4) 50%, rgba(10,10,12,0.9) 100%)",
+              background: "linear-gradient(180deg, rgba(10,10,12,0.2) 0%, rgba(10,10,12,0.35) 50%, rgba(10,10,12,0.85) 100%)",
             }}
           />
 
