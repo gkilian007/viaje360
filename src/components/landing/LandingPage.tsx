@@ -293,6 +293,18 @@ export default function LandingPage() {
 
   const handleLoaded = useCallback(() => setLoaded(true), [])
 
+  // Override body overflow-hidden from root layout
+  useEffect(() => {
+    document.body.style.overflow = "auto"
+    document.body.style.height = "auto"
+    document.documentElement.style.height = "auto"
+    return () => {
+      document.body.style.overflow = ""
+      document.body.style.height = ""
+      document.documentElement.style.height = ""
+    }
+  }, [])
+
   // Track active section + navbar background
   useEffect(() => {
     function onScroll() {
@@ -370,7 +382,7 @@ export default function LandingPage() {
       </nav>
 
       {/* ─── Hero — fullscreen with scroll-driven video ─── */}
-      <section id="hero" className="relative min-h-[300vh]">
+      <section id="hero" className="relative min-h-[180vh]">
         {/* Sticky viewport container */}
         <div className="sticky top-0 h-screen overflow-hidden">
           {/* Video background */}
