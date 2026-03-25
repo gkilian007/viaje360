@@ -1,10 +1,6 @@
 "use client"
 
-import React, { useEffect, useRef, useState } from 'react'
-import { gsap } from 'gsap'
-import { ScrollTrigger } from 'gsap/ScrollTrigger'
-
-gsap.registerPlugin(ScrollTrigger)
+import React, { useEffect, useRef } from 'react'
 
 export const Component = () => {
   const containerRef = useRef<HTMLDivElement>(null)
@@ -13,123 +9,79 @@ export const Component = () => {
   const titleRef     = useRef<HTMLHeadingElement>(null)
   const subtitleRef  = useRef<HTMLParagraphElement>(null)
   const ctaRef       = useRef<HTMLDivElement>(null)
-  const scrollRef    = useRef<HTMLDivElement>(null)
-  const [animated, setAnimated] = useState(false)
 
-  // Fallback: if GSAP hasn't animated after 2.5s, force-show everything
   useEffect(() => {
-    const timer = setTimeout(() => {
-      if (!animated) {
-        ;[badgeRef, titleRef, subtitleRef, ctaRef, videoWrapRef, scrollRef].forEach(r => {
-          if (r.current) {
-            r.current.style.opacity = '1'
-            r.current.style.transform = 'none'
-            r.current.style.filter = 'none'
+    // Dynamic import — if this fails, everything stays visible (default state)
+    let killed = false
+
+    ;(async () => {
+      try {
+        const { gsap } = await import('gsap')
+        const { ScrollTrigger } = await import('gsap/ScrollTrigger')
+        gsap.registerPlugin(ScrollTrigger)
+
+        if (killed) return
+
+        const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches
+        if (prefersReducedMotion) return
+
+        const isMobile = window.innerWidth < 768
+        const refs = [badgeRef.current, titleRef.current, subtitleRef.current, ctaRef.current, videoWrapRef.current].filter(Boolean)
+
+        // Hide first, then animate in
+        refs.forEach(el => gsap.set(el!, { opacity: 0, y: 30 }))
+        if (videoWrapRef.current && !isMobile) gsap.set(videoWrapRef.current, { opacity: 0, scale: 0.85, x: 50, y: 0 })
+
+        const tl = gsap.timeline({ delay: 0.3 })
+
+        if (badgeRef.current)
+          tl.to(badgeRef.current, { opacity: 1, y: 0, duration: 0.8, ease: 'elastic.out(1, 0.75)' })
+        if (titleRef.current)
+          tl.to(titleRef.current, { opacity: 1, y: 0, duration: 1, ease: 'power4.out' }, '-=0.5')
+        if (subtitleRef.current)
+          tl.to(subtitleRef.current, { opacity: 1, y: 0, duration: 0.7, ease: 'power4.out' }, '-=0.6')
+        if (ctaRef.current)
+          tl.to(ctaRef.current, { opacity: 1, y: 0, duration: 0.7, ease: 'elastic.out(1, 0.75)' }, '-=0.4')
+        if (videoWrapRef.current) {
+          if (isMobile) {
+            tl.to(videoWrapRef.current, { opacity: 1, y: 0, duration: 0.8, ease: 'power3.out' }, '-=0.5')
+          } else {
+            tl.to(videoWrapRef.current, { opacity: 1, scale: 1, x: 0, duration: 1.2, ease: 'elastic.out(1, 0.75)' }, '-=0.8')
           }
-        })
-      }
-    }, 2500)
-    return () => clearTimeout(timer)
-  }, [animated])
-
-  // Entrance animations
-  useEffect(() => {
-    const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches
-
-    if (prefersReducedMotion) {
-      ;[badgeRef, titleRef, subtitleRef, ctaRef, videoWrapRef, scrollRef].forEach(r => {
-        if (r.current) {
-          r.current.style.opacity = '1'
-          r.current.style.transform = 'none'
-          r.current.style.filter = 'none'
         }
-      })
-      setAnimated(true)
-      return
-    }
 
-    const springEase = 'elastic.out(1, 0.75)'
-    const smoothEase = 'power4.out'
-    const tl = gsap.timeline({
-      delay: 0.4,
-      onComplete: () => setAnimated(true),
-    })
-
-    if (badgeRef.current)
-      tl.fromTo(badgeRef.current,
-        { opacity: 0, y: 24, scale: 0.9 },
-        { opacity: 1, y: 0, scale: 1, duration: 1, ease: springEase })
-
-    if (titleRef.current)
-      tl.fromTo(titleRef.current,
-        { opacity: 0, y: 50, filter: 'blur(8px)' },
-        { opacity: 1, y: 0, filter: 'blur(0px)', duration: 1.2, ease: smoothEase }, '-=0.6')
-
-    if (subtitleRef.current)
-      tl.fromTo(subtitleRef.current,
-        { opacity: 0, y: 24 },
-        { opacity: 1, y: 0, duration: 0.8, ease: smoothEase }, '-=0.7')
-
-    if (ctaRef.current)
-      tl.fromTo(ctaRef.current,
-        { opacity: 0, y: 20, scale: 0.95 },
-        { opacity: 1, y: 0, scale: 1, duration: 0.9, ease: springEase }, '-=0.5')
-
-    if (videoWrapRef.current)
-      tl.fromTo(videoWrapRef.current,
-        { opacity: 0, scale: 0.8, x: 60 },
-        { opacity: 1, scale: 1, x: 0, duration: 1.4, ease: springEase }, '-=1.0')
-
-    if (scrollRef.current)
-      tl.fromTo(scrollRef.current,
-        { opacity: 0 },
-        { opacity: 1, duration: 0.6, ease: 'power2.out' }, '-=0.3')
-
-    return () => { tl.kill() }
-  }, [])
-
-  // Scroll parallax (desktop only)
-  useEffect(() => {
-    if (!containerRef.current) return
-    const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches
-    const isMobile = window.innerWidth < 768
-    if (prefersReducedMotion || isMobile) return
-
-    const ctx = gsap.context(() => {
-      const textEls = [badgeRef.current, titleRef.current, subtitleRef.current, ctaRef.current].filter(Boolean)
-      textEls.forEach((el, i) => {
-        gsap.to(el!, {
-          y: -(60 + i * 15), ease: 'none',
-          scrollTrigger: { trigger: containerRef.current, start: 'top top', end: 'bottom top', scrub: 0.8 },
-        })
-      })
-
-      if (videoWrapRef.current) {
-        gsap.to(videoWrapRef.current, {
-          y: -30, ease: 'none',
-          scrollTrigger: { trigger: containerRef.current, start: 'top top', end: 'bottom top', scrub: 0.8 },
-        })
+        // Desktop scroll parallax
+        if (!isMobile) {
+          const textEls = [badgeRef.current, titleRef.current, subtitleRef.current, ctaRef.current].filter(Boolean)
+          textEls.forEach((el, i) => {
+            gsap.to(el!, {
+              y: -(50 + i * 12), ease: 'none',
+              scrollTrigger: { trigger: containerRef.current, start: 'top top', end: 'bottom top', scrub: 0.8 },
+            })
+          })
+          if (videoWrapRef.current) {
+            gsap.to(videoWrapRef.current, {
+              y: -25, ease: 'none',
+              scrollTrigger: { trigger: containerRef.current, start: 'top top', end: 'bottom top', scrub: 0.8 },
+            })
+          }
+        }
+      } catch (e) {
+        // GSAP failed — elements are already visible, nothing to do
+        console.warn('Hero animation skipped:', e)
       }
+    })()
 
-      if (scrollRef.current) {
-        gsap.to(scrollRef.current, {
-          opacity: 0, y: -10,
-          scrollTrigger: { trigger: containerRef.current, start: '5% top', end: '15% top', scrub: true },
-        })
-      }
-    }, containerRef)
-
-    return () => ctx.revert()
+    return () => { killed = true }
   }, [])
 
   return (
-    <div ref={containerRef} className="relative w-full h-screen z-[1]" role="banner">
+    <div ref={containerRef} className="relative w-full min-h-screen z-[1]" role="banner">
 
-      {/* Phone video — desktop: right side, mobile: centered below text */}
-      <div className="absolute inset-0 flex items-center justify-center md:justify-end md:pr-[6vw] pointer-events-none">
+      {/* Phone video */}
+      <div className="flex items-center justify-center md:absolute md:inset-0 md:justify-end md:pr-[6vw] pointer-events-none pt-[70vh] md:pt-0">
         <div ref={videoWrapRef}
-          className="w-[200px] md:w-[clamp(240px,24vw,380px)] mt-[55vh] md:mt-0"
-          style={{ opacity: 0, willChange: 'transform, opacity' }}
+          className="w-[180px] md:w-[clamp(240px,24vw,380px)]"
         >
           <video
             muted autoPlay loop playsInline preload="auto"
@@ -143,17 +95,16 @@ export const Component = () => {
       </div>
 
       {/* Hero text */}
-      <div className="absolute inset-0 flex flex-col justify-center px-6 md:pl-[8vw] md:pr-[38vw] pointer-events-none">
+      <div className="absolute top-0 left-0 right-0 flex flex-col justify-center min-h-screen px-6 md:pl-[8vw] md:pr-[38vw] pointer-events-none">
         <div ref={badgeRef}
           className="inline-flex items-center gap-2 px-4 py-2 rounded-full text-[11px] font-semibold tracking-widest uppercase text-[#0A84FF] mb-4 md:mb-6 w-fit pointer-events-auto"
-          style={{ background: 'rgba(10,132,255,0.1)', border: '1px solid rgba(10,132,255,0.2)', backdropFilter: 'blur(10px)', opacity: 0, willChange: 'transform, opacity' }}
+          style={{ background: 'rgba(10,132,255,0.1)', border: '1px solid rgba(10,132,255,0.2)', backdropFilter: 'blur(10px)' }}
         >
           ✦ Impulsado por IA
         </div>
 
         <h1 ref={titleRef}
           className="text-[clamp(1.8rem,5vw,4rem)] font-extrabold leading-[1.08] tracking-tight max-w-xl"
-          style={{ opacity: 0, willChange: 'transform, opacity, filter' }}
         >
           Tu viaje perfecto,{' '}
           <span className="bg-gradient-to-r from-[#0A84FF] via-[#5856D6] to-[#BF5AF2] bg-clip-text text-transparent">
@@ -163,14 +114,12 @@ export const Component = () => {
 
         <p ref={subtitleRef}
           className="mt-3 md:mt-5 text-[clamp(0.85rem,1.6vw,1.1rem)] text-[#c0c6d6] max-w-sm leading-relaxed"
-          style={{ opacity: 0, willChange: 'transform, opacity' }}
         >
           Itinerarios cinematográficos que se adaptan a ti en tiempo real.
         </p>
 
         <div ref={ctaRef}
           className="mt-6 md:mt-8 flex flex-col sm:flex-row gap-3 pointer-events-auto"
-          style={{ opacity: 0, willChange: 'transform, opacity' }}
         >
           <a href="/onboarding"
             className="px-7 py-3.5 rounded-full text-[14px] font-semibold text-white text-center transition-all hover:scale-[1.03] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#0A84FF] w-fit"
@@ -186,9 +135,9 @@ export const Component = () => {
       </div>
 
       {/* Scroll indicator */}
-      <div ref={scrollRef} className="absolute bottom-8 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2 pointer-events-none" aria-hidden="true" style={{ opacity: 0 }}>
+      <div className="absolute bottom-8 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2 pointer-events-none animate-bounce" aria-hidden="true">
         <span className="text-[10px] text-[#555] uppercase tracking-widest">Scroll</span>
-        <div className="w-[1px] h-8 bg-gradient-to-b from-[#555] to-transparent animate-bounce" />
+        <div className="w-[1px] h-8 bg-gradient-to-b from-[#555] to-transparent" />
       </div>
     </div>
   )
