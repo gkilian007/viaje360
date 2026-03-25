@@ -2,7 +2,13 @@
 
 import { useEffect, useRef, useState, useCallback } from "react"
 import Link from "next/link"
+import dynamic from "next/dynamic"
 import { DesertDrift } from "@/components/ui/desert-drift"
+
+const HorizonHero = dynamic(
+  () => import("@/components/ui/horizon-hero-section").then((m) => m.Component),
+  { ssr: false }
+)
 
 // ─── Constants ───
 
@@ -294,8 +300,7 @@ export default function LandingPage() {
   const [navSolid, setNavSolid] = useState(false)
 
   const handleLoaded = useCallback(() => setLoaded(true), [])
-  const heroSectionRef = useRef<HTMLElement>(null)
-  const { videoRef: heroVideoRef, videoWrapRef: heroVideoWrapRef } = useScrollHero(heroSectionRef)
+
 
   // Override body overflow-hidden from root layout
   useEffect(() => {
@@ -385,98 +390,9 @@ export default function LandingPage() {
         </div>
       </nav>
 
-      {/* ─── Hero — scroll-driven video parallax with vertical pan ─── */}
-      <section id="hero" ref={heroSectionRef} className="relative" style={{ height: "300vh" }}>
-        {/* Sticky viewport: stays pinned while section scrolls past */}
-        <div className="sticky top-0 h-screen overflow-hidden">
-          {/* Dark base */}
-          <div className="absolute inset-0 bg-[#0a0a0c]" />
-
-          {/* Video wrapper — much taller than viewport, pans with scroll */}
-          <div
-            ref={heroVideoWrapRef}
-            className="absolute left-1/2 -translate-x-1/2 w-[90vw] sm:w-[70vw] md:w-[50vw]"
-            style={{ height: "180vh", top: 0, willChange: "transform" }}
-          >
-            <div
-              className="w-full h-full rounded-[3rem] overflow-hidden opacity-50"
-              style={{
-                border: "3px solid rgba(255,255,255,0.06)",
-                boxShadow: "0 40px 120px rgba(10,132,255,0.2), 0 0 80px rgba(88,86,214,0.1)",
-              }}
-            >
-              <video
-                ref={heroVideoRef}
-                muted
-                playsInline
-                preload="auto"
-                className="w-full h-full object-cover"
-              >
-                <source src="/hero-video1.mp4" type="video/mp4" />
-              </video>
-            </div>
-          </div>
-
-          {/* Gradient overlays for text readability */}
-          <div
-            className="absolute inset-0 pointer-events-none"
-            style={{
-              background: "linear-gradient(180deg, rgba(10,10,12,0.4) 0%, rgba(10,10,12,0.15) 40%, rgba(10,10,12,0.15) 60%, rgba(10,10,12,0.7) 100%)",
-            }}
-          />
-          <div
-            className="absolute inset-0 pointer-events-none"
-            style={{
-              background: "radial-gradient(ellipse 70% 50% at 50% 50%, transparent 0%, rgba(10,10,12,0.6) 100%)",
-            }}
-          />
-
-          {/* Hero text — parallax */}
-          <div
-            ref={heroParallax.ref}
-            className="absolute inset-0 flex flex-col items-center justify-center px-6 text-center"
-            style={{ transform: `translateY(${heroParallax.offset}px)` }}
-          >
-            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full text-[11px] font-semibold tracking-widest uppercase text-[#0A84FF] mb-6" style={{ background: "rgba(10,132,255,0.1)", border: "1px solid rgba(10,132,255,0.2)", backdropFilter: "blur(10px)" }}>
-              <span className="material-symbols-outlined text-[14px]">auto_awesome</span>
-              Impulsado por IA
-            </div>
-
-            <h1 className="text-[clamp(2.5rem,7vw,5rem)] font-extrabold leading-[1.05] tracking-tight max-w-4xl">
-              Tu viaje perfecto,{" "}
-              <span className="bg-gradient-to-r from-[#0A84FF] via-[#5856D6] to-[#BF5AF2] bg-clip-text text-transparent">
-                planificado por IA
-              </span>
-            </h1>
-
-            <p className="mt-6 text-[clamp(1rem,2vw,1.25rem)] text-[#c0c6d6] max-w-xl leading-relaxed">
-              Itinerarios cinematográficos que se adaptan a ti en tiempo real.
-            </p>
-
-            <div className="mt-10 flex flex-col sm:flex-row gap-4">
-              <Link
-                href="/onboarding"
-                className="px-8 py-4 rounded-full text-[15px] font-semibold text-white transition-all hover:scale-[1.03]"
-                style={{ background: "linear-gradient(135deg, #0A84FF, #5856D6)", boxShadow: "0 8px 32px rgba(10,132,255,0.3)" }}
-              >
-                Planifica gratis
-              </Link>
-              <a
-                href="#features"
-                className="px-8 py-4 rounded-full text-[15px] font-medium text-[#c0c6d6] transition-all hover:text-white"
-                style={{ background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.1)", backdropFilter: "blur(10px)" }}
-              >
-                Descubre más ↓
-              </a>
-            </div>
-
-            {/* Scroll indicator */}
-            <div className="absolute bottom-10 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2 animate-bounce">
-              <span className="text-[11px] text-[#666] uppercase tracking-widest">Scroll</span>
-              <span className="material-symbols-outlined text-[#666]">expand_more</span>
-            </div>
-          </div>
-        </div>
+      {/* ─── Hero — Three.js cinematic starfield ─── */}
+      <section id="hero">
+        <HorizonHero />
       </section>
 
       {/* ─── 3D Experience ─── */}
