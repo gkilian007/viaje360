@@ -35,14 +35,14 @@ export const Component = () => {
       {/* Bottom fade to match next section */}
       <div className="absolute bottom-0 left-0 right-0 h-32 pointer-events-none z-10" style={{ background: 'linear-gradient(to bottom, transparent, #0a0a0c)' }} />
 
-      {/* Phone mockup — right side */}
-      <div className="absolute inset-0 flex items-center justify-end pr-[8vw] pointer-events-none z-10 hidden md:flex">
-        <div ref={phoneRef} className="relative opacity-0" style={{ width: 'clamp(200px, 22vw, 320px)', aspectRatio: '9/19.5', borderRadius: '2.5rem', overflow: 'hidden', border: '3px solid rgba(255,255,255,0.08)', boxShadow: '0 40px 100px rgba(10,132,255,0.15), 0 0 40px rgba(0,0,0,0.4)', background: '#000' }}>
+      {/* Phone video — right side, no frame (video already contains phone bezel) */}
+      <div className="absolute inset-0 flex items-center justify-end pr-[4vw] pointer-events-none z-10 hidden md:flex">
+        <div ref={phoneRef} className="relative opacity-0" style={{ width: 'clamp(260px, 28vw, 420px)' }}>
           <video
             ref={phoneVideoRef}
             muted autoPlay loop playsInline preload="auto"
-            className="absolute left-0 w-full"
-            style={{ top: 0, height: '150%', objectFit: 'cover', animation: 'videoPan 12s ease-in-out infinite alternate' }}
+            className="w-full h-auto"
+            style={{ mixBlendMode: 'lighten' }}
           >
             <source src="/hero-video1.mp4" type="video/mp4" />
           </video>
