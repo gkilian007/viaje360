@@ -392,7 +392,7 @@ export default function LandingPage() {
   }
 
   return (
-    <div className="text-[#e4e2e4] min-h-screen overflow-x-hidden scroll-smooth" style={{ background: 'transparent' }}>
+    <div className="text-[#e4e2e4] min-h-screen overflow-x-hidden scroll-smooth bg-[#0a0a0c]">
       {/* ─── Fixed starfield background — stays behind everything ─── */}
       <StarfieldBg />
 
