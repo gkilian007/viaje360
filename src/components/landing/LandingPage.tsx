@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState, useCallback } from "react"
 import Link from "next/link"
 import dynamic from "next/dynamic"
-import { DesertDrift } from "@/components/ui/desert-drift"
+// import { DesertDrift } from "@/components/ui/desert-drift"
 
 const HorizonHero = dynamic(
   () => import("@/components/ui/horizon-hero-section").then((m) => m.Component),
@@ -271,7 +271,7 @@ function Reveal({ children, className, delay = 0 }: { children: React.ReactNode;
 
     const observer = new IntersectionObserver(
       ([entry]) => { if (entry.isIntersecting) setVisible(true) },
-      { threshold: 0.15 }
+      { threshold: 0.05, rootMargin: '0px 0px -30px 0px' }
     )
     observer.observe(el)
     return () => observer.disconnect()
@@ -403,40 +403,10 @@ export default function LandingPage() {
         <HorizonHero />
       </section>
 
-      {/* ─── 3D Experience ─── */}
-      <section className="relative py-24 px-6 overflow-hidden">
+      {/* ─── Features ─── */}
+      <section id="features" className="relative pt-8 pb-12 px-6" style={{ background: 'linear-gradient(180deg, rgba(10,10,12,1) 0%, rgba(16,16,20,1) 50%, rgba(10,10,12,1) 100%)' }}>
         <div className="max-w-6xl mx-auto">
           <Reveal className="text-center mb-12">
-            <p className="text-[12px] font-semibold tracking-widest uppercase text-[#0A84FF] mb-3">Experiencia</p>
-            <h2 className="text-[clamp(1.8rem,4vw,3rem)] font-bold tracking-tight">
-              Siente el{" "}
-              <span className="bg-gradient-to-r from-[#0A84FF] to-[#5856D6] bg-clip-text text-transparent">
-                mundo en 3D
-              </span>
-            </h2>
-            <p className="mt-4 text-[16px] text-[#9ca3af] max-w-md mx-auto">
-              Una experiencia visual inmersiva que refleja la profundidad de cada destino.
-            </p>
-          </Reveal>
-
-          <Reveal>
-            <div
-              className="rounded-3xl overflow-hidden"
-              style={{
-                border: "1px solid rgba(255,255,255,0.06)",
-                boxShadow: "0 30px 80px rgba(10,132,255,0.12), 0 0 40px rgba(0,0,0,0.4)",
-              }}
-            >
-              <DesertDrift className="rounded-3xl h-[70vh]" />
-            </div>
-          </Reveal>
-        </div>
-      </section>
-
-      {/* ─── Features ─── */}
-      <section id="features" className="relative py-32 px-6">
-        <div className="max-w-6xl mx-auto">
-          <Reveal className="text-center mb-20">
             <p className="text-[12px] font-semibold tracking-widest uppercase text-[#0A84FF] mb-3">Producto</p>
             <h2 className="text-[clamp(1.8rem,4vw,3rem)] font-bold tracking-tight">
               Todo para viajar mejor
@@ -478,7 +448,7 @@ export default function LandingPage() {
       </section>
 
       {/* ─── Phone showcase with second video ─── */}
-      <section className="relative py-24 px-6 overflow-hidden">
+      <section className="relative pt-8 pb-12 px-6 overflow-hidden">
         <div className="max-w-6xl mx-auto flex flex-col lg:flex-row items-center gap-16">
           {/* Video in phone frame */}
           <Reveal className="flex-1 flex justify-center">
@@ -534,9 +504,9 @@ export default function LandingPage() {
       </section>
 
       {/* ─── How it works ─── */}
-      <section id="how-it-works" className="py-32 px-6">
+      <section id="how-it-works" className="pt-8 pb-12 px-6" style={{ background: 'linear-gradient(180deg, rgba(10,10,12,1) 0%, rgba(16,16,20,1) 50%, rgba(10,10,12,1) 100%)' }}>
         <div className="max-w-4xl mx-auto">
-          <Reveal className="text-center mb-20">
+          <Reveal className="text-center mb-12">
             <p className="text-[12px] font-semibold tracking-widest uppercase text-[#30D158] mb-3">Cómo funciona</p>
             <h2 className="text-[clamp(1.8rem,4vw,3rem)] font-bold tracking-tight">
               Tres pasos. Cero estrés.
@@ -565,7 +535,7 @@ export default function LandingPage() {
       </section>
 
       {/* ─── Reviews ─── */}
-      <section id="testimonials" className="py-32 px-6">
+      <section id="testimonials" className="pt-8 pb-12 px-6">
         <div className="max-w-6xl mx-auto">
           <Reveal className="text-center mb-16">
             <p className="text-[12px] font-semibold tracking-widest uppercase text-[#FF9F0A] mb-3">Reviews</p>
@@ -601,7 +571,7 @@ export default function LandingPage() {
       </section>
 
       {/* ─── FAQ ─── */}
-      <section id="faq" className="py-32 px-6">
+      <section id="faq" className="pt-8 pb-12 px-6">
         <div className="max-w-2xl mx-auto">
           <Reveal className="text-center mb-16">
             <p className="text-[12px] font-semibold tracking-widest uppercase text-[#BF5AF2] mb-3">FAQ</p>
@@ -621,7 +591,7 @@ export default function LandingPage() {
       </section>
 
       {/* ─── Final CTA ─── */}
-      <section className="py-32 px-6">
+      <section className="pt-8 pb-16 px-6">
         <Reveal>
           <div
             className="max-w-3xl mx-auto text-center p-14 rounded-[2rem] relative overflow-hidden"
