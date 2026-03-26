@@ -152,6 +152,15 @@ function PlanPageContent() {
     }
   }, [searchParams])
 
+  // ALL hooks must be before any conditional return
+  const today = itinerary[selectedDay - 1]
+  const { getSegment } = useWalkingTimes(today?.activities ?? [])
+  const liveStatus = useCurrentActivity(today?.activities ?? [], currentTrip?.startDate)
+  const firstWithCoords = itinerary.flatMap(d => d.activities).find(a => a.lat && a.lng)
+  const { getForDate } = useWeather(firstWithCoords?.lat, firstWithCoords?.lng)
+  const todayWeather = today ? getForDate(today.date) : undefined
+  const totalDays = itinerary.length
+
   if (!hydrated || !serverLoaded) {
     return (
       <div className="min-h-screen map-bg flex items-center justify-center">
@@ -162,16 +171,6 @@ function PlanPageContent() {
       </div>
     )
   }
-
-  const today = itinerary[selectedDay - 1]
-  const { getSegment } = useWalkingTimes(today?.activities ?? [])
-  const liveStatus = useCurrentActivity(today?.activities ?? [], currentTrip?.startDate)
-
-  // Get destination coords from first activity with coordinates
-  const firstWithCoords = itinerary.flatMap(d => d.activities).find(a => a.lat && a.lng)
-  const { getForDate } = useWeather(firstWithCoords?.lat, firstWithCoords?.lng)
-  const todayWeather = today ? getForDate(today.date) : undefined
-  const totalDays = itinerary.length
 
   if (!currentTrip || totalDays === 0) {
     return (
