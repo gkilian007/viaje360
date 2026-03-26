@@ -3,6 +3,7 @@ import { normalizeRouteError, successResponse } from "@/lib/api/route-helpers"
 import { resolveRequestIdentity } from "@/lib/auth/server"
 import { getActiveTrip, getChatHistory, mapDbChatMessagesToAppMessages } from "@/lib/services/trip.service"
 import { createServiceClient } from "@/lib/supabase/server"
+import type { GeneratedItinerary } from "@/lib/supabase/database.types"
 
 export async function GET(request: NextRequest) {
   try {
@@ -19,6 +20,23 @@ export async function GET(request: NextRequest) {
     }
 
     const supabase = createServiceClient()
+
+    // Fetch latest itinerary version snapshot for rich activity fields
+    const { data: latestVersion } = await supabase
+      .from("itinerary_versions")
+      .select("snapshot, version_number")
+      .eq("trip_id", dbTrip.id)
+      .order("version_number", { ascending: false })
+      .limit(1)
+      .maybeSingle()
+
+    const versionSnapshot = (latestVersion?.snapshot as GeneratedItinerary | null) ?? null
+    const snapshotByDayAndOrder = new Map<string, GeneratedItinerary["days"][number]["activities"][number]>()
+    for (const day of versionSnapshot?.days ?? []) {
+      day.activities.forEach((activity, index) => {
+        snapshotByDayAndOrder.set(`${day.dayNumber}:${index}`, activity)
+      })
+    }
 
     // Fetch itinerary days + activities
     const { data: dbDays, error: daysError } = await supabase
@@ -57,24 +75,34 @@ export async function GET(request: NextRequest) {
         dayNumber: day.day_number,
         theme: day.theme ?? undefined,
         isRestDay: day.is_rest_day ?? false,
-        activities: dayActivities.map((act) => ({
-          id: act.id,
-          name: act.name,
-          type: act.type,
-          location: act.location ?? "",
-          time: act.time ?? "",
-          duration: act.duration ?? 60,
-          cost: act.cost ?? 0,
-          notes: act.notes ?? undefined,
-          description: act.notes ?? undefined,
-          icon: act.icon ?? undefined,
-          neighborhood: act.neighborhood ?? undefined,
-          indoor: act.indoor ?? false,
-          weatherDependent: act.weather_dependent ?? false,
-          kidFriendly: act.kid_friendly ?? false,
-          petFriendly: act.pet_friendly ?? false,
-          booked: act.booked ?? false,
-        })),
+        activities: dayActivities.map((act) => {
+          const enriched = snapshotByDayAndOrder.get(`${day.day_number}:${act.sort_order ?? 0}`)
+          return {
+            id: act.id,
+            name: act.name,
+            type: act.type,
+            location: act.location ?? enriched?.location ?? "",
+            time: act.time ?? enriched?.time ?? "",
+            duration: act.duration ?? enriched?.duration ?? 60,
+            cost: act.cost ?? enriched?.cost ?? 0,
+            notes: act.notes ?? enriched?.notes ?? undefined,
+            description: enriched?.description ?? act.notes ?? undefined,
+            icon: act.icon ?? enriched?.icon ?? undefined,
+            neighborhood: act.neighborhood ?? undefined,
+            indoor: act.indoor ?? enriched?.indoor ?? false,
+            weatherDependent: act.weather_dependent ?? enriched?.weatherDependent ?? false,
+            kidFriendly: act.kid_friendly ?? enriched?.kidFriendly ?? false,
+            petFriendly: act.pet_friendly ?? enriched?.petFriendly ?? false,
+            booked: act.booked ?? false,
+            isLocked: act.is_locked ?? enriched?.isLocked ?? false,
+            url: enriched?.url ?? undefined,
+            pricePerPerson: enriched?.pricePerPerson ?? undefined,
+            imageQuery: enriched?.imageQuery ?? undefined,
+            recommendationReason: enriched?.recommendationReason ?? undefined,
+            lat: act.latitude ?? enriched?.lat ?? undefined,
+            lng: act.longitude ?? enriched?.lng ?? undefined,
+          }
+        }),
       }
     })
 
