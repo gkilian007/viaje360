@@ -8,19 +8,356 @@ import { createClient, isSupabaseBrowserConfigured } from "@/lib/supabase/client
 import { BottomNav } from "@/components/layout/BottomNav"
 import { motion } from "framer-motion"
 import type { User as SupabaseUser } from "@supabase/supabase-js"
+import type { DayItinerary } from "@/lib/types"
 
-const QUICK_PRESETS = [
+// ─── Trending destinations ───────────────────────────────────────────────────
+
+const TRENDING = [
+  { name: "Tokio", country: "Japón", emoji: "🗼", color: "#FF453A" },
+  { name: "Barcelona", country: "España", emoji: "🏛️", color: "#0A84FF" },
+  { name: "Bali", country: "Indonesia", emoji: "🏝️", color: "#30D158" },
+  { name: "Nueva York", country: "EE.UU.", emoji: "🗽", color: "#5856D6" },
+  { name: "Roma", country: "Italia", emoji: "🏟️", color: "#FF9F0A" },
+  { name: "París", country: "Francia", emoji: "🗼", color: "#BF5AF2" },
+]
+
+const QUICK_STYLES = [
   { emoji: "👨‍👩‍👧‍👦", label: "Familia", desc: "Con niños" },
   { emoji: "💑", label: "Pareja", desc: "Romántico" },
   { emoji: "🎒", label: "Solo", desc: "Aventura" },
   { emoji: "👯", label: "Amigos", desc: "Grupo" },
-  { emoji: "♿", label: "Accesible", desc: "Sin barreras" },
-  { emoji: "🐕", label: "Mascota", desc: "Pet-friendly" },
 ]
+
+// ─── Subcomponents ───────────────────────────────────────────────────────────
+
+function ProfileHeader({
+  user,
+  initials,
+  displayName,
+  email,
+  tripCount,
+  totalDays,
+  onLogout,
+}: {
+  user: SupabaseUser | null
+  initials: string
+  displayName: string
+  email: string
+  tripCount: number
+  totalDays: number
+  onLogout: () => void
+}) {
+  return (
+    <div className="relative">
+      {/* Cover */}
+      <div
+        className="h-32 lg:h-44 rounded-b-3xl lg:rounded-3xl overflow-hidden"
+        style={{
+          background: "linear-gradient(135deg, #0A84FF 0%, #5856D6 50%, #BF5AF2 100%)",
+        }}
+      >
+        <div className="absolute inset-0 opacity-20"
+          style={{ backgroundImage: "url(\"data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.15'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E\")" }}
+        />
+      </div>
+
+      {/* Profile card */}
+      <div className="px-4 lg:px-6 -mt-12">
+        <div
+          className="rounded-2xl p-4 lg:p-5"
+          style={{
+            background: "rgba(28,28,30,0.95)",
+            border: "1px solid rgba(255,255,255,0.08)",
+            backdropFilter: "blur(20px)",
+          }}
+        >
+          <div className="flex items-center gap-4">
+            {/* Avatar */}
+            <div
+              className="w-16 h-16 lg:w-20 lg:h-20 rounded-2xl flex items-center justify-center text-[22px] lg:text-[28px] font-bold text-white shrink-0 ring-4 ring-[#131315]"
+              style={{ background: "linear-gradient(135deg, #0A84FF, #5856D6)" }}
+            >
+              {initials}
+            </div>
+
+            <div className="flex-1 min-w-0">
+              <h1 className="text-[18px] lg:text-[22px] font-bold text-white truncate">{displayName}</h1>
+              <p className="text-[12px] text-[#9ca3af] truncate">{email}</p>
+
+              {/* Stats row */}
+              <div className="flex gap-4 mt-2">
+                <div className="text-center">
+                  <p className="text-[16px] font-bold text-white">{tripCount}</p>
+                  <p className="text-[10px] text-[#888]">Viajes</p>
+                </div>
+                <div className="text-center">
+                  <p className="text-[16px] font-bold text-white">{totalDays}</p>
+                  <p className="text-[10px] text-[#888]">Días</p>
+                </div>
+                <div className="text-center">
+                  <p className="text-[16px] font-bold text-white">{tripCount > 0 ? 1 : 0}</p>
+                  <p className="text-[10px] text-[#888]">Países</p>
+                </div>
+              </div>
+            </div>
+
+            {/* Logout */}
+            <button
+              onClick={onLogout}
+              className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0 hover:bg-white/5 transition-colors"
+              style={{ border: "1px solid rgba(255,255,255,0.08)" }}
+            >
+              <span className="material-symbols-outlined text-[18px] text-[#888]">logout</span>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+function CreatePostCTA({ onNewTrip }: { onNewTrip: () => void }) {
+  return (
+    <motion.button
+      whileTap={{ scale: 0.98 }}
+      onClick={onNewTrip}
+      className="w-full rounded-2xl p-4 text-left"
+      style={{
+        background: "rgba(28,28,30,0.95)",
+        border: "1px solid rgba(255,255,255,0.08)",
+      }}
+    >
+      <div className="flex items-center gap-3">
+        <div
+          className="w-10 h-10 rounded-full flex items-center justify-center shrink-0"
+          style={{ background: "linear-gradient(135deg, #0A84FF, #5856D6)" }}
+        >
+          <span className="material-symbols-outlined text-[20px] text-white">add_location_alt</span>
+        </div>
+        <p className="text-[14px] text-[#888]">¿A dónde quieres ir?</p>
+        <div className="ml-auto px-4 py-2 rounded-xl text-[13px] font-semibold text-white"
+          style={{ background: "linear-gradient(135deg, #0A84FF, #5856D6)" }}
+        >
+          Planificar
+        </div>
+      </div>
+    </motion.button>
+  )
+}
+
+function TripCard({
+  trip,
+  itinerary,
+  onContinue,
+}: {
+  trip: { id: string; name: string; destination: string; country: string; status: string; budget: number; startDate: string; endDate: string }
+  itinerary: DayItinerary[] | null
+  onContinue: () => void
+}) {
+  const totalActivities = itinerary?.reduce((sum, d) => sum + d.activities.length, 0) ?? 0
+  const totalDays = itinerary?.length ?? 0
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 12 }}
+      animate={{ opacity: 1, y: 0 }}
+      className="rounded-2xl overflow-hidden"
+      style={{
+        background: "rgba(28,28,30,0.95)",
+        border: "1px solid rgba(255,255,255,0.08)",
+      }}
+    >
+      {/* Trip header image area */}
+      <div
+        className="h-36 lg:h-44 relative"
+        style={{
+          background: "linear-gradient(135deg, rgba(10,132,255,0.3), rgba(88,86,214,0.3))",
+        }}
+      >
+        <div className="absolute inset-0 flex items-center justify-center">
+          <span className="text-[64px]">✈️</span>
+        </div>
+        <div
+          className="absolute top-3 right-3 px-3 py-1 rounded-full text-[11px] font-semibold"
+          style={{
+            background: trip.status === "active"
+              ? "rgba(48,209,88,0.2)"
+              : "rgba(142,142,147,0.2)",
+            color: trip.status === "active" ? "#30D158" : "#8E8E93",
+            border: `1px solid ${trip.status === "active" ? "rgba(48,209,88,0.3)" : "rgba(142,142,147,0.3)"}`,
+          }}
+        >
+          {trip.status === "active" ? "En curso" : trip.status === "planning" ? "Planificando" : "Completado"}
+        </div>
+      </div>
+
+      {/* Trip info */}
+      <div className="p-4">
+        <h3 className="text-[16px] font-bold text-white">{trip.destination}</h3>
+        <p className="text-[12px] text-[#888] mt-0.5">
+          {trip.country ? `${trip.country} · ` : ""}
+          {totalDays} días · {totalActivities} actividades · €{trip.budget}
+        </p>
+
+        {/* Action row */}
+        <div className="flex items-center gap-3 mt-4 pt-3" style={{ borderTop: "1px solid rgba(255,255,255,0.06)" }}>
+          <button className="flex items-center gap-1.5 text-[12px] text-[#888] hover:text-white transition-colors">
+            <span className="material-symbols-outlined text-[18px]">favorite</span>
+            Me gusta
+          </button>
+          <button className="flex items-center gap-1.5 text-[12px] text-[#888] hover:text-white transition-colors">
+            <span className="material-symbols-outlined text-[18px]">share</span>
+            Compartir
+          </button>
+          <motion.button
+            whileTap={{ scale: 0.97 }}
+            onClick={onContinue}
+            className="ml-auto flex items-center gap-1.5 px-4 py-2 rounded-xl text-[12px] font-semibold text-white"
+            style={{ background: "linear-gradient(135deg, #0A84FF, #5856D6)" }}
+          >
+            <span className="material-symbols-outlined text-[16px]">arrow_forward</span>
+            Ver itinerario
+          </motion.button>
+        </div>
+      </div>
+    </motion.div>
+  )
+}
+
+function EmptyFeed({ onNewTrip }: { onNewTrip: () => void }) {
+  return (
+    <div
+      className="rounded-2xl p-8 text-center"
+      style={{
+        background: "rgba(28,28,30,0.95)",
+        border: "1px solid rgba(255,255,255,0.08)",
+      }}
+    >
+      <span className="text-[56px] block mb-3">🗺️</span>
+      <h3 className="text-[18px] font-bold text-white mb-2">Tu aventura empieza aquí</h3>
+      <p className="text-[13px] text-[#888] max-w-sm mx-auto mb-6">
+        Crea tu primer itinerario personalizado con IA y empieza a explorar el mundo.
+      </p>
+      <motion.button
+        whileTap={{ scale: 0.97 }}
+        onClick={onNewTrip}
+        className="px-6 py-3 rounded-2xl font-semibold text-white"
+        style={{
+          background: "linear-gradient(135deg, #0A84FF, #5856D6)",
+          boxShadow: "0 4px 20px rgba(10,132,255,0.3)",
+        }}
+      >
+        Crear mi primer viaje ✨
+      </motion.button>
+    </div>
+  )
+}
+
+function TrendingWidget({ onSelect }: { onSelect: () => void }) {
+  return (
+    <div
+      className="rounded-2xl p-4"
+      style={{
+        background: "rgba(28,28,30,0.95)",
+        border: "1px solid rgba(255,255,255,0.08)",
+      }}
+    >
+      <div className="flex items-center gap-2 mb-4">
+        <span className="material-symbols-outlined text-[18px] text-[#FF9F0A]">trending_up</span>
+        <h3 className="text-[14px] font-bold text-white">Destinos populares</h3>
+      </div>
+      <div className="space-y-2">
+        {TRENDING.map((dest) => (
+          <motion.button
+            key={dest.name}
+            whileTap={{ scale: 0.98 }}
+            onClick={onSelect}
+            className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-white/5 transition-colors"
+          >
+            <div
+              className="w-9 h-9 rounded-lg flex items-center justify-center text-[18px] shrink-0"
+              style={{ background: `${dest.color}15`, border: `1px solid ${dest.color}30` }}
+            >
+              {dest.emoji}
+            </div>
+            <div className="text-left">
+              <p className="text-[13px] font-semibold text-white">{dest.name}</p>
+              <p className="text-[11px] text-[#888]">{dest.country}</p>
+            </div>
+            <span className="material-symbols-outlined text-[16px] text-[#555] ml-auto">chevron_right</span>
+          </motion.button>
+        ))}
+      </div>
+    </div>
+  )
+}
+
+function StylesWidget({ onNewTrip }: { onNewTrip: () => void }) {
+  return (
+    <div
+      className="rounded-2xl p-4"
+      style={{
+        background: "rgba(28,28,30,0.95)",
+        border: "1px solid rgba(255,255,255,0.08)",
+      }}
+    >
+      <div className="flex items-center gap-2 mb-4">
+        <span className="material-symbols-outlined text-[18px] text-[#BF5AF2]">travel_explore</span>
+        <h3 className="text-[14px] font-bold text-white">Tipo de viaje</h3>
+      </div>
+      <div className="grid grid-cols-2 gap-2">
+        {QUICK_STYLES.map((style) => (
+          <motion.button
+            key={style.label}
+            whileTap={{ scale: 0.95 }}
+            onClick={onNewTrip}
+            className="flex flex-col items-center gap-1 p-3 rounded-xl hover:bg-white/5 transition-colors"
+            style={{ border: "1px solid rgba(255,255,255,0.06)" }}
+          >
+            <span className="text-[24px]">{style.emoji}</span>
+            <span className="text-[12px] font-semibold text-white">{style.label}</span>
+            <span className="text-[10px] text-[#888]">{style.desc}</span>
+          </motion.button>
+        ))}
+      </div>
+    </div>
+  )
+}
+
+function TipsWidget() {
+  return (
+    <div
+      className="rounded-2xl p-4"
+      style={{
+        background: "rgba(28,28,30,0.95)",
+        border: "1px solid rgba(255,255,255,0.08)",
+      }}
+    >
+      <div className="flex items-center gap-2 mb-3">
+        <span className="material-symbols-outlined text-[18px] text-[#30D158]">tips_and_updates</span>
+        <h3 className="text-[14px] font-bold text-white">Tips de viaje</h3>
+      </div>
+      <div className="space-y-3">
+        {[
+          { icon: "🧳", text: "Haz una lista de lo esencial 2 días antes de salir" },
+          { icon: "📱", text: "Descarga mapas offline de tu destino" },
+          { icon: "💡", text: "La IA adapta tu plan si cambias de opinión" },
+        ].map((tip, i) => (
+          <div key={i} className="flex items-start gap-2.5">
+            <span className="text-[16px] shrink-0 mt-0.5">{tip.icon}</span>
+            <p className="text-[12px] text-[#c0c6d6] leading-relaxed">{tip.text}</p>
+          </div>
+        ))}
+      </div>
+    </div>
+  )
+}
+
+// ─── Main page ───────────────────────────────────────────────────────────────
 
 export default function HomePage() {
   const router = useRouter()
-  const currentTrip = useAppStore((s) => s.currentTrip)
+  const { currentTrip, generatedItinerary } = useAppStore()
   const resetOnboarding = useOnboardingStore((s) => s.reset)
   const [authUser, setAuthUser] = useState<SupabaseUser | null>(null)
   const [loadingAuth, setLoadingAuth] = useState(true)
@@ -68,6 +405,10 @@ export default function HomePage() {
     .toUpperCase()
     .slice(0, 2)
 
+  const email = authUser?.email ?? "Modo demo"
+  const tripCount = currentTrip ? 1 : 0
+  const totalDays = generatedItinerary?.length ?? 0
+
   if (loadingAuth) {
     return (
       <div className="flex items-center justify-center h-screen" style={{ background: "#131315" }}>
@@ -77,172 +418,140 @@ export default function HomePage() {
   }
 
   return (
-    <div className="flex flex-col h-full overflow-y-auto pb-28" style={{ background: "#131315" }}>
-      {/* Profile header */}
-      <div className="px-5 pt-14 pb-2">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div
-              className="w-12 h-12 rounded-full flex items-center justify-center text-[16px] font-bold text-white"
-              style={{
-                background: "linear-gradient(135deg, #0A84FF, #5856D6)",
-              }}
-            >
-              {initials}
-            </div>
-            <div>
-              <h1 className="text-[20px] font-bold text-white">Hola, {displayName}</h1>
-              <p className="text-[12px] text-[#9ca3af]">
-                {authUser?.email ?? "Modo demo"}
-              </p>
-            </div>
-          </div>
-          <button
-            onClick={handleLogout}
-            className="w-10 h-10 rounded-xl flex items-center justify-center"
-            style={{ background: "rgba(42,42,44,0.8)", border: "1px solid rgba(255,255,255,0.08)" }}
-          >
-            <span className="material-symbols-outlined text-[20px] text-[#9ca3af]">logout</span>
+    <div className="min-h-screen pb-28 lg:pb-8" style={{ background: "#131315" }}>
+      {/* Top bar — desktop */}
+      <header
+        className="hidden lg:flex items-center justify-between px-6 py-3 sticky top-0 z-50"
+        style={{
+          background: "rgba(19,19,21,0.92)",
+          backdropFilter: "blur(20px)",
+          borderBottom: "1px solid rgba(255,255,255,0.06)",
+        }}
+      >
+        <div className="flex items-center gap-3">
+          <span className="text-[28px]">✈️</span>
+          <span className="text-[18px] font-bold text-white">Viaje360</span>
+        </div>
+        <div className="flex items-center gap-2 px-4 py-2 rounded-xl" style={{ background: "rgba(42,42,44,0.8)", border: "1px solid rgba(255,255,255,0.06)" }}>
+          <span className="material-symbols-outlined text-[18px] text-[#888]">search</span>
+          <span className="text-[13px] text-[#888]">Buscar destinos...</span>
+        </div>
+        <div className="flex items-center gap-3">
+          <button className="w-10 h-10 rounded-xl flex items-center justify-center hover:bg-white/5" style={{ border: "1px solid rgba(255,255,255,0.06)" }}>
+            <span className="material-symbols-outlined text-[20px] text-[#c0c6d6]">notifications</span>
           </button>
-        </div>
-      </div>
-
-      {/* Current trip */}
-      {currentTrip && (
-        <div className="px-5 mt-6">
-          <p className="text-[11px] uppercase tracking-widest text-[#c0c6d6] font-medium mb-3">
-            Tu viaje actual
-          </p>
-          <motion.button
-            whileTap={{ scale: 0.98 }}
-            onClick={handleContinueTrip}
-            className="w-full rounded-2xl overflow-hidden text-left"
-            style={{
-              background: "linear-gradient(135deg, rgba(10,132,255,0.12), rgba(88,86,214,0.12))",
-              border: "1px solid rgba(10,132,255,0.25)",
-            }}
-          >
-            <div className="p-5">
-              <div className="flex items-center justify-between mb-3">
-                <div className="flex items-center gap-3">
-                  <div
-                    className="w-12 h-12 rounded-xl flex items-center justify-center"
-                    style={{ background: "rgba(10,132,255,0.2)" }}
-                  >
-                    <span className="text-[28px]">✈️</span>
-                  </div>
-                  <div>
-                    <h3 className="text-[16px] font-bold text-white">
-                      {currentTrip.destination}
-                    </h3>
-                    <p className="text-[12px] text-[#9ca3af]">
-                      {currentTrip.country ? `${currentTrip.country} · ` : ""}
-                      {currentTrip.status === "active"
-                        ? "En curso"
-                        : currentTrip.status === "planning"
-                        ? "Planificando"
-                        : "Completado"}
-                    </p>
-                  </div>
-                </div>
-                <span className="material-symbols-outlined text-[22px] text-[#0A84FF]">
-                  arrow_forward_ios
-                </span>
-              </div>
-              <div
-                className="inline-block px-3 py-1 rounded-full text-[11px] font-medium text-[#0A84FF]"
-                style={{ background: "rgba(10,132,255,0.15)" }}
-              >
-                Continuar viaje →
-              </div>
-            </div>
-          </motion.button>
-        </div>
-      )}
-
-      {/* Empty state if no trips */}
-      {!currentTrip && (
-        <div className="px-5 mt-6">
           <div
-            className="p-6 rounded-2xl text-center"
-            style={{ background: "rgba(31,31,33,0.9)", border: "1px solid rgba(255,255,255,0.06)" }}
+            className="w-9 h-9 rounded-full flex items-center justify-center text-[12px] font-bold text-white cursor-pointer"
+            style={{ background: "linear-gradient(135deg, #0A84FF, #5856D6)" }}
           >
-            <span className="text-[48px] block mb-3">🗺️</span>
-            <h3 className="text-[16px] font-bold text-white mb-1">Sin viajes todavía</h3>
-            <p className="text-[13px] text-[#9ca3af]">
-              Crea tu primer itinerario personalizado con IA
-            </p>
+            {initials}
           </div>
         </div>
-      )}
+      </header>
 
-      {/* New trip CTA */}
-      <div className="px-5 mt-6">
-        <motion.button
-          whileTap={{ scale: 0.97 }}
-          onClick={handleNewTrip}
-          className="w-full p-5 rounded-2xl text-left"
-          style={{
-            background: "linear-gradient(135deg, #0A84FF, #5856D6)",
-            boxShadow: "0 8px 32px rgba(10,132,255,0.3)",
-          }}
-        >
-          <div className="flex items-center gap-4">
-            <div className="w-14 h-14 rounded-2xl bg-white/20 flex items-center justify-center">
-              <span className="material-symbols-outlined text-[32px] text-white">
-                add_location_alt
-              </span>
-            </div>
-            <div>
-              <h3 className="text-[18px] font-bold text-white">Crear nuevo plan</h3>
-              <p className="text-[13px] text-white/70 mt-0.5">
-                Destino, compañeros, presupuesto, estilo…
-              </p>
-            </div>
-          </div>
-        </motion.button>
-      </div>
+      {/* Mobile top bar */}
+      <header className="lg:hidden flex items-center justify-between px-4 pt-12 pb-3">
+        <div className="flex items-center gap-2">
+          <span className="text-[24px]">✈️</span>
+          <span className="text-[16px] font-bold text-white">Viaje360</span>
+        </div>
+        <button className="w-9 h-9 rounded-xl flex items-center justify-center" style={{ background: "rgba(42,42,44,0.8)", border: "1px solid rgba(255,255,255,0.06)" }}>
+          <span className="material-symbols-outlined text-[18px] text-[#c0c6d6]">notifications</span>
+        </button>
+      </header>
 
-      {/* Quick presets */}
-      <div className="px-5 mt-8">
-        <p className="text-[11px] uppercase tracking-widest text-[#c0c6d6] font-medium mb-3">
-          Tipo de viaje
-        </p>
-        <div className="grid grid-cols-3 gap-3">
-          {QUICK_PRESETS.map((preset) => (
-            <motion.button
-              key={preset.label}
-              whileTap={{ scale: 0.95 }}
-              onClick={handleNewTrip}
-              className="flex flex-col items-center gap-1.5 p-4 rounded-2xl"
+      {/* 3-column layout */}
+      <div className="max-w-7xl mx-auto lg:px-6 lg:mt-6">
+        <div className="lg:grid lg:grid-cols-[280px_1fr_300px] lg:gap-6">
+
+          {/* ─── Left sidebar (desktop) ─── */}
+          <aside className="hidden lg:block space-y-4 sticky top-20 self-start">
+            <ProfileHeader
+              user={authUser}
+              initials={initials}
+              displayName={displayName}
+              email={email}
+              tripCount={tripCount}
+              totalDays={totalDays}
+              onLogout={handleLogout}
+            />
+
+            {/* Nav links */}
+            <div
+              className="rounded-2xl p-3"
               style={{
-                background: "rgba(31,31,33,0.9)",
-                border: "1px solid rgba(255,255,255,0.06)",
+                background: "rgba(28,28,30,0.95)",
+                border: "1px solid rgba(255,255,255,0.08)",
               }}
             >
-              <span className="text-[28px]">{preset.emoji}</span>
-              <span className="text-[13px] font-semibold text-white">{preset.label}</span>
-              <span className="text-[10px] text-[#888]">{preset.desc}</span>
-            </motion.button>
-          ))}
-        </div>
-      </div>
-
-      {/* Tips */}
-      <div className="px-5 mt-8 mb-4">
-        <div
-          className="p-4 rounded-2xl"
-          style={{ background: "rgba(31,31,33,0.9)", border: "1px solid rgba(255,255,255,0.06)" }}
-        >
-          <div className="flex items-start gap-3">
-            <span className="text-[24px]">💡</span>
-            <div>
-              <h4 className="text-[14px] font-semibold text-white mb-1">La IA adapta tu viaje</h4>
-              <p className="text-[12px] text-[#9ca3af] leading-relaxed">
-                Cuantos más detalles des en la configuración, mejor será tu itinerario. Puedes modificarlo después.
-              </p>
+              {[
+                { icon: "home", label: "Inicio", href: "/home", active: true },
+                { icon: "explore", label: "Explorar", href: "/explore" },
+                { icon: "event_note", label: "Mi Plan", href: "/plan" },
+                { icon: "map", label: "Mapa", href: "/mapa" },
+                { icon: "smart_toy", label: "Asistente IA", href: "/ai" },
+                { icon: "emoji_events", label: "Logros", href: "/status" },
+              ].map((item) => (
+                <a
+                  key={item.href}
+                  href={item.href}
+                  className={`flex items-center gap-3 px-3 py-2.5 rounded-xl transition-colors ${
+                    item.active ? "bg-[#0A84FF]/10 text-[#0A84FF]" : "text-[#c0c6d6] hover:bg-white/5"
+                  }`}
+                >
+                  <span className="material-symbols-outlined text-[20px]">{item.icon}</span>
+                  <span className="text-[13px] font-medium">{item.label}</span>
+                </a>
+              ))}
             </div>
-          </div>
+          </aside>
+
+          {/* ─── Main feed ─── */}
+          <main className="space-y-4 px-4 lg:px-0">
+            {/* Mobile profile */}
+            <div className="lg:hidden">
+              <ProfileHeader
+                user={authUser}
+                initials={initials}
+                displayName={displayName}
+                email={email}
+                tripCount={tripCount}
+                totalDays={totalDays}
+                onLogout={handleLogout}
+              />
+            </div>
+
+            {/* Create trip CTA — like "What's on your mind?" */}
+            <div className="mt-4 lg:mt-0">
+              <CreatePostCTA onNewTrip={handleNewTrip} />
+            </div>
+
+            {/* Trip feed */}
+            {currentTrip ? (
+              <TripCard
+                trip={currentTrip}
+                itinerary={generatedItinerary}
+                onContinue={handleContinueTrip}
+              />
+            ) : (
+              <EmptyFeed onNewTrip={handleNewTrip} />
+            )}
+
+            {/* Mobile widgets — stacked below feed */}
+            <div className="lg:hidden space-y-4">
+              <TrendingWidget onSelect={handleNewTrip} />
+              <StylesWidget onNewTrip={handleNewTrip} />
+              <TipsWidget />
+            </div>
+          </main>
+
+          {/* ─── Right sidebar (desktop) ─── */}
+          <aside className="hidden lg:block space-y-4 sticky top-20 self-start">
+            <TrendingWidget onSelect={handleNewTrip} />
+            <StylesWidget onNewTrip={handleNewTrip} />
+            <TipsWidget />
+          </aside>
+
         </div>
       </div>
 
