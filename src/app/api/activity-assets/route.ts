@@ -108,7 +108,9 @@ function chooseBestUrl(input: {
     : input.bookingUrl || input.officialUrl || input.providedUrl || null
 
   const suspicious = !direct || !/^https?:\/\//i.test(direct) || /example\.com|placeholder|localhost|\.test\//i.test(direct)
-  if (suspicious) {
+  const isMaps = !!direct && /google\.(com|es)\/maps|maps\.app\.goo\.gl|goo\.gl\/maps/i.test(direct)
+
+  if (suspicious || isMaps) {
     return {
       primaryUrl: mapsUrl,
       primaryKind: "maps" as const,

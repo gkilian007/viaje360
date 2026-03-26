@@ -292,7 +292,7 @@ export function mapToAppTypes(
       time: act.time ?? "09:00",
       duration: act.duration ?? 60,
       cost: act.cost ?? 0,
-      booked: /booked|ticket|reservation|entrada/i.test(`${act.name} ${act.notes ?? ""}`),
+      booked: false,
       isLocked: act.isLocked ?? false,
       notes: act.notes,
       description: act.description,

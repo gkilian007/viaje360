@@ -95,6 +95,7 @@ export function ActivityDetailModal({ activity, tripId, currentDayNumber, onClos
   const [feedbackState, setFeedbackState] = useState<null | "liked" | "disliked" | "more_like_this" | "less_like_this">(null)
   const [isSubmittingFeedback, setIsSubmittingFeedback] = useState(false)
   const [isTogglingLock, setIsTogglingLock] = useState(false)
+  const [isTogglingBooked, setIsTogglingBooked] = useState(false)
   const [adaptationMessage, setAdaptationMessage] = useState<string | null>(null)
 
   // Close on escape
@@ -121,6 +122,7 @@ export function ActivityDetailModal({ activity, tripId, currentDayNumber, onClos
     setFeedbackState(null)
     setIsSubmittingFeedback(false)
     setIsTogglingLock(false)
+    setIsTogglingBooked(false)
     setAdaptationMessage(null)
   }, [activity?.id])
 
@@ -170,6 +172,35 @@ export function ActivityDetailModal({ activity, tripId, currentDayNumber, onClos
       setAdaptationMessage("No he podido cambiar el bloqueo de esta actividad ahora mismo.")
     } finally {
       setIsTogglingLock(false)
+    }
+  }
+
+  async function toggleBooked() {
+    if (!activity || !tripId || isTogglingBooked) return
+
+    setIsTogglingBooked(true)
+    try {
+      const nextBooked = !activity.booked
+      const res = await fetch("/api/activity-booking", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          tripId,
+          activityId: activity.id,
+          booked: nextBooked,
+        }),
+      })
+
+      if (res.ok) {
+        await refreshActiveTripState()
+        setAdaptationMessage(nextBooked ? "Actividad marcada como reservada." : "Reserva eliminada de esta actividad.")
+      } else {
+        setAdaptationMessage("No he podido actualizar el estado de reserva ahora mismo.")
+      }
+    } catch {
+      setAdaptationMessage("No he podido actualizar el estado de reserva ahora mismo.")
+    } finally {
+      setIsTogglingBooked(false)
     }
   }
 
@@ -240,6 +271,14 @@ export function ActivityDetailModal({ activity, tripId, currentDayNumber, onClos
 
   const icon = activity?.icon ?? ACTIVITY_ICONS[activity?.type ?? "tour"] ?? "place"
   const isRestaurant = activity?.type === "restaurant"
+  const fallbackDescription = activity
+    ? isRestaurant
+      ? `Parada gastronómica en ${activity.location}. Úsala como referencia rápida para decidir si te encaja dentro del plan de ese día.`
+      : `${activity.name} es una parada recomendada en ${activity.location}. Revísala como punto clave dentro de tu itinerario y ajusta el plan si quieres priorizarla más o menos.`
+    : ""
+  const fallbackNotes = activity
+    ? `Abre el mapa o la web asociada para confirmar horario, acceso y tiempos antes de ir.`
+    : ""
 
   return (
     <AnimatePresence>
@@ -317,30 +356,26 @@ export function ActivityDetailModal({ activity, tripId, currentDayNumber, onClos
               )}
 
               {/* Description */}
-              {activity.description && (
-                <div className="mb-4">
-                  <p className="text-[11px] uppercase tracking-widest text-[#c0c6d6] font-medium mb-2">
-                    Qué hacer
-                  </p>
-                  <p className="text-[14px] text-[#e4e2e4] leading-relaxed">
-                    {activity.description}
-                  </p>
-                </div>
-              )}
+              <div className="mb-4">
+                <p className="text-[11px] uppercase tracking-widest text-[#c0c6d6] font-medium mb-2">
+                  Qué hacer
+                </p>
+                <p className="text-[14px] text-[#e4e2e4] leading-relaxed">
+                  {activity.description ?? fallbackDescription}
+                </p>
+              </div>
 
               {/* Notes */}
-              {activity.notes && (
-                <div className="mb-4 p-3 rounded-2xl border border-white/8 bg-white/[0.03]">
-                  <p className="text-[11px] uppercase tracking-widest text-[#0A84FF] font-medium mb-1.5">
-                    Tip práctico
-                  </p>
-                  <p className="text-[13px] text-[#d7d9df] leading-relaxed">
-                    {activity.notes}
-                  </p>
-                </div>
-              )}
+              <div className="mb-4 p-3 rounded-2xl border border-white/8 bg-white/[0.03]">
+                <p className="text-[11px] uppercase tracking-widest text-[#0A84FF] font-medium mb-1.5">
+                  Tip práctico
+                </p>
+                <p className="text-[13px] text-[#d7d9df] leading-relaxed">
+                  {activity.notes ?? fallbackNotes}
+                </p>
+              </div>
 
-              <div className="mb-4">
+              <div className="mb-3">
                 <button
                   type="button"
                   disabled={isTogglingLock}
@@ -353,6 +388,22 @@ export function ActivityDetailModal({ activity, tripId, currentDayNumber, onClos
                   }}
                 >
                   {activity.isLocked ? "Actividad fijada · no tocar en adaptaciones" : "Mantener esta actividad fija"}
+                </button>
+              </div>
+
+              <div className="mb-4">
+                <button
+                  type="button"
+                  disabled={isTogglingBooked}
+                  onClick={toggleBooked}
+                  className="w-full px-3 py-3 rounded-2xl text-[12px] font-semibold text-left transition-all"
+                  style={{
+                    background: activity.booked ? "rgba(48,209,88,0.16)" : "rgba(255,255,255,0.04)",
+                    border: activity.booked ? "1px solid rgba(48,209,88,0.35)" : "1px solid rgba(255,255,255,0.08)",
+                    color: activity.booked ? "#8ff0b0" : "#e4e2e4",
+                  }}
+                >
+                  {activity.booked ? "Entradas/reserva confirmadas" : "Marcar como reservado"}
                 </button>
               </div>
 
