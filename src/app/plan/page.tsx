@@ -22,6 +22,9 @@ import { useWalkingTimes } from "@/lib/hooks/useWalkingTimes"
 import { useCurrentActivity } from "@/lib/hooks/useCurrentActivity"
 import { WalkingChip } from "@/components/features/WalkingChip"
 import { CurrentActivityBanner } from "@/components/features/CurrentActivityBanner"
+import { WeatherBadge } from "@/components/features/WeatherBadge"
+import { WeatherAlert } from "@/components/features/WeatherAlert"
+import { useWeather } from "@/lib/hooks/useWeather"
 import type { TimelineActivity, Trip } from "@/lib/types"
 
 function DaySelector({
@@ -163,6 +166,11 @@ function PlanPageContent() {
   const today = itinerary[selectedDay - 1]
   const { getSegment } = useWalkingTimes(today?.activities ?? [])
   const liveStatus = useCurrentActivity(today?.activities ?? [], currentTrip?.startDate)
+
+  // Get destination coords from first activity with coordinates
+  const firstWithCoords = itinerary.flatMap(d => d.activities).find(a => a.lat && a.lng)
+  const { getForDate } = useWeather(firstWithCoords?.lat, firstWithCoords?.lng)
+  const todayWeather = today ? getForDate(today.date) : undefined
   const totalDays = itinerary.length
 
   if (!currentTrip || totalDays === 0) {
@@ -227,12 +235,23 @@ function PlanPageContent() {
                   <span className="text-[11px] uppercase tracking-widest text-[#0A84FF] font-medium">
                     Día {selectedDay}
                   </span>
+                  {todayWeather && <WeatherBadge weather={todayWeather} compact />}
                 </div>
                 <p className="text-[14px] font-semibold text-white">
                   {today.activities.length} actividades planificadas
                 </p>
               </div>
             </div>
+          )}
+
+          {/* Weather alert */}
+          {todayWeather && currentTrip?.id && (
+            <WeatherAlert
+              weather={todayWeather}
+              dayNumber={selectedDay}
+              tripId={currentTrip.id}
+              onAdapted={(days) => setGeneratedItinerary(days as typeof itinerary)}
+            />
           )}
 
           {/* Live activity banner */}
@@ -344,7 +363,16 @@ function PlanPageContent() {
               <div className="flex-1 overflow-y-auto px-6 py-4">
                 <p className="text-[11px] uppercase tracking-widest text-[#c0c6d6] font-medium mb-4">
                   Itinerario — Día {selectedDay}
+                  {todayWeather && <WeatherBadge weather={todayWeather} compact />}
                 </p>
+                {todayWeather && currentTrip?.id && (
+                  <WeatherAlert
+                    weather={todayWeather}
+                    dayNumber={selectedDay}
+                    tripId={currentTrip.id}
+                    onAdapted={(days) => setGeneratedItinerary(days as typeof itinerary)}
+                  />
+                )}
                 <CurrentActivityBanner
                   current={liveStatus.current}
                   next={liveStatus.next}
