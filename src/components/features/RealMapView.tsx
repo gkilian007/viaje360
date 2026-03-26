@@ -1,7 +1,7 @@
 "use client"
 
-import { useEffect, useMemo, useRef } from "react"
-import { MapContainer, TileLayer, Marker, Popup, Polyline, useMap } from "react-leaflet"
+import { useEffect, useMemo, useRef, useState } from "react"
+import { MapContainer, TileLayer, Marker, Popup, Polyline, Circle, useMap } from "react-leaflet"
 import L from "leaflet"
 import "leaflet/dist/leaflet.css"
 
@@ -173,6 +173,65 @@ function injectMapStyles() {
   document.head.appendChild(style)
 }
 
+// User location indicator
+function UserLocation() {
+  const map = useMap()
+  const [pos, setPos] = useState<{ lat: number; lng: number } | null>(null)
+
+  useEffect(() => {
+    if (!navigator.geolocation) return
+    const id = navigator.geolocation.watchPosition(
+      (p) => setPos({ lat: p.coords.latitude, lng: p.coords.longitude }),
+      () => {},
+      { enableHighAccuracy: true, maximumAge: 30000 }
+    )
+    return () => navigator.geolocation.clearWatch(id)
+  }, [])
+
+  if (!pos) return null
+
+  return (
+    <>
+      <Circle center={[pos.lat, pos.lng]} radius={60} pathOptions={{ color: "#0A84FF", fillColor: "#0A84FF", fillOpacity: 0.15, weight: 1 }} />
+      <Circle center={[pos.lat, pos.lng]} radius={8} pathOptions={{ color: "#fff", fillColor: "#0A84FF", fillOpacity: 1, weight: 2 }} />
+    </>
+  )
+}
+
+// Colored route segments between consecutive activities
+function RouteSegments({ geocoded }: { geocoded: GeocodedActivity[] }) {
+  if (geocoded.length < 2) return null
+
+  const segments: Array<{ positions: [number, number][]; color: string; opacity: number }> = []
+  for (let i = 0; i < geocoded.length - 1; i++) {
+    const from = geocoded[i]
+    const to = geocoded[i + 1]
+    const progress = i / (geocoded.length - 1)
+    // Gradient from green (start) → purple (mid) → red (end)
+    const color = progress < 0.5
+      ? `hsl(${145 - progress * 2 * 85}, 70%, 50%)`
+      : `hsl(${60 - (progress - 0.5) * 2 * 60}, 70%, 50%)`
+
+    segments.push({
+      positions: [[from.lat, from.lng], [to.lat, to.lng]],
+      color,
+      opacity: 0.7,
+    })
+  }
+
+  return (
+    <>
+      {segments.map((seg, i) => (
+        <Polyline
+          key={`seg-${i}`}
+          positions={seg.positions}
+          pathOptions={{ color: seg.color, weight: 3, opacity: seg.opacity, dashArray: "8, 6" }}
+        />
+      ))}
+    </>
+  )
+}
+
 // Auto-fit map bounds when markers change
 function FitBounds({ geocoded }: { geocoded: GeocodedActivity[] }) {
   const map = useMap()
@@ -253,18 +312,11 @@ export function RealMapView({
         {/* Fly to selected */}
         <FlyToSelected geocoded={geocoded} selectedActivityId={selectedActivityId} />
 
-        {/* Route line connecting activities in order */}
-        {routePositions.length > 1 && (
-          <Polyline
-            positions={routePositions}
-            pathOptions={{
-              color: "#5856D6",
-              weight: 3,
-              opacity: 0.6,
-              dashArray: "8, 8",
-            }}
-          />
-        )}
+        {/* Route segments with gradient colors */}
+        <RouteSegments geocoded={geocoded} />
+
+        {/* User location */}
+        <UserLocation />
 
         {/* Activity markers */}
         {geocoded.map((geo, index) => {

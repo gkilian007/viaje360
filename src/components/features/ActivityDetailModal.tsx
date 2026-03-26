@@ -339,10 +339,44 @@ export function ActivityDetailModal({ activity, tripId, currentDayNumber, onClos
               </h2>
 
               {/* Location */}
-              <p className="text-[13px] text-[#c0c6d6] flex items-center gap-1 mb-4">
+              <p className="text-[13px] text-[#c0c6d6] flex items-center gap-1 mb-2">
                 <span className="material-symbols-outlined text-[14px]">location_on</span>
                 {activity.location}
               </p>
+
+              {/* Status badges */}
+              <div className="flex flex-wrap items-center gap-2 mb-4">
+                {activity.booked && (
+                  <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-semibold bg-[#30D158]/15 text-[#30D158] border border-[#30D158]/25">
+                    <span className="material-symbols-outlined text-[12px]">check_circle</span>
+                    Reservado
+                  </span>
+                )}
+                {activity.isLocked && (
+                  <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-semibold bg-[#FF9F0A]/15 text-[#FF9F0A] border border-[#FF9F0A]/25">
+                    <span className="material-symbols-outlined text-[12px]">lock</span>
+                    Fijada
+                  </span>
+                )}
+                {isRestaurant && activity.pricePerPerson ? (
+                  <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-semibold bg-[#FF9F0A]/10 text-[#FFD59A] border border-[#FF9F0A]/20">
+                    ~€{activity.pricePerPerson}/pers
+                  </span>
+                ) : activity.cost > 0 ? (
+                  <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-semibold bg-[#0A84FF]/10 text-[#9FD0FF] border border-[#0A84FF]/20">
+                    €{activity.cost} entrada
+                  </span>
+                ) : (
+                  <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-semibold bg-[#30D158]/10 text-[#30D158] border border-[#30D158]/20">
+                    Gratis
+                  </span>
+                )}
+                {activity.indoor !== undefined && (
+                  <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] text-[#c0c6d6] bg-white/5 border border-white/8">
+                    {activity.indoor ? "Interior" : "Exterior"}
+                  </span>
+                )}
+              </div>
 
               {activity.recommendationReason && (
                 <div className="mb-4 p-3 rounded-2xl border border-[#0A84FF]/20 bg-[#0A84FF]/10">
@@ -476,29 +510,39 @@ export function ActivityDetailModal({ activity, tripId, currentDayNumber, onClos
                 </div>
               )}
 
-              {/* Price section */}
-              <div className="flex items-center gap-3 mb-5">
-                {isRestaurant && activity.pricePerPerson ? (
-                  <div className="flex items-center gap-2">
-                    <span className="material-symbols-outlined text-[20px] text-[#FF9F0A]">restaurant</span>
-                    <span className="text-[16px] font-bold text-white">
-                      ~€{activity.pricePerPerson}
-                    </span>
-                    <span className="text-[12px] text-[#c0c6d6]">/ persona</span>
-                  </div>
-                ) : activity.cost > 0 ? (
-                  <div className="flex items-center gap-2">
-                    <span className="material-symbols-outlined text-[20px] text-[#30D158]">confirmation_number</span>
-                    <span className="text-[16px] font-bold text-white">€{activity.cost}</span>
-                    <span className="text-[12px] text-[#c0c6d6]">entrada</span>
-                  </div>
-                ) : (
-                  <div className="flex items-center gap-2">
-                    <span className="material-symbols-outlined text-[20px] text-[#30D158]">check_circle</span>
-                    <span className="text-[14px] text-[#30D158] font-medium">Gratis</span>
-                  </div>
-                )}
-              </div>
+              {/* Mini-map */}
+              {activity.lat && activity.lng && (
+                <div className="mb-5 rounded-2xl overflow-hidden border border-white/8">
+                  <a
+                    href={`https://www.google.com/maps/search/?api=1&query=${activity.lat},${activity.lng}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="block"
+                  >
+                    <img
+                      src={`https://maps.googleapis.com/maps/api/staticmap?center=${activity.lat},${activity.lng}&zoom=15&size=600x200&scale=2&maptype=roadmap&markers=color:red%7C${activity.lat},${activity.lng}&style=feature:all|element:geometry|color:0x242f3e&style=feature:all|element:labels.text.stroke|color:0x242f3e&style=feature:all|element:labels.text.fill|color:0x746855&style=feature:water|element:geometry|color:0x17263c&key=${process.env.NEXT_PUBLIC_GOOGLE_PLACES_API_KEY || ""}`}
+                      alt="Mapa"
+                      className="w-full h-[120px] object-cover"
+                      onError={(e) => { (e.target as HTMLImageElement).style.display = "none" }}
+                    />
+                    {/* Fallback: OSM tile if no Google key */}
+                    <div
+                      className="w-full h-[120px] bg-[#1a1a2e] flex items-center justify-center"
+                      style={{ display: process.env.NEXT_PUBLIC_GOOGLE_PLACES_API_KEY ? "none" : "flex" }}
+                    >
+                      <img
+                        src={`https://staticmap.openstreetmap.de/staticmap.php?center=${activity.lat},${activity.lng}&zoom=15&size=600x200&markers=${activity.lat},${activity.lng},red-pushpin`}
+                        alt="Mapa"
+                        className="w-full h-full object-cover"
+                        onError={(e) => {
+                          const parent = (e.target as HTMLImageElement).parentElement!
+                          parent.innerHTML = `<div class="flex flex-col items-center justify-center h-full gap-1"><span class="material-symbols-outlined text-[24px] text-[#0A84FF]">map</span><span class="text-[12px] text-[#c0c6d6]">Ver ubicación en Maps</span></div>`
+                        }}
+                      />
+                    </div>
+                  </a>
+                </div>
+              )}
 
             </div>
 
@@ -513,7 +557,10 @@ export function ActivityDetailModal({ activity, tripId, currentDayNumber, onClos
               <div className="flex gap-3">
                 {(() => {
                   const primaryUrl = assets?.primaryUrl ?? `https://www.google.com/maps/search/${encodeURIComponent(`${activity.name} ${activity.location}`)}`
-                  const mapsUrl = assets?.mapsUrl ?? `https://www.google.com/maps/search/${encodeURIComponent(`${activity.name} ${activity.location}`)}`
+                  const mapsDeepLink = activity.lat && activity.lng
+                    ? `https://www.google.com/maps/search/?api=1&query=${activity.lat},${activity.lng}`
+                    : (assets?.mapsUrl ?? `https://www.google.com/maps/search/${encodeURIComponent(`${activity.name} ${activity.location}`)}`)
+                  const mapsUrl = mapsDeepLink
                   const primaryKind = assets?.primaryKind ?? "maps"
                   const hasDirectUrl = primaryKind !== "maps"
 

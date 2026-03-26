@@ -242,6 +242,8 @@ export default function MapaPage() {
 
       <ActivityDetailModal
         activity={selectedActivity}
+        tripId={currentTrip?.id}
+        currentDayNumber={selectedDay}
         onClose={() => setSelectedActivity(null)}
       />
     </div>

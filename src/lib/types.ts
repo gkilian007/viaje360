@@ -64,10 +64,14 @@ export interface TimelineActivity {
   imageQuery?: string
   /** Human-readable explanation of why this recommendation appears */
   recommendationReason?: string
+  /** Whether this is an indoor activity */
+  indoor?: boolean
   /** Latitude for map display */
   lat?: number
   /** Longitude for map display */
   lng?: number
+  /** Cached image URL */
+  imageUrl?: string
 }
 
 export interface DayItinerary {
