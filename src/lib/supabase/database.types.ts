@@ -108,6 +108,15 @@ export interface DbActivity {
   dietary_tags: string[]
   sort_order: number
   created_at: string
+  // Rich detail fields (added 2026-03-26 backfill)
+  description: string | null
+  url: string | null
+  image_query: string | null
+  price_per_person: number | null
+  recommendation_reason: string | null
+  link_type: string | null
+  image_url: string | null
+  image_source: string | null
 }
 
 export interface DbChatMessage {

@@ -69,6 +69,13 @@ async function insertItinerarySchedule(
         dietary_tags: act.dietaryTags ?? [],
         is_ai_suggestion: true,
         sort_order: i,
+        description: act.description ?? null,
+        url: act.url ?? null,
+        image_query: act.imageQuery ?? null,
+        price_per_person: act.pricePerPerson ?? null,
+        recommendation_reason: act.recommendationReason ?? null,
+        latitude: act.lat ?? null,
+        longitude: act.lng ?? null,
       }))
     )
 
