@@ -118,6 +118,9 @@ export interface OnboardingData {
   mustSee: string
   mustAvoid: string
   alreadyBooked: string
+
+  // Auto-detected from browser
+  language?: string
 }
 
 export const defaultOnboardingData: OnboardingData = {

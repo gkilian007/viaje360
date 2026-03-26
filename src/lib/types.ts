@@ -23,6 +23,7 @@ export interface Trip {
   budget: number
   spent: number
   status: "planning" | "active" | "completed"
+  language?: string
   imageUrl?: string
   description?: string
   currentActivity?: string

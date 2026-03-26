@@ -71,6 +71,7 @@ export const onboardingRequestSchema = z.object({
   mustSee: z.string().optional().default(""),
   mustAvoid: z.string().optional().default(""),
   alreadyBooked: z.string().optional().default(""),
+  language: z.string().min(2).max(10).optional().default("es"),
 })
 
 const generatedActivityTypeSchema = z.enum([

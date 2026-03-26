@@ -54,7 +54,7 @@ export function GeneratingStep() {
       const res = await fetch("/api/itinerary/generate", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(data),
+        body: JSON.stringify({ ...data, language: navigator.language?.split("-")[0] || "es" }),
       })
 
       clearInterval(interval)
