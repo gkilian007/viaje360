@@ -101,7 +101,7 @@ function PlanPageContent() {
   const itinerary = generatedItinerary ?? []
   const [selectedDay, setSelectedDay] = useState(1)
   const [hydrated, setHydrated] = useState(false)
-  const [selectedActivity, setSelectedActivity] = useState<TimelineActivity | null>(null)
+  const [selectedActivityId, setSelectedActivityId] = useState<string | null>(null)
   const [showDiarySaved, setShowDiarySaved] = useState(false)
   const { trackEvent } = useActivityEventTracker()
   const { hasExistingDiary } = useExistingDiary(currentTrip?.id ?? null, selectedDay)
@@ -109,8 +109,13 @@ function PlanPageContent() {
   const [showPaywall, setShowPaywall] = useState(false)
   const [serverLoaded, setServerLoaded] = useState(false)
 
+  // Derive selectedActivity from itinerary so it stays in sync after refreshActiveTripState()
+  const selectedActivity = selectedActivityId
+    ? itinerary.flatMap(d => d.activities).find(a => a.id === selectedActivityId) ?? null
+    : null
+
   const handleActivityClick = (activity: TimelineActivity) => {
-    setSelectedActivity(activity)
+    setSelectedActivityId(activity.id)
     trackEvent(activity.id, "detail_opened", { source: "timeline-card", dayNumber: selectedDay })
   }
 
@@ -451,7 +456,7 @@ function PlanPageContent() {
           activity={selectedActivity}
           tripId={currentTrip?.id ?? null}
           currentDayNumber={selectedDay}
-          onClose={() => setSelectedActivity(null)}
+          onClose={() => setSelectedActivityId(null)}
         />
       </ErrorBoundary>
 

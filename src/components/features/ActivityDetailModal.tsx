@@ -207,7 +207,14 @@ export function ActivityDetailModal({ activity, tripId, currentDayNumber, onClos
   async function submitFeedback(feedback: "liked" | "disliked" | "more_like_this" | "less_like_this") {
     if (!activity || !tripId || isSubmittingFeedback) return
 
-    setFeedbackState(feedback)
+    // Allow toggling off or switching to a different feedback
+    const isToggleOff = feedbackState === feedback
+    setFeedbackState(isToggleOff ? null : feedback)
+    if (isToggleOff) {
+      setAdaptationMessage("Feedback eliminado.")
+      return
+    }
+
     setIsSubmittingFeedback(true)
 
     try {
