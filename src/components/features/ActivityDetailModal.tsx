@@ -14,41 +14,57 @@ interface ActivityDetailModalProps {
   onClose: () => void
 }
 
-function ActivityImage({ query, name }: { query?: string; name: string }) {
-  const [src, setSrc] = useState<string | null>(null)
+function ActivityImage({ query, name, type }: { query?: string; name: string; type?: string }) {
   const [error, setError] = useState(false)
 
-  useEffect(() => {
-    if (!query) return
-    // Use a free image proxy / placeholder based on the query
-    const encoded = encodeURIComponent(query)
-    setSrc(`https://source.unsplash.com/800x400/?${encoded}`)
-  }, [query])
+  const gradientsByType: Record<string, string> = {
+    restaurant: "from-orange-600 to-red-600",
+    museum: "from-purple-600 to-indigo-600",
+    monument: "from-amber-600 to-yellow-600",
+    park: "from-green-600 to-emerald-600",
+    shopping: "from-pink-600 to-rose-600",
+    tour: "from-blue-600 to-cyan-600",
+    hotel: "from-slate-600 to-zinc-600",
+    transport: "from-sky-600 to-blue-600",
+  }
 
-  if (!src || error) {
-    // Gradient fallback
-    const colors: Record<string, string> = {
-      restaurant: "from-orange-600 to-red-600",
-      museum: "from-purple-600 to-indigo-600",
-      monument: "from-amber-600 to-yellow-600",
-      park: "from-green-600 to-emerald-600",
-      shopping: "from-pink-600 to-rose-600",
-      tour: "from-blue-600 to-cyan-600",
-    }
+  const emojiByType: Record<string, string> = {
+    restaurant: "🍴",
+    museum: "🏛️",
+    monument: "🏰",
+    park: "🌳",
+    shopping: "🛍️",
+    tour: "🚶",
+    hotel: "🏨",
+    transport: "🚇",
+  }
+
+  const gradient = gradientsByType[type ?? "tour"] ?? "from-blue-600 to-cyan-600"
+  const emoji = emojiByType[type ?? "tour"] ?? "📍"
+
+  // Try Wikipedia/Commons image via search query
+  const imgSrc = query
+    ? `https://commons.wikimedia.org/w/index.php?search=${encodeURIComponent(query)}&title=Special:MediaSearch&go=Go&type=image`
+    : null
+
+  if (!query || error) {
     return (
-      <div className={`w-full h-48 bg-gradient-to-br ${colors.tour} flex items-center justify-center`}>
-        <span className="text-white/60 text-6xl font-bold">{name.charAt(0)}</span>
+      <div className={`w-full h-48 bg-gradient-to-br ${gradient} flex flex-col items-center justify-center gap-2`}>
+        <span className="text-6xl">{emoji}</span>
+        <span className="text-white/70 text-[14px] font-semibold text-center px-6 line-clamp-2">{name}</span>
       </div>
     )
   }
 
+  // Use a gradient with name overlay as reliable fallback — no external image dependency
   return (
-    <img
-      src={src}
-      alt={name}
-      className="w-full h-48 object-cover"
-      onError={() => setError(true)}
-    />
+    <div className={`w-full h-48 bg-gradient-to-br ${gradient} flex flex-col items-center justify-center gap-2 relative overflow-hidden`}>
+      <div className="absolute inset-0 opacity-10"
+        style={{ backgroundImage: "url(\"data:image/svg+xml,%3Csvg width='40' height='40' viewBox='0 0 40 40' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='%23ffffff' fill-opacity='0.2'%3E%3Cpath d='M0 20L20 0L40 20L20 40Z'/%3E%3C/g%3E%3C/svg%3E\")" }}
+      />
+      <span className="text-6xl z-10">{emoji}</span>
+      <span className="text-white/80 text-[15px] font-bold text-center px-6 line-clamp-2 z-10">{name}</span>
+    </div>
   )
 }
 
@@ -237,7 +253,7 @@ export function ActivityDetailModal({ activity, tripId, currentDayNumber, onClos
             </div>
 
             {/* Image */}
-            <ActivityImage query={activity.imageQuery} name={activity.name} />
+            <ActivityImage query={activity.imageQuery} name={activity.name} type={activity.type} />
 
             {/* Content */}
             <div className="px-5 py-5 overflow-y-auto max-h-[45vh]">

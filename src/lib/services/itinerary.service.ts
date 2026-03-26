@@ -117,6 +117,8 @@ EVERY activity MUST include ALL of these fields (no exceptions):
 - lat: latitude of the location (decimal, e.g. 35.6762)
 - lng: longitude of the location (decimal, e.g. 139.6503)
 
+CRITICAL: NEVER repeat the same restaurant, museum, monument, or activity on different days. Each activity must appear only ONCE in the entire trip. Every day should have completely different places.
+
 Make it ACTIONABLE, not generic. Bad: "Visit the cathedral." Good: "Enter through the Puerta del Lagarto, go first to the main nave, then climb the Giralda for city views before the midday queue."
 For restaurants: use REAL names that exist. url = menu page or TripAdvisor link. Mention a signature dish and why it fits the user's dietary needs.
 For museums/monuments: url = official ticket page. cost = real entry fee. Say what the user should prioritize inside.
