@@ -58,10 +58,10 @@ export async function POST(request: NextRequest) {
       data: { eventValue: result.eventValue },
     })
   } catch (error) {
-    console.error("[Activity Events API] Error:", error)
-    return NextResponse.json(
-      { ok: false, message: "Error interno del servidor" },
-      { status: 500 }
-    )
+    // Activity events are telemetry — log but don't fail the UX
+    const msg = error instanceof Error ? error.message : String(error)
+    console.error("[Activity Events API] Error:", msg)
+    // Return 200 with ok:false so the client doesn't spam console with 500s
+    return NextResponse.json({ ok: false, message: "Event tracking skipped", detail: msg })
   }
 }
