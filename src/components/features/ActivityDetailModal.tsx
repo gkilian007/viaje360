@@ -5,7 +5,7 @@ import { motion, AnimatePresence } from "framer-motion"
 import type { TimelineActivity, DayItinerary, Trip, ChatMessage } from "@/lib/types"
 import { ACTIVITY_ICONS } from "@/lib/constants"
 import { useActivityEvent } from "@/lib/hooks/useActivityEvent"
-import { useActivityImage } from "@/lib/hooks/useActivityImage"
+import { useActivityAssets } from "@/lib/hooks/useActivityAssets"
 import { useAppStore } from "@/store/useAppStore"
 
 interface ActivityDetailModalProps {
@@ -15,8 +15,7 @@ interface ActivityDetailModalProps {
   onClose: () => void
 }
 
-function ActivityImage({ query, name, type }: { query?: string; name: string; type?: string }) {
-  const { src, loading } = useActivityImage(query, name)
+function ActivityImage({ imageUrl, loading, name, type }: { imageUrl?: string | null; loading?: boolean; name: string; type?: string }) {
   const [imgError, setImgError] = useState(false)
 
   const gradientsByType: Record<string, string> = {
@@ -44,17 +43,15 @@ function ActivityImage({ query, name, type }: { query?: string; name: string; ty
   const gradient = gradientsByType[type ?? "tour"] ?? "from-blue-600 to-cyan-600"
   const emoji = emojiByType[type ?? "tour"] ?? "📍"
 
-  // Real image found
-  if (src && !imgError) {
+  if (imageUrl && !imgError) {
     return (
       <div className="relative w-full h-48 overflow-hidden">
         <img
-          src={src}
+          src={imageUrl}
           alt={name}
           className="w-full h-full object-cover"
           onError={() => setImgError(true)}
         />
-        {/* Subtle gradient overlay for text readability */}
         <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent" />
         <div className="absolute bottom-3 left-4 right-4">
           <span className="text-white text-[15px] font-bold drop-shadow-lg line-clamp-1">{name}</span>
@@ -63,7 +60,6 @@ function ActivityImage({ query, name, type }: { query?: string; name: string; ty
     )
   }
 
-  // Loading state
   if (loading) {
     return (
       <div className={`w-full h-48 bg-gradient-to-br ${gradient} flex flex-col items-center justify-center gap-2 animate-pulse`}>
@@ -73,7 +69,6 @@ function ActivityImage({ query, name, type }: { query?: string; name: string; ty
     )
   }
 
-  // Fallback: gradient + emoji + name
   return (
     <div className={`w-full h-48 bg-gradient-to-br ${gradient} flex flex-col items-center justify-center gap-2 relative overflow-hidden`}>
       <div className="absolute inset-0 opacity-10"
@@ -88,7 +83,15 @@ function ActivityImage({ query, name, type }: { query?: string; name: string; ty
 export function ActivityDetailModal({ activity, tripId, currentDayNumber, onClose }: ActivityDetailModalProps) {
   const track = useActivityEvent(tripId ?? null)
   const trackedRef = useRef<string | null>(null)
-  const { setCurrentTrip, setGeneratedItinerary, replaceChatMessages } = useAppStore()
+  const { currentTrip, setCurrentTrip, setGeneratedItinerary, replaceChatMessages } = useAppStore()
+  const { data: assets, loading: assetsLoading } = useActivityAssets({
+    name: activity?.name ?? "",
+    location: activity?.location ?? "",
+    destination: currentTrip?.destination ?? "",
+    type: activity?.type ?? "tour",
+    imageQuery: activity?.imageQuery,
+    url: activity?.url,
+  })
   const [feedbackState, setFeedbackState] = useState<null | "liked" | "disliked" | "more_like_this" | "less_like_this">(null)
   const [isSubmittingFeedback, setIsSubmittingFeedback] = useState(false)
   const [isTogglingLock, setIsTogglingLock] = useState(false)
@@ -270,7 +273,7 @@ export function ActivityDetailModal({ activity, tripId, currentDayNumber, onClos
             </div>
 
             {/* Image */}
-            <ActivityImage query={activity.imageQuery} name={activity.name} type={activity.type} />
+            <ActivityImage imageUrl={assets?.imageUrl} loading={assetsLoading} name={activity.name} type={activity.type} />
 
             {/* Content */}
             <div className="px-5 py-5 overflow-y-auto max-h-[45vh]">
@@ -449,19 +452,20 @@ export function ActivityDetailModal({ activity, tripId, currentDayNumber, onClos
               {/* Action buttons */}
               <div className="flex gap-3">
                 {(() => {
-                  const mapsUrl = `https://www.google.com/maps/search/${encodeURIComponent(`${activity.name} ${activity.location}`)}`
-                  const hasDirectUrl = activity.url && !activity.url.includes("google.com/maps")
+                  const primaryUrl = assets?.primaryUrl ?? `https://www.google.com/maps/search/${encodeURIComponent(`${activity.name} ${activity.location}`)}`
+                  const mapsUrl = assets?.mapsUrl ?? `https://www.google.com/maps/search/${encodeURIComponent(`${activity.name} ${activity.location}`)}`
+                  const primaryKind = assets?.primaryKind ?? "maps"
+                  const hasDirectUrl = primaryKind !== "maps"
 
                   return (
                     <>
-                      {/* Primary action: direct link or Maps */}
                       <a
-                        href={hasDirectUrl ? activity.url! : mapsUrl}
+                        href={primaryUrl}
                         target="_blank"
                         rel="noopener noreferrer"
                         onClick={() => {
                           const eventType = isRestaurant ? "menu_clicked" : "booking_clicked"
-                          track(eventType, activity.id, { url: activity.url ?? mapsUrl })
+                          track(eventType, activity.id, { url: primaryUrl, kind: primaryKind })
                         }}
                         className="flex-1 flex items-center justify-center gap-2 px-4 py-3.5 rounded-2xl font-semibold text-[14px] text-white transition-all hover:scale-[1.02] active:scale-[0.98]"
                         style={{
@@ -471,16 +475,15 @@ export function ActivityDetailModal({ activity, tripId, currentDayNumber, onClos
                         }}
                       >
                         <span className="material-symbols-outlined text-[18px]">
-                          {hasDirectUrl
-                            ? (isRestaurant ? "menu_book" : "confirmation_number")
-                            : "map"}
+                          {primaryKind === "maps" ? "map" : isRestaurant ? "menu_book" : "confirmation_number"}
                         </span>
-                        {hasDirectUrl
-                          ? (isRestaurant ? "Ver carta" : "Web oficial")
-                          : "Ver en Maps"}
+                        {primaryKind === "maps"
+                          ? "Ver en Maps"
+                          : isRestaurant
+                          ? "Ver carta"
+                          : "Comprar entrada"}
                       </a>
 
-                      {/* Secondary: Google Maps if primary is a direct link */}
                       {hasDirectUrl && (
                         <a
                           href={mapsUrl}
