@@ -260,7 +260,7 @@ export function ActivityDetailModal({ activity, tripId, currentDayNumber, onClos
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: "100%" }}
             transition={{ type: "spring", damping: 30, stiffness: 300 }}
-            className="fixed bottom-0 left-0 right-0 z-50 max-h-[85vh] overflow-hidden rounded-t-3xl"
+            className="fixed bottom-0 left-0 right-0 z-50 max-h-[85dvh] overflow-hidden rounded-t-3xl flex flex-col"
             style={{
               background: "rgba(28, 28, 30, 0.98)",
               backdropFilter: "blur(40px)",
@@ -276,7 +276,7 @@ export function ActivityDetailModal({ activity, tripId, currentDayNumber, onClos
             <ActivityImage imageUrl={assets?.imageUrl} loading={assetsLoading} name={activity.name} type={activity.type} />
 
             {/* Content */}
-            <div className="px-5 py-5 overflow-y-auto max-h-[45vh]">
+            <div className="px-5 py-5 overflow-y-auto flex-1 min-h-0">
               {/* Type badge + time */}
               <div className="flex items-center gap-2 mb-3">
                 <span
@@ -449,7 +449,16 @@ export function ActivityDetailModal({ activity, tripId, currentDayNumber, onClos
                 )}
               </div>
 
-              {/* Action buttons */}
+            </div>
+
+            {/* Sticky footer actions */}
+            <div
+              className="px-5 pt-3 pb-5 safe-area-bottom shrink-0"
+              style={{
+                background: "linear-gradient(to top, rgba(28,28,30,0.98) 75%, rgba(28,28,30,0.82) 100%)",
+                borderTop: "1px solid rgba(255,255,255,0.08)",
+              }}
+            >
               <div className="flex gap-3">
                 {(() => {
                   const primaryUrl = assets?.primaryUrl ?? `https://www.google.com/maps/search/${encodeURIComponent(`${activity.name} ${activity.location}`)}`
