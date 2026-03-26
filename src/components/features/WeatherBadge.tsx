@@ -1,7 +1,7 @@
 "use client"
 
-import type { DayWeather } from "@/lib/services/weather.service"
-import { getWeatherDisplay } from "@/lib/services/weather.service"
+import type { DayWeather } from "@/lib/weather-utils"
+import { getWeatherDisplay } from "@/lib/weather-utils"
 
 interface WeatherBadgeProps {
   weather: DayWeather

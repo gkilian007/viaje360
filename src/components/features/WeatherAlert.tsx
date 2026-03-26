@@ -1,8 +1,8 @@
 "use client"
 
 import { useState } from "react"
-import type { DayWeather } from "@/lib/services/weather.service"
-import { getWeatherDisplay } from "@/lib/services/weather.service"
+import type { DayWeather } from "@/lib/weather-utils"
+import { getWeatherDisplay } from "@/lib/weather-utils"
 
 interface WeatherAlertProps {
   weather: DayWeather

@@ -1,7 +1,7 @@
 "use client"
 
 import { useEffect, useState } from "react"
-import type { DayWeather } from "@/lib/services/weather.service"
+import type { DayWeather } from "@/lib/weather-utils"
 
 const cache = new Map<string, DayWeather[]>()
 
