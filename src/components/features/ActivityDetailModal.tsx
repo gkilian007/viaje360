@@ -510,38 +510,23 @@ export function ActivityDetailModal({ activity, tripId, currentDayNumber, onClos
                 </div>
               )}
 
-              {/* Mini-map */}
+              {/* Mini-map link */}
               {activity.lat && activity.lng && (
-                <div className="mb-5 rounded-2xl overflow-hidden border border-white/8">
-                  <a
-                    href={`https://www.google.com/maps/search/?api=1&query=${activity.lat},${activity.lng}`}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="block"
-                  >
-                    <img
-                      src={`https://maps.googleapis.com/maps/api/staticmap?center=${activity.lat},${activity.lng}&zoom=15&size=600x200&scale=2&maptype=roadmap&markers=color:red%7C${activity.lat},${activity.lng}&style=feature:all|element:geometry|color:0x242f3e&style=feature:all|element:labels.text.stroke|color:0x242f3e&style=feature:all|element:labels.text.fill|color:0x746855&style=feature:water|element:geometry|color:0x17263c&key=${process.env.NEXT_PUBLIC_GOOGLE_PLACES_API_KEY || ""}`}
-                      alt="Mapa"
-                      className="w-full h-[120px] object-cover"
-                      onError={(e) => { (e.target as HTMLImageElement).style.display = "none" }}
-                    />
-                    {/* Fallback: OSM tile if no Google key */}
-                    <div
-                      className="w-full h-[120px] bg-[#1a1a2e] flex items-center justify-center"
-                      style={{ display: process.env.NEXT_PUBLIC_GOOGLE_PLACES_API_KEY ? "none" : "flex" }}
-                    >
-                      <img
-                        src={`https://staticmap.openstreetmap.de/staticmap.php?center=${activity.lat},${activity.lng}&zoom=15&size=600x200&markers=${activity.lat},${activity.lng},red-pushpin`}
-                        alt="Mapa"
-                        className="w-full h-full object-cover"
-                        onError={(e) => {
-                          const parent = (e.target as HTMLImageElement).parentElement!
-                          parent.innerHTML = `<div class="flex flex-col items-center justify-center h-full gap-1"><span class="material-symbols-outlined text-[24px] text-[#0A84FF]">map</span><span class="text-[12px] text-[#c0c6d6]">Ver ubicación en Maps</span></div>`
-                        }}
-                      />
-                    </div>
-                  </a>
-                </div>
+                <a
+                  href={`https://www.google.com/maps/search/?api=1&query=${activity.lat},${activity.lng}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="mb-5 flex items-center gap-3 p-3 rounded-2xl border border-white/8 bg-white/[0.03] hover:bg-white/[0.06] transition-colors"
+                >
+                  <span className="material-symbols-outlined text-[24px] text-[#0A84FF]">map</span>
+                  <div>
+                    <p className="text-[13px] text-white font-medium">Ver ubicación en el mapa</p>
+                    <p className="text-[11px] text-[#888]">
+                      {activity.lat.toFixed(4)}, {activity.lng.toFixed(4)}
+                    </p>
+                  </div>
+                  <span className="material-symbols-outlined text-[16px] text-[#555] ml-auto">open_in_new</span>
+                </a>
               )}
 
             </div>
