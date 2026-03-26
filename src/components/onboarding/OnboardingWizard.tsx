@@ -104,7 +104,7 @@ export function OnboardingWizard() {
   }
 
   return (
-    <div className="min-h-screen map-bg flex flex-col">
+    <div className="h-dvh map-bg flex flex-col overflow-hidden">
       {/* Top bar: progress + step count */}
       <div className="safe-area-top px-5 pt-4 pb-3 flex-shrink-0">
         <div className="flex items-center justify-between mb-3">
@@ -135,7 +135,7 @@ export function OnboardingWizard() {
       </div>
 
       {/* Navigation */}
-      <div className="safe-area-bottom px-5 pb-6 flex-shrink-0">
+      <div className="px-5 pb-8 pt-4 flex-shrink-0" style={{ background: "linear-gradient(to top, #131315 70%, transparent)" }}>
         <NavigationButtons
           onNext={handleNext}
           onBack={prevStep}
