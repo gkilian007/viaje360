@@ -88,7 +88,7 @@ function MobileStats({ trip, totalDays }: { trip: Trip; totalDays: number }) {
 }
 
 function PlanPageContent() {
-  const { pendingAchievement, currentTrip, generatedItinerary, setGeneratedItinerary } = useAppStore()
+  const { pendingAchievement, currentTrip, generatedItinerary, setGeneratedItinerary, setCurrentTrip, replaceChatMessages } = useAppStore()
   const searchParams = useSearchParams()
   const itinerary = generatedItinerary ?? []
   const [selectedDay, setSelectedDay] = useState(1)
@@ -108,6 +108,26 @@ function PlanPageContent() {
   useEffect(() => {
     setHydrated(true)
   }, [])
+
+  // Rehydrate from server to get rich activity fields (description, url, lat/lng, etc.)
+  useEffect(() => {
+    async function rehydrate() {
+      try {
+        const res = await fetch("/api/trips/active", { cache: "no-store" })
+        if (!res.ok) return
+        const payload = await res.json()
+        if (payload?.data?.trip) {
+          setCurrentTrip(payload.data.trip)
+          setGeneratedItinerary(payload.data.days ?? null)
+          if (payload.data.chatMessages) {
+            replaceChatMessages(payload.data.chatMessages)
+          }
+        }
+      } catch {}
+    }
+    if (hydrated && currentTrip?.id) void rehydrate()
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [hydrated])
 
   // Check if diary was just saved
   useEffect(() => {

@@ -359,6 +359,7 @@ export default function HomePage() {
   const router = useRouter()
   const { currentTrip, generatedItinerary } = useAppStore()
   const resetOnboarding = useOnboardingStore((s) => s.reset)
+  const { setCurrentTrip, setGeneratedItinerary, replaceChatMessages } = useAppStore()
   const [authUser, setAuthUser] = useState<SupabaseUser | null>(null)
   const [loadingAuth, setLoadingAuth] = useState(true)
 
@@ -375,6 +376,25 @@ export default function HomePage() {
     }
     void loadUser()
   }, [])
+
+  // Load active trip from server on mount
+  useEffect(() => {
+    async function loadActiveTrip() {
+      try {
+        const res = await fetch("/api/trips/active", { cache: "no-store" })
+        if (!res.ok) return
+        const payload = await res.json()
+        if (payload?.data?.trip) {
+          setCurrentTrip(payload.data.trip)
+          setGeneratedItinerary(payload.data.days ?? null)
+          if (payload.data.chatMessages) {
+            replaceChatMessages(payload.data.chatMessages)
+          }
+        }
+      } catch {}
+    }
+    if (!loadingAuth) void loadActiveTrip()
+  }, [loadingAuth, setCurrentTrip, setGeneratedItinerary, replaceChatMessages])
 
   function handleNewTrip() {
     resetOnboarding()
