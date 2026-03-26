@@ -10,10 +10,13 @@ interface GeocodedActivity {
 }
 
 async function geocodeClient(
-  query: string
+  query: string,
+  destination?: string
 ): Promise<{ lat: number; lng: number } | null> {
   try {
-    const res = await fetch(`/api/geocode?q=${encodeURIComponent(query)}`)
+    const params = new URLSearchParams({ q: query })
+    if (destination) params.set("near", destination)
+    const res = await fetch(`/api/geocode?${params}`)
     if (!res.ok) return null
 
     const { data } = await res.json()
@@ -95,7 +98,7 @@ export function useGeocodedActivities(
 
         let coords: { lat: number; lng: number } | null = null
         for (const query of queries) {
-          coords = await geocodeClient(query)
+          coords = await geocodeClient(query, destination)
           if (coords) break
           if (!abortRef.current) {
             await new Promise((r) => setTimeout(r, 1100))
