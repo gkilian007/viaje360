@@ -99,6 +99,7 @@ function PlanPageContent() {
   const { hasExistingDiary } = useExistingDiary(currentTrip?.id ?? null, selectedDay)
   const access = useAccess(currentTrip?.destination)
   const [showPaywall, setShowPaywall] = useState(false)
+  const [serverLoaded, setServerLoaded] = useState(false)
 
   const handleActivityClick = (activity: TimelineActivity) => {
     setSelectedActivity(activity)
@@ -109,12 +110,12 @@ function PlanPageContent() {
     setHydrated(true)
   }, [])
 
-  // Rehydrate from server to get rich activity fields (description, url, lat/lng, etc.)
+  // Always rehydrate from server to get rich activity fields and ensure trip is loaded
   useEffect(() => {
     async function rehydrate() {
       try {
         const res = await fetch("/api/trips/active", { cache: "no-store" })
-        if (!res.ok) return
+        if (!res.ok) { setServerLoaded(true); return }
         const payload = await res.json()
         if (payload?.data?.trip) {
           setCurrentTrip(payload.data.trip)
@@ -123,9 +124,11 @@ function PlanPageContent() {
             replaceChatMessages(payload.data.chatMessages)
           }
         }
-      } catch {}
+      } catch {} finally {
+        setServerLoaded(true)
+      }
     }
-    if (hydrated && currentTrip?.id) void rehydrate()
+    if (hydrated) void rehydrate()
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [hydrated])
 
@@ -141,10 +144,13 @@ function PlanPageContent() {
     }
   }, [searchParams])
 
-  if (!hydrated) {
+  if (!hydrated || !serverLoaded) {
     return (
       <div className="min-h-screen map-bg flex items-center justify-center">
-        <div className="text-[#c0c6d6] text-sm">Cargando itinerario...</div>
+        <div className="flex flex-col items-center gap-3">
+          <div className="w-8 h-8 border-2 border-[#0A84FF] border-t-transparent rounded-full animate-spin" />
+          <div className="text-[#c0c6d6] text-sm">Cargando itinerario...</div>
+        </div>
       </div>
     )
   }
