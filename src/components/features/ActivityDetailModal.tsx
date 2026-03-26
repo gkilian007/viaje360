@@ -5,6 +5,7 @@ import { motion, AnimatePresence } from "framer-motion"
 import type { TimelineActivity, DayItinerary, Trip, ChatMessage } from "@/lib/types"
 import { ACTIVITY_ICONS } from "@/lib/constants"
 import { useActivityEvent } from "@/lib/hooks/useActivityEvent"
+import { useActivityImage } from "@/lib/hooks/useActivityImage"
 import { useAppStore } from "@/store/useAppStore"
 
 interface ActivityDetailModalProps {
@@ -15,7 +16,8 @@ interface ActivityDetailModalProps {
 }
 
 function ActivityImage({ query, name, type }: { query?: string; name: string; type?: string }) {
-  const [error, setError] = useState(false)
+  const { src, loading } = useActivityImage(query, name)
+  const [imgError, setImgError] = useState(false)
 
   const gradientsByType: Record<string, string> = {
     restaurant: "from-orange-600 to-red-600",
@@ -42,21 +44,36 @@ function ActivityImage({ query, name, type }: { query?: string; name: string; ty
   const gradient = gradientsByType[type ?? "tour"] ?? "from-blue-600 to-cyan-600"
   const emoji = emojiByType[type ?? "tour"] ?? "📍"
 
-  // Try Wikipedia/Commons image via search query
-  const imgSrc = query
-    ? `https://commons.wikimedia.org/w/index.php?search=${encodeURIComponent(query)}&title=Special:MediaSearch&go=Go&type=image`
-    : null
-
-  if (!query || error) {
+  // Real image found
+  if (src && !imgError) {
     return (
-      <div className={`w-full h-48 bg-gradient-to-br ${gradient} flex flex-col items-center justify-center gap-2`}>
-        <span className="text-6xl">{emoji}</span>
-        <span className="text-white/70 text-[14px] font-semibold text-center px-6 line-clamp-2">{name}</span>
+      <div className="relative w-full h-48 overflow-hidden">
+        <img
+          src={src}
+          alt={name}
+          className="w-full h-full object-cover"
+          onError={() => setImgError(true)}
+        />
+        {/* Subtle gradient overlay for text readability */}
+        <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent" />
+        <div className="absolute bottom-3 left-4 right-4">
+          <span className="text-white text-[15px] font-bold drop-shadow-lg line-clamp-1">{name}</span>
+        </div>
       </div>
     )
   }
 
-  // Use a gradient with name overlay as reliable fallback — no external image dependency
+  // Loading state
+  if (loading) {
+    return (
+      <div className={`w-full h-48 bg-gradient-to-br ${gradient} flex flex-col items-center justify-center gap-2 animate-pulse`}>
+        <span className="text-5xl opacity-60">{emoji}</span>
+        <span className="text-white/50 text-[12px]">Buscando imagen...</span>
+      </div>
+    )
+  }
+
+  // Fallback: gradient + emoji + name
   return (
     <div className={`w-full h-48 bg-gradient-to-br ${gradient} flex flex-col items-center justify-center gap-2 relative overflow-hidden`}>
       <div className="absolute inset-0 opacity-10"
