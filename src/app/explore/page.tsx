@@ -1,218 +1,304 @@
 "use client"
 
 import { useState } from "react"
+import { useRouter } from "next/navigation"
 import { useAppStore } from "@/store/useAppStore"
+import { useOnboardingStore } from "@/store/useOnboardingStore"
 import { BottomNav } from "@/components/layout/BottomNav"
-import { RARITY_COLORS, RARITY_LABELS } from "@/lib/constants"
-import { QuizCard } from "@/components/features/QuizCard"
-import { demoDestinations } from "@/lib/demo-data"
+import { motion } from "framer-motion"
+
+// ─── Curated content — no dependency on user state ───────────────────────────
+
+const FEATURED_DESTINATIONS = [
+  { name: "Tokio", country: "Japón", emoji: "🗼", color: "#FF453A", tag: "Cultura y tecnología" },
+  { name: "Barcelona", country: "España", emoji: "🏛️", color: "#0A84FF", tag: "Arquitectura y playa" },
+  { name: "Bali", country: "Indonesia", emoji: "🏝️", color: "#30D158", tag: "Naturaleza y bienestar" },
+  { name: "Nueva York", country: "EE.UU.", emoji: "🗽", color: "#5856D6", tag: "Ciudad sin parar" },
+  { name: "Roma", country: "Italia", emoji: "🏟️", color: "#FF9F0A", tag: "Historia viva" },
+  { name: "París", country: "Francia", emoji: "🗼", color: "#BF5AF2", tag: "Arte y gastronomía" },
+  { name: "Lisboa", country: "Portugal", emoji: "🐟", color: "#32D74B", tag: "Fado y pastelería" },
+  { name: "Kioto", country: "Japón", emoji: "⛩️", color: "#FF6B6B", tag: "Tradición japonesa" },
+  { name: "Marrakech", country: "Marruecos", emoji: "🕌", color: "#FFB84D", tag: "Souks y especias" },
+  { name: "Ámsterdam", country: "Países Bajos", emoji: "🌷", color: "#4ECDC4", tag: "Canales y arte" },
+  { name: "Dubái", country: "EAU", emoji: "🌆", color: "#C4A35A", tag: "Lujo y modernidad" },
+  { name: "Ciudad de México", country: "México", emoji: "🌮", color: "#E84393", tag: "Cultura y sabor" },
+]
+
+const TRAVEL_STYLES = [
+  { emoji: "🎒", label: "Mochilero", desc: "Máximo con mínimo presupuesto", companion: "solo" },
+  { emoji: "💑", label: "Pareja", desc: "Escapadas románticas", companion: "pareja" },
+  { emoji: "👨‍👩‍👧‍👦", label: "Familia", desc: "Para todas las edades", companion: "familia" },
+  { emoji: "👯", label: "Amigos", desc: "Planes en grupo", companion: "amigos" },
+]
+
+const HIDDEN_GEMS = [
+  { name: "Kotor", country: "Montenegro", emoji: "🏰", desc: "Ciudad medieval amurallada en un fiordo adriático" },
+  { name: "Matera", country: "Italia", emoji: "🪨", desc: "Ciudad rupestre de 9.000 años de antigüedad, Capital Europea de la Cultura" },
+  { name: "Faroe Islands", country: "Dinamarca", emoji: "🌊", desc: "Acantilados dramáticos y pueblos de turba en el Atlántico Norte" },
+  { name: "Luang Prabang", country: "Laos", emoji: "🛕", desc: "Ciudad de templos y cascadas en el Mekong" },
+  { name: "Chefchaouen", country: "Marruecos", emoji: "💙", desc: "La ciudad azul escondida en las montañas del Rif" },
+  { name: "Tbilisi", country: "Georgia", emoji: "🏔️", desc: "Vinos naturales, baños de azufre y arquitectura soviética" },
+]
+
+const TRAVEL_TIPS = [
+  { icon: "🌦️", tip: "Viaje360 adapta tu itinerario en tiempo real si llueve o hace calor extremo" },
+  { icon: "✨", tip: "El Momento Mágico detecta gemas ocultas cerca de ti mientras viajas" },
+  { icon: "📖", tip: "El diario de viaje con IA genera tu historia personalizada al final del viaje" },
+  { icon: "🚇", tip: "El sistema de transporte sugiere metro o caminar según tu energía del día" },
+  { icon: "🎟️", tip: "Reserva entradas directamente desde la actividad de tu itinerario" },
+]
 
 export default function ExplorePage() {
+  const router = useRouter()
   const { monuments } = useAppStore()
+  const { setField: setOnboardingField, reset: resetOnboarding } = useOnboardingStore()
   const [search, setSearch] = useState("")
 
-  const filteredMonuments = monuments.filter(
-    (m) =>
-      m.name.toLowerCase().includes(search.toLowerCase()) ||
-      m.location.toLowerCase().includes(search.toLowerCase())
-  )
-
-  const filteredDestinations = demoDestinations.filter(
-    (d) =>
+  const filteredDestinations = FEATURED_DESTINATIONS.filter(
+    d =>
       d.name.toLowerCase().includes(search.toLowerCase()) ||
-      d.country.toLowerCase().includes(search.toLowerCase())
+      d.country.toLowerCase().includes(search.toLowerCase()) ||
+      d.tag.toLowerCase().includes(search.toLowerCase())
   )
 
-  const hasResults = filteredMonuments.length > 0 || filteredDestinations.length > 0
-  const totalResults = filteredMonuments.length + filteredDestinations.length
+  const filteredGems = HIDDEN_GEMS.filter(
+    g =>
+      g.name.toLowerCase().includes(search.toLowerCase()) ||
+      g.country.toLowerCase().includes(search.toLowerCase()) ||
+      g.desc.toLowerCase().includes(search.toLowerCase())
+  )
+
+  function handleDestinationSelect(destName: string) {
+    resetOnboarding()
+    setOnboardingField("destination", destName)
+    router.push("/onboarding")
+  }
+
+  function handleStyleSelect(companion: string) {
+    resetOnboarding()
+    setOnboardingField("companion", companion as "solo" | "pareja" | "familia" | "amigos")
+    router.push("/onboarding")
+  }
+
+  const isSearching = search.length > 0
+  const hasResults = filteredDestinations.length > 0 || filteredGems.length > 0
 
   return (
-    <div className="flex flex-col h-full overflow-y-auto pb-24" style={{ background: "#131315" }}>
+    <div className="flex flex-col min-h-screen overflow-y-auto pb-28" style={{ background: "#0f1117" }}>
+
       {/* Header */}
-      <div className="px-4 pt-12 pb-4">
-        <p className="text-[11px] uppercase tracking-widest text-[#c0c6d6] font-medium mb-1">
-          Descubrir
-        </p>
-        <h1 className="text-[26px] font-bold text-white">Explorar</h1>
+      <div className="px-5 pt-14 pb-5">
+        <p className="text-[11px] uppercase tracking-widest text-[#0A84FF] font-medium mb-1">Descubrir</p>
+        <h1 className="text-[28px] font-black text-white">Explorar</h1>
+        <p className="text-[13px] text-[#888] mt-1">Inspírate y planea tu próximo viaje</p>
       </div>
 
       {/* Search */}
-      <div className="px-4 mb-4">
-        <div
-          className="flex items-center gap-3 px-4 py-3 rounded-2xl"
-          style={{
-            background: "rgba(31,31,33,0.9)",
-            border: "1px solid rgba(255,255,255,0.07)",
-          }}
-        >
-          <span className="material-symbols-outlined text-[20px] text-[#c0c6d6]">search</span>
+      <div className="px-5 mb-5">
+        <div className="flex items-center gap-3 px-4 py-3 rounded-2xl"
+          style={{ background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.08)" }}>
+          <span className="material-symbols-outlined text-[20px] text-[#666]">search</span>
           <input
             type="text"
-            placeholder="Buscar lugares, ciudades..."
+            placeholder="Buscar destinos, estilos..."
             value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            className="flex-1 bg-transparent text-[14px] text-[#e4e2e4] placeholder:text-[#c0c6d6]/50"
+            onChange={e => setSearch(e.target.value)}
+            className="flex-1 bg-transparent text-[14px] text-white placeholder:text-[#555] outline-none"
           />
           {search && (
-            <button onClick={() => setSearch("")} className="text-[#c0c6d6] hover:text-white">
+            <button onClick={() => setSearch("")} className="text-[#555] hover:text-white transition-colors">
               <span className="material-symbols-outlined text-[18px]">close</span>
             </button>
           )}
         </div>
       </div>
 
-      {/* Featured destinations */}
-      {!search && (
-        <>
-          <div className="px-4 mb-3">
-            <p className="text-[11px] uppercase tracking-widest text-[#c0c6d6] font-medium">
-              Destinos Populares
-            </p>
-          </div>
-          <div className="flex gap-3 px-4 overflow-x-auto pb-2 mb-4">
-            {demoDestinations.map((dest) => (
-              <div
-                key={dest.id}
-                className="shrink-0 w-40 rounded-2xl overflow-hidden cursor-pointer hover:scale-[1.02] transition-all"
-                style={{ background: "rgba(31,31,33,0.9)", border: "1px solid rgba(255,255,255,0.06)" }}
-              >
-                <div className={`h-24 bg-gradient-to-br ${dest.imageColor} relative`}>
-                  <div className="absolute inset-0 bg-black/20" />
-                  <div className="absolute bottom-2 left-2">
-                    <span
-                      className="text-[10px] px-2 py-1 rounded-full font-medium text-white"
-                      style={{ background: "rgba(0,0,0,0.4)", backdropFilter: "blur(8px)" }}
-                    >
-                      ⭐ {dest.rating}
-                    </span>
-                  </div>
-                </div>
-                <div className="p-3">
-                  <p className="text-[13px] font-semibold text-white">{dest.name}</p>
-                  <p className="text-[11px] text-[#c0c6d6]">{dest.country}</p>
-                </div>
-              </div>
-            ))}
-          </div>
-        </>
-      )}
-
-      {/* Quiz card */}
-      {!search && (
-        <div className="px-4 mb-4">
-          <p className="text-[11px] uppercase tracking-widest text-[#c0c6d6] font-medium mb-3">
-            Quiz del Día
-          </p>
-          <QuizCard />
-        </div>
-      )}
-
-      {/* Search results: destinations */}
-      {search && filteredDestinations.length > 0 && (
-        <div className="px-4 mb-4">
-          <p className="text-[11px] uppercase tracking-widest text-[#c0c6d6] font-medium mb-3">
-            Destinos ({filteredDestinations.length})
-          </p>
-          <div className="flex flex-col gap-2">
-            {filteredDestinations.map((dest) => (
-              <div
-                key={dest.id}
-                className="flex items-center gap-3 p-3 rounded-xl"
-                style={{ background: "rgba(31,31,33,0.9)", border: "1px solid rgba(255,255,255,0.06)" }}
-              >
-                <div className={`w-10 h-10 rounded-xl bg-gradient-to-br ${dest.imageColor} shrink-0`} />
-                <div>
-                  <p className="text-[14px] font-semibold text-white">{dest.name}</p>
-                  <p className="text-[12px] text-[#c0c6d6]">{dest.country} · ⭐ {dest.rating}</p>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
-
-      {/* Monuments / places */}
-      <div className="px-4">
-        <p className="text-[11px] uppercase tracking-widest text-[#c0c6d6] font-medium mb-3">
-          {search ? `Resultados (${totalResults})` : "Lugares para Coleccionar"}
-        </p>
-        <div className="flex flex-col gap-3">
-          {filteredMonuments.length === 0 && (
-            <div
-              className="flex flex-col items-center gap-3 py-8 px-4 rounded-2xl text-center"
-              style={{ background: "rgba(19,19,21,0.6)", border: "1px solid rgba(255,255,255,0.04)" }}
-            >
-              <span className="material-symbols-outlined text-[40px] text-[#c0c6d6]">explore</span>
-              <div>
-                <p className="text-[15px] font-semibold text-white mb-1">Descubre lugares increíbles</p>
-                <p className="text-[13px] text-[#888]">
-                  Visita sitios de tu itinerario para coleccionar lugares y ganar XP
-                </p>
+      {/* Search results */}
+      {isSearching && (
+        <div className="px-5 space-y-4">
+          {filteredDestinations.length > 0 && (
+            <div>
+              <p className="text-[11px] uppercase tracking-widest text-[#666] font-medium mb-3">
+                Destinos ({filteredDestinations.length})
+              </p>
+              <div className="space-y-2">
+                {filteredDestinations.map(dest => (
+                  <motion.button
+                    key={dest.name}
+                    whileTap={{ scale: 0.98 }}
+                    onClick={() => handleDestinationSelect(dest.name)}
+                    className="w-full flex items-center gap-3 p-3 rounded-2xl text-left"
+                    style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.07)" }}
+                  >
+                    <span className="text-[28px]">{dest.emoji}</span>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-[14px] font-bold text-white">{dest.name}</p>
+                      <p className="text-[11px] text-[#888]">{dest.country} · {dest.tag}</p>
+                    </div>
+                    <span className="material-symbols-outlined text-[16px] text-[#444]">arrow_forward</span>
+                  </motion.button>
+                ))}
               </div>
             </div>
           )}
-          {filteredMonuments.map((monument) => {
-            const rarity = RARITY_COLORS[monument.rarity]
-            return (
-              <div
-                key={monument.id}
-                className={`flex items-center gap-4 p-4 rounded-2xl ${monument.collected ? rarity.glow : ""}`}
-                style={{
-                  background: monument.collected ? "rgba(31,31,33,0.9)" : "rgba(19,19,21,0.6)",
-                  border: `1px solid ${monument.collected ? "rgba(255,255,255,0.08)" : "rgba(255,255,255,0.04)"}`,
-                }}
-              >
-                <div
-                  className={`w-12 h-12 rounded-2xl flex items-center justify-center shrink-0 ${rarity.bg}`}
-                >
-                  <span
-                    className={`material-symbols-outlined text-[24px] ${rarity.text}`}
-                    style={
-                      monument.collected
-                        ? { fontVariationSettings: "'FILL' 1, 'wght' 400, 'GRAD' 0, 'opsz' 24" }
-                        : {}
-                    }
+          {filteredGems.length > 0 && (
+            <div>
+              <p className="text-[11px] uppercase tracking-widest text-[#666] font-medium mb-3">
+                Gemas ocultas ({filteredGems.length})
+              </p>
+              <div className="space-y-2">
+                {filteredGems.map(gem => (
+                  <motion.button
+                    key={gem.name}
+                    whileTap={{ scale: 0.98 }}
+                    onClick={() => handleDestinationSelect(gem.name)}
+                    className="w-full flex items-start gap-3 p-3 rounded-2xl text-left"
+                    style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.07)" }}
                   >
-                    {monument.collected ? "place" : "lock"}
-                  </span>
-                </div>
-                <div className="flex-1 min-w-0">
-                  <p className="text-[14px] font-semibold text-white truncate">{monument.name}</p>
-                  <p className="text-[12px] text-[#c0c6d6] truncate flex items-center gap-1">
-                    <span className="material-symbols-outlined text-[12px]">location_on</span>
-                    {monument.location}
-                  </p>
-                  <div className="flex items-center gap-2 mt-1">
-                    <span className={`text-[10px] font-medium ${rarity.text}`}>
-                      {RARITY_LABELS[monument.rarity]}
-                    </span>
-                    <span className="text-[10px] text-[#ffdb3c] flex items-center gap-0.5">
-                      <span className="material-symbols-outlined text-[11px]"
-                        style={{ fontVariationSettings: "'FILL' 1, 'wght' 400, 'GRAD' 0, 'opsz' 24" }}>
-                        stars
-                      </span>
-                      +{monument.xpReward} XP
-                    </span>
-                  </div>
-                </div>
-                {monument.collected && (
-                  <div className="shrink-0">
-                    <span
-                      className="w-7 h-7 rounded-full flex items-center justify-center"
-                      style={{ background: "rgba(48, 209, 88, 0.15)" }}
-                    >
-                      <span className="material-symbols-outlined text-[16px] text-[#30D158]"
-                        style={{ fontVariationSettings: "'FILL' 1, 'wght' 400, 'GRAD' 0, 'opsz' 24" }}>
-                        check_circle
-                      </span>
-                    </span>
-                  </div>
-                )}
+                    <span className="text-[24px] shrink-0 mt-0.5">{gem.emoji}</span>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-[13px] font-bold text-white">{gem.name}</p>
+                      <p className="text-[11px] text-[#888]">{gem.country}</p>
+                      <p className="text-[11px] text-[#666] mt-1 leading-relaxed">{gem.desc}</p>
+                    </div>
+                  </motion.button>
+                ))}
               </div>
-            )
-          })}
+            </div>
+          )}
+          {!hasResults && (
+            <div className="text-center py-12">
+              <span className="text-[48px]">🌍</span>
+              <p className="text-white font-semibold mt-3">No encontrado</p>
+              <p className="text-[#888] text-[13px] mt-1">Prueba con otro nombre de ciudad o país</p>
+            </div>
+          )}
         </div>
-      </div>
+      )}
+
+      {/* Main content (no search) */}
+      {!isSearching && (
+        <>
+          {/* Featured destinations — horizontal scroll */}
+          <div className="mb-6">
+            <div className="px-5 mb-3 flex items-center justify-between">
+              <p className="text-[13px] font-bold text-white">✈️ Destinos populares</p>
+              <p className="text-[11px] text-[#555]">Toca para planear</p>
+            </div>
+            <div className="flex gap-3 px-5 overflow-x-auto pb-2 scrollbar-none">
+              {FEATURED_DESTINATIONS.map((dest, idx) => (
+                <motion.button
+                  key={dest.name}
+                  initial={{ opacity: 0, x: 20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ delay: idx * 0.04 }}
+                  whileTap={{ scale: 0.95 }}
+                  onClick={() => handleDestinationSelect(dest.name)}
+                  className="shrink-0 w-36 rounded-2xl overflow-hidden text-left"
+                  style={{ background: "rgba(22,22,30,0.95)", border: "1px solid rgba(255,255,255,0.07)" }}
+                >
+                  <div
+                    className="h-20 flex items-center justify-center"
+                    style={{ background: `${dest.color}18` }}
+                  >
+                    <span className="text-[44px]">{dest.emoji}</span>
+                  </div>
+                  <div className="p-3">
+                    <p className="text-[13px] font-bold text-white">{dest.name}</p>
+                    <p className="text-[10px] text-[#666] mt-0.5">{dest.tag}</p>
+                  </div>
+                </motion.button>
+              ))}
+            </div>
+          </div>
+
+          {/* Travel styles */}
+          <div className="px-5 mb-6">
+            <p className="text-[13px] font-bold text-white mb-3">🧭 Estilo de viaje</p>
+            <div className="grid grid-cols-2 gap-2">
+              {TRAVEL_STYLES.map(style => (
+                <motion.button
+                  key={style.label}
+                  whileTap={{ scale: 0.96 }}
+                  onClick={() => handleStyleSelect(style.companion)}
+                  className="flex flex-col items-center gap-1.5 p-4 rounded-2xl"
+                  style={{ background: "rgba(22,22,30,0.95)", border: "1px solid rgba(255,255,255,0.07)" }}
+                >
+                  <span className="text-[32px]">{style.emoji}</span>
+                  <p className="text-[13px] font-bold text-white">{style.label}</p>
+                  <p className="text-[10px] text-[#666]">{style.desc}</p>
+                </motion.button>
+              ))}
+            </div>
+          </div>
+
+          {/* Hidden gems */}
+          <div className="px-5 mb-6">
+            <p className="text-[13px] font-bold text-white mb-3">💎 Gemas ocultas</p>
+            <div className="space-y-2">
+              {HIDDEN_GEMS.map(gem => (
+                <motion.button
+                  key={gem.name}
+                  whileTap={{ scale: 0.98 }}
+                  onClick={() => handleDestinationSelect(gem.name)}
+                  className="w-full flex items-start gap-3 p-4 rounded-2xl text-left"
+                  style={{ background: "rgba(22,22,30,0.95)", border: "1px solid rgba(255,255,255,0.07)" }}
+                >
+                  <span className="text-[28px] shrink-0">{gem.emoji}</span>
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-baseline gap-2">
+                      <p className="text-[14px] font-bold text-white">{gem.name}</p>
+                      <p className="text-[11px] text-[#555]">{gem.country}</p>
+                    </div>
+                    <p className="text-[12px] text-[#888] mt-1 leading-relaxed">{gem.desc}</p>
+                  </div>
+                  <span className="material-symbols-outlined text-[16px] text-[#333] shrink-0 mt-1">arrow_forward</span>
+                </motion.button>
+              ))}
+            </div>
+          </div>
+
+          {/* Tips */}
+          <div className="px-5 mb-6">
+            <p className="text-[13px] font-bold text-white mb-3">💡 ¿Sabías que...?</p>
+            <div className="space-y-2">
+              {TRAVEL_TIPS.map((tip, i) => (
+                <div
+                  key={i}
+                  className="flex items-start gap-3 p-3 rounded-xl"
+                  style={{ background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.05)" }}
+                >
+                  <span className="text-[18px] shrink-0">{tip.icon}</span>
+                  <p className="text-[12px] text-[#aaa] leading-relaxed">{tip.tip}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Collected monuments (if any) */}
+          {monuments.length > 0 && (
+            <div className="px-5 mb-6">
+              <p className="text-[13px] font-bold text-white mb-3">📍 Lugares visitados</p>
+              <div className="space-y-2">
+                {monuments.filter(m => m.collected).map(m => (
+                  <div
+                    key={m.id}
+                    className="flex items-center gap-3 p-3 rounded-xl"
+                    style={{ background: "rgba(48,209,88,0.06)", border: "1px solid rgba(48,209,88,0.15)" }}
+                  >
+                    <span className="material-symbols-outlined text-[18px] text-[#30D158]"
+                      style={{ fontVariationSettings: "'FILL' 1" }}>check_circle</span>
+                    <div>
+                      <p className="text-[13px] font-semibold text-white">{m.name}</p>
+                      <p className="text-[11px] text-[#888]">{m.location}</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+        </>
+      )}
 
       <BottomNav />
     </div>

@@ -6,7 +6,9 @@ import { useOnboardingStore } from "@/store/useOnboardingStore"
 import {
   findNearbyPOIs,
   buildMagicMomentSuggestion,
+  overpassPOIToNearbyPOI,
   type MagicMomentSuggestion,
+  type NearbyPOI,
 } from "@/lib/magic-moment"
 
 interface UseMagicMomentProps {
@@ -73,6 +75,8 @@ export function useMagicMoment({
     if (!resolvedLat || !resolvedLng || !today) return
     if (!destination) return
 
+    void (async () => {
+
     const nextAct = today.activities[currentIndex + 1] ?? today.activities[0]
     if (!nextAct) return
 
@@ -91,7 +95,24 @@ export function useMagicMoment({
       destination,
     }
 
-    const nearbyPOIs = findNearbyPOIs(ctx)
+    // Get curated POIs first
+    let nearbyPOIs: NearbyPOI[] = findNearbyPOIs(ctx)
+
+    // If no curated POIs for this destination, try Overpass API (real-time, all destinations)
+    if (nearbyPOIs.length === 0 && resolvedLat && resolvedLng) {
+      try {
+        const overpassRes = await fetch(
+          `/api/nearby?lat=${resolvedLat}&lng=${resolvedLng}&radius=600`
+        )
+        if (overpassRes.ok) {
+          const { data } = await overpassRes.json()
+          nearbyPOIs = (data?.pois ?? []).map(overpassPOIToNearbyPOI)
+        }
+      } catch {
+        // Overpass is optional — continue without it
+      }
+    }
+
     const eligiblePOIs = nearbyPOIs.filter(poi => {
       const key = poi.name
       if (dismissed.has(key)) return false
@@ -101,6 +122,7 @@ export function useMagicMoment({
 
     const s = buildMagicMomentSuggestion(eligiblePOIs, ctx)
     setSuggestion(s)
+    })()
   }, [resolvedLat, resolvedLng, currentIndex, minutesToNext, dayProgress, destination, today, onboarding.interests, dismissed, lastShownAt])
 
   function dismiss() {

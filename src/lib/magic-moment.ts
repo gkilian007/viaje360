@@ -151,7 +151,7 @@ const DEFAULT_RADIUS_METERS = 600
 export function findNearbyPOIs(ctx: MagicMomentContext, radiusMeters = DEFAULT_RADIUS_METERS): NearbyPOI[] {
   const cityKey = ctx.destination.toLowerCase().trim()
 
-  // Try exact match, then partial match
+  // Try exact match, then partial match in curated DB
   let candidates = POI_DATABASE[cityKey]
   if (!candidates) {
     const found = Object.keys(POI_DATABASE).find(k => cityKey.includes(k) || k.includes(cityKey))
@@ -165,6 +165,80 @@ export function findNearbyPOIs(ctx: MagicMomentContext, radiusMeters = DEFAULT_R
     }))
     .filter(({ dist }) => dist <= radiusMeters)
     .map(({ poi, dist }) => toPOI(poi, dist))
+}
+
+// ─── Overpass API — real-time POI search (server-side via /api/nearby) ────────
+// Used as fallback when curated DB has no results for the destination.
+// Caller is responsible for invoking this and merging with findNearbyPOIs results.
+
+export interface OverpassPOI {
+  name: string
+  type: string
+  lat: number
+  lng: number
+  distanceMeters: number
+  mapsUrl: string
+  emoji: string
+  durationMinutes: number
+  openNow: boolean
+}
+
+const OVERPASS_TYPE_MAP: Record<string, { emoji: string; type: string; duration: number }> = {
+  museum: { emoji: "🏛️", type: "arte", duration: 60 },
+  gallery: { emoji: "🖼️", type: "arte", duration: 30 },
+  cafe: { emoji: "☕", type: "gastronomia", duration: 20 },
+  restaurant: { emoji: "🍽️", type: "gastronomia", duration: 45 },
+  bar: { emoji: "🍷", type: "gastronomia", duration: 25 },
+  market: { emoji: "🛒", type: "gastronomia", duration: 30 },
+  viewpoint: { emoji: "🌆", type: "fotografia", duration: 20 },
+  park: { emoji: "🌳", type: "naturaleza", duration: 30 },
+  garden: { emoji: "🌸", type: "naturaleza", duration: 25 },
+  historic: { emoji: "🏺", type: "historia", duration: 20 },
+  artwork: { emoji: "🎨", type: "arte", duration: 10 },
+  fountain: { emoji: "⛲", type: "fotografia", duration: 10 },
+  bookshop: { emoji: "📚", type: "cultural", duration: 20 },
+  ice_cream: { emoji: "🍦", type: "gastronomia", duration: 10 },
+}
+
+export function overpassResultToNearbyPOI(
+  element: { lat: number; lon: number; tags: Record<string, string> },
+  fromLat: number,
+  fromLng: number
+): OverpassPOI | null {
+  const tags = element.tags ?? {}
+  const name = tags.name ?? tags["name:en"] ?? tags["name:es"]
+  if (!name || name.length < 3) return null
+
+  const dist = haversineMeters(fromLat, fromLng, element.lat, element.lon)
+  const amenity = tags.amenity ?? tags.tourism ?? tags.historic ?? tags.leisure ?? ""
+  const mapped = OVERPASS_TYPE_MAP[amenity] ?? { emoji: "📍", type: "cultural", duration: 20 }
+
+  return {
+    name,
+    type: mapped.type,
+    lat: element.lat,
+    lng: element.lon,
+    distanceMeters: Math.round(dist),
+    mapsUrl: `https://www.google.com/maps/search/?api=1&query=${element.lat},${element.lon}`,
+    emoji: mapped.emoji,
+    durationMinutes: mapped.duration,
+    openNow: true, // Overpass doesn't have real-time hours — assume open
+  }
+}
+
+export function overpassPOIToNearbyPOI(poi: OverpassPOI): NearbyPOI {
+  return {
+    name: poi.name,
+    type: poi.type,
+    distanceMeters: poi.distanceMeters,
+    lat: poi.lat,
+    lng: poi.lng,
+    openNow: poi.openNow,
+    durationMinutes: poi.durationMinutes,
+    mapsUrl: poi.mapsUrl,
+    emoji: poi.emoji,
+    description: undefined,
+  }
 }
 
 // ─── Score a POI ──────────────────────────────────────────────────────────────

@@ -1,25 +1,15 @@
 import { NextRequest } from "next/server"
-import { successResponse, normalizeRouteError } from "@/lib/api/route-helpers"
-import { createDestinationOrder } from "@/lib/services/paypal.service"
+import { errorResponse } from "@/lib/api/route-helpers"
 
-export async function POST(req: NextRequest) {
-  try {
-    const body = await req.json()
-    const { destination, amount, currency } = body
+// PayPal integration is not yet active.
+// Configure NEXT_PUBLIC_PAYPAL_CLIENT_ID and PAYPAL_CLIENT_SECRET to enable it.
+// Currently all payments go through Stripe (/api/stripe/create-checkout-session).
 
-    if (!destination) {
-      return successResponse({ error: "destination required" }, 400)
-    }
-
-    const order = await createDestinationOrder(
-      destination,
-      amount ?? "4.99",
-      currency ?? "EUR"
-    )
-
-    return successResponse({ orderId: order.id, status: order.status })
-  } catch (error) {
-    console.error("PayPal create-order error:", error)
-    return normalizeRouteError(error, "Failed to create PayPal order")
-  }
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+export async function POST(_req: NextRequest) {
+  return errorResponse(
+    "INTERNAL_ERROR",
+    "PayPal integration is not active. Please use Stripe checkout.",
+    501
+  )
 }
