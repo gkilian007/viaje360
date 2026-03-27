@@ -1,10 +1,11 @@
 "use client"
 
 import { useState, useRef, useCallback } from "react"
+import type { DayItinerary } from "@/lib/types"
 
 interface AdaptInputProps {
   tripId: string
-  onAdapted: (days: any[]) => void
+  onAdapted: (days: DayItinerary[]) => void
   disabled?: boolean
   /** Current day number for context-aware adaptation */
   currentDayNumber?: number

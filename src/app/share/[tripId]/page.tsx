@@ -70,6 +70,14 @@ export default function ShareTripPage() {
   const [error, setError] = useState<string | null>(null)
   const [copied, setCopied] = useState(false)
 
+  function handleCopyLink() {
+    const url = window.location.href
+    navigator.clipboard.writeText(url).then(() => {
+      setCopied(true)
+      setTimeout(() => setCopied(false), 2500)
+    }).catch(() => {})
+  }
+
   useEffect(() => {
     if (!tripId) return
 
@@ -227,9 +235,13 @@ export default function ShareTripPage() {
       {/* ── Sticky CTA footer ── */}
       <div className="fixed bottom-0 left-0 right-0 z-20 bg-[#0a0a0f]/90 backdrop-blur-xl border-t border-white/[0.06] px-4 py-4">
         <div className="max-w-2xl mx-auto flex items-center justify-between gap-3">
-          <p className="text-[#c0c6d6] text-sm">
-            Creado con <span className="text-white font-semibold">Viaje360</span>
-          </p>
+          <button
+            onClick={handleCopyLink}
+            className="text-[#c0c6d6] text-sm flex items-center gap-1.5 hover:text-white transition-colors"
+          >
+            <span className="text-base">{copied ? "✅" : "🔗"}</span>
+            {copied ? "Copiado" : "Compartir"}
+          </button>
           <Link
             href="/home"
             className="shrink-0 bg-gradient-to-r from-[#0A84FF] to-[#5E5CE6] text-white text-sm font-semibold px-5 py-2.5 rounded-xl"
@@ -239,7 +251,7 @@ export default function ShareTripPage() {
         </div>
       </div>
 
-      {/* ── Copy link toast (hidden — triggered via plan/page.tsx button) ── */}
+      {/* ── Copy link toast ── */}
       {copied && (
         <div className="fixed top-20 left-1/2 -translate-x-1/2 z-50 bg-[#30D158] text-white text-sm font-semibold px-4 py-2 rounded-xl shadow-lg">
           ✅ Enlace copiado

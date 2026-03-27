@@ -2,6 +2,7 @@
 
 import { useState } from "react"
 import { useRouter } from "next/navigation"
+import { BottomNav } from "@/components/layout/BottomNav"
 
 const FEATURES_FREE = [
   "14 días de prueba gratis por destino",
@@ -195,6 +196,8 @@ export default function PricingPage() {
       <p className="text-[11px] text-[#666] text-center mt-4 leading-relaxed">
         Checkout seguro alojado por Stripe. Puedes cancelar en cualquier momento.
       </p>
+
+      <BottomNav />
     </div>
   )
 }

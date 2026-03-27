@@ -3,6 +3,7 @@
 import { useEffect, useState, useCallback } from "react"
 import { useRouter } from "next/navigation"
 import type { TripSummary } from "@/app/api/trips/route"
+import { BottomNav } from "@/components/layout/BottomNav"
 
 function formatDateRange(start: string, end: string): string {
   const s = new Date(start)
@@ -178,6 +179,8 @@ export default function TripsPage() {
             />
           ))}
       </div>
+
+      <BottomNav />
     </div>
   )
 }

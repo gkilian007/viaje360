@@ -13,7 +13,7 @@ export function TopAppBar({ title, showBack = false }: TopAppBarProps) {
   const displayTitle = title ?? currentTrip?.name ?? "Viaje360"
 
   return (
-    <div className="absolute top-0 left-0 right-0 z-20 px-4 pt-safe-top">
+    <div className="absolute top-0 left-0 right-0 z-20 px-4 safe-area-top">
       <div
         className="flex items-center justify-between px-4 py-3 mt-2 rounded-2xl"
         style={{

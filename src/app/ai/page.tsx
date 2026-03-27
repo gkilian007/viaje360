@@ -112,7 +112,7 @@ export default function AIPage() {
     <div className="flex flex-col h-full overflow-hidden" style={{ background: "#131315" }}>
       {/* Header */}
       <div
-        className="flex items-center gap-3 px-4 py-4 shrink-0"
+        className="safe-area-top flex items-center gap-3 px-4 pb-4 pt-4 shrink-0"
         style={{
           background: "rgba(19, 19, 21, 0.95)",
           backdropFilter: "blur(20px)",
