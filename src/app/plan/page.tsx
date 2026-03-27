@@ -111,6 +111,7 @@ function PlanPageContent() {
   const [hydrated, setHydrated] = useState(false)
   const [selectedActivityId, setSelectedActivityId] = useState<string | null>(null)
   const [showDiarySaved, setShowDiarySaved] = useState(false)
+  const [shareCopied, setShareCopied] = useState(false)
   const { trackEvent } = useActivityEventTracker()
   const { hasExistingDiary } = useExistingDiary(currentTrip?.id ?? null, selectedDay)
   const access = useAccess(currentTrip?.destination, currentTrip?.startDate)
@@ -422,6 +423,27 @@ function PlanPageContent() {
                 <span>Ver recap del viaje</span>
                 <span className="material-symbols-outlined text-[14px] ml-auto">chevron_right</span>
               </a>
+            </div>
+          )}
+
+          {/* Share plan button */}
+          {currentTrip?.id && (
+            <div className="px-5 pb-2">
+              <button
+                onClick={() => {
+                  const shareUrl = `https://viaje360.app/share/${currentTrip.id}`
+                  navigator.clipboard.writeText(shareUrl).then(() => {
+                    setShareCopied(true)
+                    setTimeout(() => setShareCopied(false), 2500)
+                  }).catch(() => {})
+                }}
+                className="flex items-center gap-2 w-full py-3 px-4 rounded-2xl text-[12px] text-[#888] hover:text-white transition-colors"
+                style={{ background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.06)" }}
+              >
+                <span className="material-symbols-outlined text-[16px] text-[#0A84FF]">share</span>
+                <span>{shareCopied ? "✅ Enlace copiado" : "Compartir plan"}</span>
+                <span className="material-symbols-outlined text-[14px] ml-auto">link</span>
+              </button>
             </div>
           )}
 
