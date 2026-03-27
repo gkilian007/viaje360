@@ -257,32 +257,63 @@ function RealRouteSegments({ geocoded }: { geocoded: GeocodedActivity[] }) {
 // Auto-fit map bounds when markers change
 function FitBounds({ geocoded }: { geocoded: GeocodedActivity[] }) {
   const map = useMap()
-  const fittedRef = useRef(false)
+  const prevIdsRef = useRef("")
+
+  // Single effect: fit whenever the set of activity IDs changes
+  const geoIds = geocoded.map(g => g.activity.id).join(",")
 
   useEffect(() => {
+    if (!geoIds) return
+    // Same set as before — don't re-fit
+    if (geoIds === prevIdsRef.current) return
+    prevIdsRef.current = geoIds
+
     const valid = geocoded.filter(g => isFinite(g.lat) && isFinite(g.lng))
     if (valid.length === 0) return
 
-    // Only fit bounds once when markers first appear — avoids jarring re-fits
-    if (fittedRef.current) return
-    fittedRef.current = true
-
     const size = map.getSize()
-    if (size.x === 0 || size.y === 0) return
+    if (size.x === 0 || size.y === 0) {
+      // Map not ready yet — retry after paint
+      setTimeout(() => {
+        const s = map.getSize()
+        if (s.x > 0 && s.y > 0) {
+          const bounds = L.latLngBounds(valid.map((g) => [g.lat, g.lng]))
+          map.fitBounds(bounds, { padding: [40, 40], maxZoom: 15 })
+        }
+      }, 150)
+      return
+    }
 
     const bounds = L.latLngBounds(valid.map((g) => [g.lat, g.lng]))
     map.fitBounds(bounds, { padding: [40, 40], maxZoom: 15 })
-  }, [geocoded, map])
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [geoIds, map])
 
-  // Reset when switching to a different day (different set of activities)
+  return null
+}
+
+// Invalidate map size and re-fit when activity set changes (day switch)
+function DayChangeEffect({ geocoded }: { geocoded: GeocodedActivity[] }) {
+  const map = useMap()
   const geoIds = geocoded.map(g => g.activity.id).join(",")
   const prevIdsRef = useRef("")
+
   useEffect(() => {
-    if (geoIds !== prevIdsRef.current && prevIdsRef.current !== "") {
-      fittedRef.current = false
-    }
+    if (!geoIds || geoIds === prevIdsRef.current) return
     prevIdsRef.current = geoIds
-  }, [geoIds])
+
+    // Let React finish rendering the new markers, then invalidate + fit
+    const timer = setTimeout(() => {
+      map.invalidateSize()
+      const valid = geocoded.filter(g => isFinite(g.lat) && isFinite(g.lng))
+      if (valid.length === 0) return
+      const bounds = L.latLngBounds(valid.map(g => [g.lat, g.lng]))
+      map.fitBounds(bounds, { padding: [40, 40], maxZoom: 15 })
+    }, 100)
+
+    return () => clearTimeout(timer)
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [geoIds, map])
 
   return null
 }
@@ -366,6 +397,9 @@ export function RealMapView({
 
         {/* Center on destination when no markers */}
         {geocoded.length === 0 && <CenterOnDestination center={center} />}
+
+        {/* Invalidate + re-fit on day change */}
+        <DayChangeEffect geocoded={geocoded} />
 
         {/* Auto-fit bounds */}
         <FitBounds geocoded={geocoded} />
