@@ -5,22 +5,29 @@ import { AnimatePresence, motion } from "framer-motion"
 import { useOnboardingStore } from "@/store/useOnboardingStore"
 import { ProgressBar } from "./ui/ProgressBar"
 import { NavigationButtons } from "./ui/NavigationButtons"
-import { DestinationStep } from "./steps/DestinationStep"
-import { CompanionsStep } from "./steps/CompanionsStep"
-import { KidsPetsStep } from "./steps/KidsPetsStep"
-import { MobilityStep } from "./steps/MobilityStep"
-import { AccommodationStep } from "./steps/AccommodationStep"
+// Core new steps
+import { CoreDestinationStep } from "./steps/CoreDestinationStep"
+import { CoreCompanionsStep } from "./steps/CoreCompanionsStep"
+import { CoreFinalizeStep } from "./steps/CoreFinalizeStep"
+// Reused steps (core)
 import { InterestsStep } from "./steps/InterestsStep"
+import { BudgetStep } from "./steps/BudgetStep"
+// Advanced (optional) steps
+import { AccommodationStep } from "./steps/AccommodationStep"
 import { TravelerStyleStep } from "./steps/TravelerStyleStep"
 import { FamousLocalStep } from "./steps/FamousLocalStep"
 import { PaceStep } from "./steps/PaceStep"
 import { RestDaysStep } from "./steps/RestDaysStep"
 import { DayStyleStep } from "./steps/DayStyleStep"
-import { BudgetStep } from "./steps/BudgetStep"
 import { SplurgeStep } from "./steps/SplurgeStep"
 import { DietaryStep } from "./steps/DietaryStep"
 import { TransportStep } from "./steps/TransportStep"
 import { WeatherStep } from "./steps/WeatherStep"
+import { MobilityStep } from "./steps/MobilityStep"
+// Legacy steps (kept for backward compat)
+import { DestinationStep } from "./steps/DestinationStep"
+import { CompanionsStep } from "./steps/CompanionsStep"
+import { KidsPetsStep } from "./steps/KidsPetsStep"
 import { FirstTimeStep } from "./steps/FirstTimeStep"
 import { MustSeeStep } from "./steps/MustSeeStep"
 import { GeneratingStep } from "./steps/GeneratingStep"
@@ -28,27 +35,35 @@ import type { StepId } from "@/lib/onboarding-types"
 
 function StepContent({ stepId }: { stepId: StepId }) {
   switch (stepId) {
-    case "destination": return <DestinationStep />
-    case "companions": return <CompanionsStep />
-    case "kids-pets": return <KidsPetsStep />
-    case "mobility": return <MobilityStep />
-    case "accommodation": return <AccommodationStep />
+    // Core 5-step flow
+    case "core-destination": return <CoreDestinationStep />
+    case "core-companions": return <CoreCompanionsStep />
     case "interests": return <InterestsStep />
+    case "budget": return <BudgetStep />
+    case "core-finalize": return <CoreFinalizeStep />
+    // Advanced optional steps
+    case "accommodation": return <AccommodationStep />
     case "traveler-style": return <TravelerStyleStep />
     case "famous-local": return <FamousLocalStep />
     case "pace": return <PaceStep />
     case "rest-days": return <RestDaysStep />
     case "day-style": return <DayStyleStep />
-    case "budget": return <BudgetStep />
     case "splurge": return <SplurgeStep />
     case "dietary": return <DietaryStep />
     case "transport": return <TransportStep />
     case "weather": return <WeatherStep />
+    case "mobility": return <MobilityStep />
+    // Legacy (kept for backward compat)
+    case "destination": return <DestinationStep />
+    case "companions": return <CompanionsStep />
+    case "kids-pets": return <KidsPetsStep />
     case "first-time": return <FirstTimeStep />
     case "must-see": return <MustSeeStep />
     default: return null
   }
 }
+
+const CORE_STEP_COUNT = 5
 
 const slideVariants = {
   enterFromRight: { x: "100%", opacity: 0 },
@@ -66,8 +81,11 @@ export function OnboardingWizard() {
     getCurrentStepIndex,
     getTotalSteps,
     isStepValid,
+    isInAdvanced,
     nextStep,
     prevStep,
+    advancedExpanded,
+    getVisibleSteps,
   } = useOnboardingStore()
 
   const [generating, setGenerating] = useState(false)
@@ -87,12 +105,16 @@ export function OnboardingWizard() {
 
   const progress = getProgress()
   const currentIndex = getCurrentStepIndex()
-  const totalSteps = getTotalSteps()
+  const visibleSteps = getVisibleSteps()
   const isFirstStep = currentIndex === 0
-  const isLastStep = currentIndex === totalSteps - 1
+  const isLastStep = currentIndex === visibleSteps.length - 1
+  const inAdvanced = isInAdvanced()
+
+  // Step 5 (core-finalize) without advanced expanded = last step → trigger generation
+  const isCoreLastStep = currentStepId === "core-finalize" && !advancedExpanded
 
   const handleNext = () => {
-    if (isLastStep) {
+    if (isLastStep || isCoreLastStep) {
       setGenerating(true)
     } else {
       nextStep()
@@ -103,6 +125,12 @@ export function OnboardingWizard() {
     return <GeneratingStep />
   }
 
+  // Display step counter
+  const coreIndex = ["core-destination", "core-companions", "interests", "budget", "core-finalize"].indexOf(currentStepId)
+  const displayStep = inAdvanced
+    ? `Avanzado ${visibleSteps.indexOf(currentStepId) - CORE_STEP_COUNT + 1}/${visibleSteps.length - CORE_STEP_COUNT}`
+    : `${coreIndex + 1} / ${CORE_STEP_COUNT}`
+
   return (
     <div className="h-dvh map-bg flex flex-col overflow-hidden">
       {/* Top bar: progress + step count */}
@@ -110,10 +138,13 @@ export function OnboardingWizard() {
         <div className="flex items-center justify-between mb-3">
           <span className="text-xs text-[#c0c6d6]">Viaje360</span>
           <span className="text-xs text-[#c0c6d6]">
-            {currentIndex + 1} / {totalSteps}
+            {displayStep}
           </span>
         </div>
         <ProgressBar progress={progress} />
+        {inAdvanced && (
+          <p className="text-[10px] text-[#c0c6d6]/50 text-center mt-1">Personalización avanzada</p>
+        )}
       </div>
 
       {/* Step content */}
@@ -141,7 +172,7 @@ export function OnboardingWizard() {
           onBack={prevStep}
           isNextValid={isStepValid()}
           isFirstStep={isFirstStep}
-          isLastStep={isLastStep}
+          isLastStep={isLastStep || isCoreLastStep}
         />
       </div>
     </div>

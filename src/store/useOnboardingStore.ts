@@ -5,6 +5,31 @@ import { persist } from "zustand/middleware"
 import type { OnboardingData, StepId } from "@/lib/onboarding-types"
 import { defaultOnboardingData } from "@/lib/onboarding-types"
 
+// Core 5 steps (always shown)
+const CORE_STEPS: StepId[] = [
+  "core-destination",   // Step 1: destination + dates + groupSize
+  "core-companions",    // Step 2: companion + kids-pets inline if familia
+  "interests",          // Step 3: interests (chips)
+  "budget",             // Step 4: budget
+  "core-finalize",      // Step 5: mustSee + firstTime + advanced accordion
+]
+
+// Advanced steps (optional, shown only if user expands accordion in step 5)
+const ADVANCED_STEPS: StepId[] = [
+  "accommodation",
+  "traveler-style",
+  "famous-local",
+  "pace",
+  "rest-days",
+  "day-style",
+  "splurge",
+  "dietary",
+  "transport",
+  "weather",
+  "mobility",
+]
+
+// Legacy full steps (kept for reference / fallback)
 const ALL_STEPS: StepId[] = [
   "destination",
   "companions",
@@ -31,16 +56,22 @@ interface OnboardingState {
   currentStepId: StepId
   onboardingComplete: boolean
   direction: 1 | -1
+  // Whether the user expanded the advanced accordion in step 5
+  advancedExpanded: boolean
+  // Current position within advanced steps (null = not in advanced)
+  advancedStepIndex: number | null
 
   getVisibleSteps: () => StepId[]
   getCurrentStepIndex: () => number
   getTotalSteps: () => number
   getProgress: () => number
   isStepValid: () => boolean
+  isInAdvanced: () => boolean
 
   nextStep: () => void
   prevStep: () => void
   setField: <K extends keyof OnboardingData>(key: K, value: OnboardingData[K]) => void
+  setAdvancedExpanded: (v: boolean) => void
   completeOnboarding: () => void
   reset: () => void
 }
@@ -49,37 +80,57 @@ export const useOnboardingStore = create<OnboardingState>()(
   persist(
     (set, get) => ({
       data: defaultOnboardingData,
-      currentStepId: "destination",
+      currentStepId: "core-destination",
       onboardingComplete: false,
       direction: 1,
+      advancedExpanded: false,
+      advancedStepIndex: null,
 
       getVisibleSteps: () => {
-        const { data } = get()
-        return ALL_STEPS.filter((step) => {
-          if (step === "kids-pets") return data.companion === "familia"
-          if (step === "mobility")
-            return data.companion === "familia" || data.hasMobilityNeeds
-          return true
-        })
+        const { advancedExpanded } = get()
+        // Core flow always visible; advanced only if expanded
+        if (!advancedExpanded) return CORE_STEPS
+        return [...CORE_STEPS, ...ADVANCED_STEPS]
       },
 
       getCurrentStepIndex: () => {
         const { currentStepId, getVisibleSteps } = get()
-        return getVisibleSteps().indexOf(currentStepId)
+        const steps = getVisibleSteps()
+        const idx = steps.indexOf(currentStepId)
+        return idx >= 0 ? idx : 0
       },
 
-      getTotalSteps: () => get().getVisibleSteps().length,
+      getTotalSteps: () => CORE_STEPS.length, // progress bar always based on 5 core steps
 
       getProgress: () => {
-        const { getCurrentStepIndex, getTotalSteps } = get()
-        const total = getTotalSteps()
-        if (total === 0) return 0
-        return (getCurrentStepIndex() + 1) / total
+        const { currentStepId } = get()
+        const idx = CORE_STEPS.indexOf(currentStepId)
+        if (idx >= 0) return (idx + 1) / CORE_STEPS.length
+        // In advanced steps: keep at 100%
+        return 1
+      },
+
+      isInAdvanced: () => {
+        const { currentStepId } = get()
+        return ADVANCED_STEPS.includes(currentStepId)
       },
 
       isStepValid: () => {
         const { data, currentStepId } = get()
         switch (currentStepId) {
+          // Core steps
+          case "core-destination":
+            return data.destination.trim().length > 0 && data.startDate.length > 0 && data.endDate.length > 0
+          case "core-companions":
+            return data.companion !== null
+          case "core-finalize":
+            return true
+          // Reused steps
+          case "interests":
+            return data.interests.length > 0
+          case "budget":
+            return data.budget !== null
+          // Legacy steps (advanced)
           case "destination":
             return data.destination.trim().length > 0
           case "companions":
@@ -90,8 +141,6 @@ export const useOnboardingStore = create<OnboardingState>()(
             return data.mobility !== null
           case "accommodation":
             return true
-          case "interests":
-            return data.interests.length > 0
           case "traveler-style":
             return data.travelerStyle !== null
           case "famous-local":
@@ -102,8 +151,6 @@ export const useOnboardingStore = create<OnboardingState>()(
             return true
           case "day-style":
             return true
-          case "budget":
-            return data.budget !== null
           case "splurge":
             return data.splurge.length > 0
           case "dietary":
@@ -125,7 +172,7 @@ export const useOnboardingStore = create<OnboardingState>()(
         const { currentStepId, getVisibleSteps } = get()
         const steps = getVisibleSteps()
         const currentIndex = steps.indexOf(currentStepId)
-        if (currentIndex < steps.length - 1) {
+        if (currentIndex >= 0 && currentIndex < steps.length - 1) {
           set({ currentStepId: steps[currentIndex + 1], direction: 1 })
         }
       },
@@ -142,14 +189,18 @@ export const useOnboardingStore = create<OnboardingState>()(
       setField: (key, value) =>
         set((state) => ({ data: { ...state.data, [key]: value } })),
 
+      setAdvancedExpanded: (v: boolean) => set({ advancedExpanded: v }),
+
       completeOnboarding: () => set({ onboardingComplete: true }),
 
       reset: () =>
         set({
           data: defaultOnboardingData,
-          currentStepId: "destination",
+          currentStepId: "core-destination",
           onboardingComplete: false,
           direction: 1,
+          advancedExpanded: false,
+          advancedStepIndex: null,
         }),
     }),
     {
@@ -158,6 +209,7 @@ export const useOnboardingStore = create<OnboardingState>()(
         data: state.data,
         currentStepId: state.currentStepId,
         onboardingComplete: state.onboardingComplete,
+        advancedExpanded: state.advancedExpanded,
       }),
     }
   )

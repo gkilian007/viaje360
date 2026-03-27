@@ -174,3 +174,7 @@ export type StepId =
   | "weather"
   | "first-time"
   | "must-see"
+  // Core 5-step flow
+  | "core-destination"
+  | "core-companions"
+  | "core-finalize"
