@@ -11,14 +11,30 @@ const HEADERS = {
   "User-Agent": "Viaje360/1.0 (https://viaje360.app)",
 }
 
+// Bounding boxes for cities whose name matches their province/state
+// Prevents Nominatim returning results from province instead of the city itself
+const CITY_VIEWBOXES: Record<string, string> = {
+  toledo: "-4.15,39.82,-3.95,39.92",
+  madrid: "-3.85,40.30,-3.55,40.55",
+  barcelona: "2.05,41.30,2.25,41.50",
+  sevilla: "-6.05,37.30,-5.85,37.45",
+  valencia: "-0.45,39.40,-0.30,39.55",
+  granada: "-3.65,37.14,-3.55,37.22",
+  córdoba: "-4.85,37.86,-4.75,37.92",
+  cordoba: "-4.85,37.86,-4.75,37.92",
+  bilbao: "-2.98,43.24,-2.88,43.30",
+  málaga: "-4.48,36.69,-4.38,36.74",
+  malaga: "-4.48,36.69,-4.38,36.74",
+}
+
 interface Coords {
   lat: number
   lng: number
 }
 
-async function searchNominatim(query: string): Promise<Coords | null> {
+async function searchNominatim(query: string, extra: Record<string, string> = {}): Promise<Coords | null> {
   try {
-    const params = new URLSearchParams({ q: query, format: "json", limit: "1" })
+    const params = new URLSearchParams({ q: query, format: "json", limit: "1", ...extra })
     const res = await fetch(`${NOMINATIM_URL}?${params}`, { headers: HEADERS })
     if (!res.ok) return null
 
@@ -129,6 +145,18 @@ async function geocodeLocation(
   location: string,
   destination: string
 ): Promise<Coords | null> {
+  const cityKey = destination.toLowerCase().trim()
+  const viewbox = CITY_VIEWBOXES[cityKey]
+
+  // Helper: search with optional viewbox constraint
+  async function searchWithViewbox(query: string): Promise<Coords | null> {
+    if (viewbox) {
+      const r = await searchNominatim(query, { viewbox, bounded: "1" })
+      if (r) return r
+    }
+    return searchNominatim(query)
+  }
+
   // Build a priority-ordered list of queries (most specific first)
   const queries: string[] = []
 
@@ -173,7 +201,7 @@ async function geocodeLocation(
   })
 
   for (const query of uniqueQueries) {
-    const result = await searchNominatim(query)
+    const result = await searchWithViewbox(query)
     if (result) return result
     await delayMs(NOMINATIM_DELAY_MS)
   }
