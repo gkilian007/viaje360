@@ -39,6 +39,7 @@ export async function POST(req: NextRequest) {
     return successResponse({ itinerary: adapted })
   } catch (error) {
     console.error("itinerary/adapt error:", error)
+    Sentry.captureException(error)
     return normalizeRouteError(error, "Failed to adapt itinerary")
   }
 }

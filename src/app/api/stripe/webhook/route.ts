@@ -1,6 +1,8 @@
+import * as Sentry from "@sentry/nextjs"
 import { NextRequest, NextResponse } from "next/server"
 import { getStripeClient } from "@/lib/services/stripe.service"
 import { createServiceClient } from "@/lib/supabase/server"
+import { sendWelcomeEmail, sendPaymentConfirmationEmail } from "@/lib/services/email.service"
 import {
   buildCheckoutCompletedUpsert,
   buildSubscriptionInactiveUpdate,
@@ -58,6 +60,23 @@ export async function POST(req: NextRequest) {
         }
 
         console.info(`[stripe/webhook] Activated subscription for user ${userId}`)
+
+        // Send transactional emails — fire-and-forget, never block the webhook
+        const session = event.data.object as { customer_email?: string | null; customer_details?: { email?: string | null }; amount_total?: number | null; currency?: string | null }
+        const customerEmail = session.customer_email ?? session.customer_details?.email ?? null
+        if (customerEmail) {
+          const amountCents = session.amount_total ?? 0
+          const currency = (session.currency ?? "eur").toUpperCase()
+          const amount = `${(amountCents / 100).toFixed(2)} ${currency}`
+          // Welcome email (new user flow)
+          sendWelcomeEmail(customerEmail, customerEmail.split("@")[0]).catch((err) =>
+            console.warn("[stripe/webhook] sendWelcomeEmail failed:", err)
+          )
+          // Payment confirmation email
+          sendPaymentConfirmationEmail(customerEmail, customerEmail.split("@")[0], "Anual", amount).catch((err) =>
+            console.warn("[stripe/webhook] sendPaymentConfirmationEmail failed:", err)
+          )
+        }
         break
       }
 
@@ -90,6 +109,7 @@ export async function POST(req: NextRequest) {
     }
   } catch (err) {
     console.error("[stripe/webhook] Handler error:", err)
+    Sentry.captureException(err)
     return NextResponse.json({ error: "Internal server error" }, { status: 500 })
   }
 

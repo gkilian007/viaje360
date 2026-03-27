@@ -57,10 +57,10 @@ export default withSentryConfig(nextConfig, {
   silent: true,
   // Disable Sentry telemetry
   telemetry: false,
-  // Only upload source maps in production
-  dryRun: process.env.NODE_ENV !== "production",
   // Disable automatic instrumentation of Vercel Cron Monitors
   automaticVercelMonitors: false,
-  // Disable sentry CLI wizard
-  disableServerWebpackPlugin: false,
+  // Only upload source maps when SENTRY_AUTH_TOKEN is set
+  sourcemaps: {
+    disable: !process.env.SENTRY_AUTH_TOKEN,
+  },
 });
