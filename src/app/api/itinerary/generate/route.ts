@@ -110,6 +110,29 @@ export async function POST(req: NextRequest) {
           console.warn("[generate] activity_knowledge ingestion error:", err)
         )
 
+    // Pre-fetch images for the first 10 activities — fire-and-forget, never block the response
+    const allActivities = generatedItinerary.days.flatMap((d) => d.activities).slice(0, 10)
+    const baseUrl = process.env.NEXT_PUBLIC_APP_URL ?? "https://viaje360.app"
+    Promise.allSettled(
+      allActivities.map((activity) =>
+        Promise.race([
+          fetch(`${baseUrl}/api/activity-assets`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              name: activity.name,
+              location: activity.location ?? "",
+              destination: body.destination,
+              type: activity.type ?? "tour",
+              imageQuery: activity.imageQuery ?? activity.name,
+              url: activity.url ?? undefined,
+            }),
+          }).catch((err) => console.warn("[generate] activity-assets prefetch error:", activity.name, err)),
+          new Promise<void>((resolve) => setTimeout(resolve, 5000)),
+        ])
+      )
+    ).catch((err) => console.warn("[generate] activity-assets Promise.allSettled error:", err))
+
     return successResponse({
       trip: {
         ...appTrip,
