@@ -253,7 +253,7 @@ function EmptyFeed({ onNewTrip }: { onNewTrip: () => void }) {
   )
 }
 
-function TrendingWidget({ onSelect }: { onSelect: () => void }) {
+function TrendingWidget({ onSelect }: { onSelect: (companion?: string, destination?: string) => void }) {
   return (
     <div
       className="rounded-2xl p-4"
@@ -271,7 +271,7 @@ function TrendingWidget({ onSelect }: { onSelect: () => void }) {
           <motion.button
             key={dest.name}
             whileTap={{ scale: 0.98 }}
-            onClick={onSelect}
+            onClick={() => onSelect(undefined, dest.name)}
             className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-white/5 transition-colors"
           >
             <div
@@ -292,7 +292,7 @@ function TrendingWidget({ onSelect }: { onSelect: () => void }) {
   )
 }
 
-function StylesWidget({ onNewTrip }: { onNewTrip: (companion?: string) => void }) {
+function StylesWidget({ onNewTrip }: { onNewTrip: (companion?: string, destination?: string) => void }) {
   return (
     <div
       className="rounded-2xl p-4"
@@ -397,10 +397,13 @@ export default function HomePage() {
     if (!loadingAuth) void loadActiveTrip()
   }, [loadingAuth, setCurrentTrip, setGeneratedItinerary, replaceChatMessages])
 
-  function handleNewTrip(companion?: string) {
+  function handleNewTrip(companion?: string, destination?: string) {
     resetOnboarding()
     if (companion) {
       setOnboardingField("companion", companion as "solo" | "pareja" | "familia" | "amigos")
+    }
+    if (destination) {
+      setOnboardingField("destination", destination)
     }
     router.push("/onboarding")
   }

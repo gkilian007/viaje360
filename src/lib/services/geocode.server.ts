@@ -6,7 +6,8 @@
 const NOMINATIM_URL = "https://nominatim.openstreetmap.org/search"
 const HEADERS = {
   Accept: "application/json",
-  "Accept-Language": "es,en,it,fr,de,pt",
+  // Broad accept-language so Nominatim returns results for any language name
+  "Accept-Language": "it,fr,de,ja,pt,es,en",
   "User-Agent": "Viaje360/1.0 (https://viaje360.app)",
 }
 
@@ -42,6 +43,77 @@ function simplifyName(name: string): string | null {
   return null
 }
 
+/**
+ * Spanish→local language translations for famous landmarks.
+ * Nominatim indexes landmarks in their local language;
+ * Spanish names for international sites fail ~100% of the time.
+ */
+const SPANISH_TO_LOCAL: Record<string, string> = {
+  // Italian landmarks
+  "coliseo romano": "Colosseo",
+  "coliseo": "Colosseo",
+  "foro romano": "Foro Romano",
+  "ciudad del vaticano": "Città del Vaticano",
+  "vaticano": "Vatican City",
+  "plaza de san pedro": "Piazza San Pietro",
+  "fontana de trevi": "Fontana di Trevi",
+  "panteón de agripa": "Pantheon",
+  "panteón": "Pantheon",
+  "muralla aureliana": "Mura Aureliane",
+  "basílica de san pedro": "Basilica di San Pietro",
+  "galería borghese": "Galleria Borghese",
+  "catacumbas de roma": "Catacombe di Roma",
+  "palacio del quirinal": "Palazzo del Quirinale",
+  "plaza navona": "Piazza Navona",
+  "plaza de españa": "Piazza di Spagna",
+  "escalinata de la trinidad": "Scalinata di Trinità dei Monti",
+  "campo de fiori": "Campo de' Fiori",
+  // French landmarks
+  "torre eiffel": "Tour Eiffel",
+  "museo del louvre": "Musée du Louvre",
+  "louvre": "Musée du Louvre",
+  "catedral de notre dame": "Cathédrale Notre-Dame de Paris",
+  "notre dame": "Notre-Dame de Paris",
+  "palacio de versalles": "Château de Versailles",
+  "versalles": "Château de Versailles",
+  "barrio montmartre": "Montmartre",
+  "arco de triunfo": "Arc de Triomphe",
+  "museo de orsay": "Musée d'Orsay",
+  "cementerio pere lachaise": "Cimetière du Père-Lachaise",
+  // Japanese landmarks
+  "templo senso-ji": "Sensō-ji",
+  "templo kinkaku-ji": "Kinkaku-ji",
+  "monte fuji": "Mount Fuji",
+  "palacio imperial de tokio": "Imperial Palace Tokyo",
+  "santuario meiji": "Meiji Jingu",
+  // German landmarks
+  "puerta de brandeburgo": "Brandenburger Tor",
+  "muro de berlín": "Berliner Mauer",
+  "castillo de neuschwanstein": "Schloss Neuschwanstein",
+  // Greek landmarks
+  "acrópolis": "Acropolis of Athens",
+  "partenón": "Parthenon",
+  // UK landmarks
+  "palacio de buckingham": "Buckingham Palace",
+  "torre de londres": "Tower of London",
+  "puente de la torre": "Tower Bridge",
+  "parlamento de londres": "Palace of Westminster",
+  "abadía de westminster": "Westminster Abbey",
+  // US landmarks
+  "estatua de la libertad": "Statue of Liberty",
+  "central park": "Central Park",
+  "times square": "Times Square",
+  // Other
+  "sagrada familia": "Sagrada Família",
+  "park güell": "Parc Güell",
+  "palau de la música catalana": "Palau de la Música Catalana",
+}
+
+function tryLocalName(name: string): string | null {
+  const normalized = name.toLowerCase().trim()
+  return SPANISH_TO_LOCAL[normalized] ?? null
+}
+
 /** Minimum delay between Nominatim requests (their policy: 1 req/s) */
 const NOMINATIM_DELAY_MS = 1100
 
@@ -60,21 +132,47 @@ async function geocodeLocation(
   // Build a priority-ordered list of queries (most specific first)
   const queries: string[] = []
 
-  // The location field should already be a real address in local language
+  // 1. The location field should already be a real address in local language
   queries.push(`${location}, ${destination}`)
 
-  // Fallback: activity name + destination
+  // 2. Try local-language name if we have a known translation
+  const localName = tryLocalName(name)
+  if (localName) {
+    queries.push(`${localName}, ${destination}`)
+    queries.push(localName) // name alone is often best for famous landmarks
+  }
+
+  // 3. Fallback: activity name + destination
   if (name !== location) {
     queries.push(`${name}, ${destination}`)
   }
 
-  // Fallback: simplified name for compound names
+  // 4. Simplified name for compound names
   const short = simplifyName(name)
   if (short) {
     queries.push(`${short}, ${destination}`)
   }
 
-  for (const query of queries) {
+  // 5. Last resort: location alone (works well for proper street addresses)
+  if (location && location !== name && location.length > 5) {
+    queries.push(location)
+  }
+
+  // 6. Name alone — Nominatim is good at famous landmarks without city
+  if (name.length > 3 && !queries.includes(name)) {
+    queries.push(name)
+  }
+
+  // Deduplicate while preserving order
+  const seen = new Set<string>()
+  const uniqueQueries = queries.filter(q => {
+    const k = q.toLowerCase().trim()
+    if (seen.has(k)) return false
+    seen.add(k)
+    return true
+  })
+
+  for (const query of uniqueQueries) {
     const result = await searchNominatim(query)
     if (result) return result
     await delayMs(NOMINATIM_DELAY_MS)
