@@ -117,9 +117,13 @@ export function CoreFinalizeStep() {
                 transition={{ duration: 0.25 }}
                 className="overflow-hidden"
               >
-                <div className="mt-3 p-4 rounded-2xl border border-white/8 bg-[rgba(31,31,33,0.5)] space-y-2">
-                  <p className="text-xs text-[#c0c6d6]/70 mb-3">
-                    Al continuar pasarás por las opciones avanzadas antes de generar tu itinerario.
+                <div className="mt-3 p-4 rounded-2xl border border-[#0A84FF]/20 bg-[#0A84FF]/5">
+                  <p className="text-xs text-[#0A84FF] font-medium mb-1 flex items-center gap-1.5">
+                    <span className="material-symbols-outlined text-[14px]">info</span>
+                    Pulsa Continuar para configurar cada opción paso a paso
+                  </p>
+                  <p className="text-xs text-[#888] mb-3">
+                    Se añadirán {9} pasos adicionales antes de generar tu itinerario.
                   </p>
                   <div className="flex flex-wrap gap-2">
                     {[
