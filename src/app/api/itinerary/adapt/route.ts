@@ -1,3 +1,4 @@
+import * as Sentry from "@sentry/nextjs"
 import { NextRequest } from "next/server"
 import { rateLimit } from "@/lib/rate-limit"
 import { adaptRequestSchema } from "@/lib/api/contracts"

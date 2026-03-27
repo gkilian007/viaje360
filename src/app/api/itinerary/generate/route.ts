@@ -1,3 +1,4 @@
+import * as Sentry from "@sentry/nextjs"
 import { NextRequest } from "next/server"
 import { rateLimit } from "@/lib/rate-limit"
 import { onboardingRequestSchema } from "@/lib/api/contracts"
@@ -121,6 +122,7 @@ export async function POST(req: NextRequest) {
     })
   } catch (error) {
     console.error("itinerary/generate error:", error)
+    Sentry.captureException(error)
 
     // Provide user-friendly error messages
     const errMsg = error instanceof Error ? error.message : ""

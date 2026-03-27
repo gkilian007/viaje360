@@ -1,4 +1,5 @@
 import type { NextConfig } from "next";
+import { withSentryConfig } from "@sentry/nextjs";
 
 const nextConfig: NextConfig = {
   async headers() {
@@ -51,4 +52,15 @@ const nextConfig: NextConfig = {
   },
 };
 
-export default nextConfig;
+export default withSentryConfig(nextConfig, {
+  // Suppress source map upload logs during CI/CD
+  silent: true,
+  // Disable Sentry telemetry
+  telemetry: false,
+  // Only upload source maps in production
+  dryRun: process.env.NODE_ENV !== "production",
+  // Disable automatic instrumentation of Vercel Cron Monitors
+  automaticVercelMonitors: false,
+  // Disable sentry CLI wizard
+  disableServerWebpackPlugin: false,
+});
