@@ -8,6 +8,7 @@ import { useActivityEvent } from "@/lib/hooks/useActivityEvent"
 import { useActivityAssets } from "@/lib/hooks/useActivityAssets"
 import { useAppStore } from "@/store/useAppStore"
 import { AffiliateLinks } from "@/components/features/AffiliateLinks"
+import { ViatorTours } from "@/components/features/ViatorTours"
 
 interface ActivityDetailModalProps {
   activity: TimelineActivity | null
@@ -405,6 +406,16 @@ export function ActivityDetailModal({ activity, tripId, currentDayNumber, onClos
                   {activity.notes || "Abre el mapa o la web asociada para confirmar horario, acceso y tiempos antes de ir."}
                 </p>
               </div>
+
+              {/* Viator real tours */}
+              {currentTrip?.destination && (
+                <div className="mb-4">
+                  <ViatorTours
+                    activityName={activity.name}
+                    destination={currentTrip.destination}
+                  />
+                </div>
+              )}
 
               {/* Affiliate booking links */}
               <div className="mb-4">
