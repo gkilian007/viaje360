@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect, Suspense } from "react"
+import { useState, useEffect, useRef, Suspense } from "react"
 import { useSearchParams } from "next/navigation"
 import { BottomNav } from "@/components/layout/BottomNav"
 import { TopAppBar } from "@/components/layout/TopAppBar"
@@ -226,6 +226,19 @@ function PlanPageContent() {
       destination: currentTrip?.destination ?? "",
       tripStartDate: currentTrip?.startDate ?? null,
     })
+
+  // Show Magic Moment as popup when an activity completes (currentIndex advances)
+  const [showMagicPopup, setShowMagicPopup] = useState(false)
+  const prevActivityIndexRef = useRef<number>(-99)
+  useEffect(() => {
+    const prev = prevActivityIndexRef.current
+    const curr = liveStatus.currentIndex
+    // Activity just changed (advanced) and we have a magic suggestion → show popup
+    if (prev !== -99 && curr !== prev && magicSuggestion) {
+      setShowMagicPopup(true)
+    }
+    prevActivityIndexRef.current = curr
+  }, [liveStatus.currentIndex, magicSuggestion])
   const totalDays = itinerary.length
   const onboardingData = useOnboardingStore((s) => s.data)
   const mobilityProfile = resolveMobilityProfile({
@@ -306,15 +319,6 @@ function PlanPageContent() {
                 </p>
               </div>
             </div>
-          )}
-
-          {/* Magic Moment — nearby hidden gem detected in real time */}
-          {magicSuggestion && (
-            <MagicMomentCard
-              suggestion={magicSuggestion}
-              onAccept={acceptMagic}
-              onDismiss={dismissMagic}
-            />
           )}
 
           {/* Proactive adaptation banner — shows top trip issue (weather, heat, fatigue, ...) */}
@@ -469,13 +473,6 @@ function PlanPageContent() {
                   Itinerario — Día {selectedDay}
                   {todayWeather && <WeatherBadge weather={todayWeather} compact />}
                 </p>
-                {magicSuggestion && (
-                  <MagicMomentCard
-                    suggestion={magicSuggestion}
-                    onAccept={acceptMagic}
-                    onDismiss={dismissMagic}
-                  />
-                )}
                 {topIssue && currentTrip?.id && (
                   <ProactiveAdaptationBanner
                     issue={topIssue}
@@ -585,6 +582,16 @@ function PlanPageContent() {
 
       {/* Achievement overlay */}
       {pendingAchievement && <AchievementOverlay achievement={pendingAchievement} />}
+
+      {/* Magic Moment popup — appears as bottom sheet when an activity completes */}
+      {showMagicPopup && magicSuggestion && (
+        <MagicMomentCard
+          suggestion={magicSuggestion}
+          asPopup
+          onAccept={() => { acceptMagic(); setShowMagicPopup(false) }}
+          onDismiss={() => { dismissMagic(); setShowMagicPopup(false) }}
+        />
+      )}
 
       {/* Diary saved toast */}
       {showDiarySaved && (

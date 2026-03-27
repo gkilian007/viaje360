@@ -157,9 +157,15 @@ export function useMagicMoment({
     })
 
     const s = buildMagicMomentSuggestion(eligiblePOIs, ctx)
-    setSuggestion(s)
+    // Only set a new suggestion — never clear an existing one automatically.
+    // The user must explicitly dismiss or accept. This prevents the card from
+    // disappearing mid-read when minutesToNext changes.
+    if (s) setSuggestion(s)
     })()
-  }, [resolvedLat, resolvedLng, currentIndex, minutesToNext, dayProgress, destination, today, onboarding.interests, dismissed, lastShownAt, tripHasStarted])
+  }, [resolvedLat, resolvedLng, currentIndex, destination, today, onboarding.interests, dismissed, lastShownAt, tripHasStarted])
+  // Note: minutesToNext and dayProgress intentionally excluded from deps —
+  // we don't want to re-evaluate (and potentially clear) the suggestion
+  // every 30 seconds as the timer ticks down.
 
   function dismiss() {
     if (!suggestion) return
