@@ -11,6 +11,8 @@ interface WalkingSegment {
   mapsUrl: string
 }
 
+// v2: bumped after fixing OSRM sanity check on walking minutes
+const CACHE_VERSION = "v2"
 const cache = new Map<string, WalkingSegment>()
 
 export function useWalkingTimes(activities: TimelineActivity[]) {
@@ -34,7 +36,7 @@ export function useWalkingTimes(activities: TimelineActivity[]) {
 
         const from = withCoords[i]
         const to = withCoords[i + 1]
-        const key = `${from.id}->${to.id}`
+        const key = `${CACHE_VERSION}:${from.id}->${to.id}`
 
         if (cache.has(key)) {
           result.set(key, cache.get(key)!)
