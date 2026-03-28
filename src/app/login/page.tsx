@@ -96,13 +96,9 @@ export default function LoginPage() {
         className="mb-10 text-center"
       >
         <div
-          className="w-20 h-20 rounded-3xl mx-auto mb-4 flex items-center justify-center"
-          style={{
-            background: "linear-gradient(135deg, rgba(10,132,255,0.25), rgba(88,86,214,0.25))",
-            border: "1px solid rgba(10,132,255,0.3)",
-          }}
+          className="w-20 h-20 mx-auto mb-4 flex items-center justify-center"
         >
-          <img src="/logo.svg" alt="Viaje360" className="w-12 h-12"/>
+          <img src="/logo.svg" alt="Viaje360" className="w-20 h-20"/>
         </div>
         <h1 className="text-[28px] font-bold text-white">Viaje360</h1>
         <p className="text-[14px] text-[#9ca3af] mt-1">Tu compañero de viaje inteligente</p>
