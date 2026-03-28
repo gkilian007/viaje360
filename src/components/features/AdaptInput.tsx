@@ -2,6 +2,7 @@
 
 import { useState, useRef, useCallback } from "react"
 import type { DayItinerary } from "@/lib/types"
+import { useAppStore } from "@/store/useAppStore"
 
 interface AdaptInputProps {
   tripId: string
@@ -22,6 +23,7 @@ export function AdaptInput({ tripId, onAdapted, disabled, currentDayNumber, curr
   const [state, setState] = useState<AdaptState>("idle")
   const [errorMsg, setErrorMsg] = useState("")
   const inputRef = useRef<HTMLInputElement>(null)
+  const { setGeneratedItinerary, replaceChatMessages } = useAppStore()
 
   const handleSubmit = useCallback(async () => {
     const reason = value.trim()
@@ -62,30 +64,25 @@ export function AdaptInput({ tripId, onAdapted, disabled, currentDayNumber, curr
       const adapted = payload.data?.itinerary
 
       if (adapted?.days) {
-        // Clear localStorage so AppBootstrap re-fetches from Supabase
-        localStorage.removeItem("viaje360-app-store")
-
-        // Re-fetch the updated trip from Supabase
-        const tripRes = await fetch("/api/trips/active", { cache: "no-store" })
-        if (tripRes.ok) {
-          const tripPayload = await tripRes.json()
-          if (tripPayload.data?.days) {
-            onAdapted(tripPayload.data.days)
-          }
+        // Update the store directly — no reload needed
+        setGeneratedItinerary(adapted.days)
+        if (payload.data?.itinerary?.chatMessages) {
+          replaceChatMessages(payload.data.itinerary.chatMessages)
         }
+        onAdapted(adapted.days)
       }
 
       setState("success")
       setValue("")
 
-      // Reload to fully hydrate from Supabase with adapted data
-      setTimeout(() => window.location.reload(), 1200)
+      // Reset to idle after showing success feedback
+      setTimeout(() => setState("idle"), 2000)
     } catch (err: any) {
       setState("error")
       setErrorMsg(err.message ?? "No se pudo adaptar el itinerario")
       setTimeout(() => setState("idle"), 4000)
     }
-  }, [value, state, tripId, onAdapted])
+  }, [value, state, tripId, onAdapted, setGeneratedItinerary, replaceChatMessages, currentDayNumber, currentTime, currentActivityName])
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === "Enter" && !e.shiftKey) {

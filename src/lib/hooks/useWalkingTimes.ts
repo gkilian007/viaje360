@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useState, useRef } from "react"
+import { useEffect, useState, useRef, useCallback } from "react"
 import type { TimelineActivity } from "@/lib/types"
 
 interface WalkingSegment {
@@ -36,10 +36,11 @@ export function useWalkingTimes(activities: TimelineActivity[]) {
 
         const from = withCoords[i]
         const to = withCoords[i + 1]
-        const key = `${CACHE_VERSION}:${from.id}->${to.id}`
+        const cacheKey = `${CACHE_VERSION}:${from.id}->${to.id}`
+        const segKey = `${from.id}->${to.id}`
 
-        if (cache.has(key)) {
-          result.set(key, cache.get(key)!)
+        if (cache.has(cacheKey)) {
+          result.set(segKey, cache.get(cacheKey)!)
           continue
         }
 
@@ -56,8 +57,8 @@ export function useWalkingTimes(activities: TimelineActivity[]) {
               distanceMeters: data.distanceMeters,
               mapsUrl: data.mapsUrl,
             }
-            cache.set(key, seg)
-            result.set(key, seg)
+            cache.set(cacheKey, seg)
+            result.set(segKey, seg)
 
             if (!abortRef.current) {
               setSegments(new Map(result))
@@ -82,9 +83,12 @@ export function useWalkingTimes(activities: TimelineActivity[]) {
     return () => { abortRef.current = true }
   }, [activities])
 
-  function getSegment(fromId: string, toId: string): WalkingSegment | undefined {
-    return segments.get(`${fromId}->${toId}`)
-  }
+  const getSegment = useCallback(
+    (fromId: string, toId: string): WalkingSegment | undefined => {
+      return segments.get(`${fromId}->${toId}`)
+    },
+    [segments]
+  )
 
   return { segments, getSegment }
 }

@@ -35,6 +35,7 @@ import { useProactiveAdaptation } from "@/lib/hooks/useProactiveAdaptation"
 import { MagicMomentCard } from "@/components/features/MagicMomentCard"
 import { useMagicMoment } from "@/lib/hooks/useMagicMoment"
 import { NotificationOptIn } from "@/components/NotificationOptIn"
+import Link from "next/link"
 import type { TimelineActivity, Trip } from "@/lib/types"
 
 function DaySelector({
@@ -102,6 +103,39 @@ function MobileStats({ trip, totalDays }: { trip: Trip; totalDays: number }) {
         </div>
       </div>
     </div>
+  )
+}
+
+function MiniMapStrip({ activities, destination }: { activities: TimelineActivity[], destination: string }) {
+  const withCoords = activities.filter(a => a.lat && a.lng && !isNaN(a.lat!) && !isNaN(a.lng!))
+  if (withCoords.length === 0) return null
+
+  const centerLat = withCoords.reduce((s, a) => s + a.lat!, 0) / withCoords.length
+  const centerLng = withCoords.reduce((s, a) => s + a.lng!, 0) / withCoords.length
+
+  const zoom = withCoords.length <= 3 ? 15 : withCoords.length <= 6 ? 14 : 13
+
+  const markers = withCoords.slice(0, 8)
+    .map(a => `${a.lat},${a.lng},ol-marker`)
+    .join('|')
+
+  const url = `https://staticmap.openstreetmap.de/staticmap.php?center=${centerLat},${centerLng}&zoom=${zoom}&size=800x160&maptype=mapnik&markers=${markers}`
+
+  return (
+    <Link href="/mapa" className="block mx-5 mb-3 rounded-2xl overflow-hidden relative" style={{ height: 140 }}>
+      <img
+        src={url}
+        alt={`Mapa de ${destination}`}
+        className="w-full h-full object-cover"
+        loading="lazy"
+      />
+      <div className="absolute inset-0 bg-gradient-to-b from-transparent to-black/30"/>
+      <div className="absolute bottom-2 right-3 flex items-center gap-1 px-2 py-1 rounded-full text-[11px] text-white font-medium"
+        style={{ background: "rgba(0,0,0,0.5)", backdropFilter: "blur(8px)" }}>
+        <span className="material-symbols-outlined text-[14px]">open_in_full</span>
+        Ver mapa completo
+      </div>
+    </Link>
   )
 }
 
@@ -362,6 +396,14 @@ function PlanPageContent() {
                 </p>
               </div>
             </div>
+          )}
+
+          {/* Mini map strip — mobile only */}
+          {today && (
+            <MiniMapStrip
+              activities={today.activities}
+              destination={currentTrip?.destination ?? ""}
+            />
           )}
 
           {/* First-visit tour banner */}

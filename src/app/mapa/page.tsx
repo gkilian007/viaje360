@@ -107,7 +107,7 @@ function ActivityList({
 }
 
 export default function MapaPage() {
-  const { currentTrip, generatedItinerary } = useAppStore()
+  const { currentTrip, generatedItinerary, setCurrentTrip, setGeneratedItinerary } = useAppStore()
   const [selectedDay, setSelectedDay] = useState(1)
   const [selectedActivity, setSelectedActivity] = useState<TimelineActivity | null>(null)
   const [hydrated, setHydrated] = useState(false)
@@ -115,6 +115,23 @@ export default function MapaPage() {
 
   useEffect(() => {
     setHydrated(true)
+  }, [])
+
+  useEffect(() => {
+    async function loadActiveTrip() {
+      if (currentTrip) return // ya tenemos datos
+      try {
+        const res = await fetch("/api/trips/active", { cache: "no-store" })
+        if (!res.ok) return
+        const payload = await res.json()
+        if (payload?.data?.trip) {
+          setCurrentTrip(payload.data.trip)
+          setGeneratedItinerary(payload.data.days ?? null)
+        }
+      } catch {}
+    }
+    void loadActiveTrip()
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   const handleActivityClick = useCallback((activity: TimelineActivity) => {
