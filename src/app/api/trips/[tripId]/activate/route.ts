@@ -5,7 +5,7 @@ import { createServiceClient } from "@/lib/supabase/server"
 
 export async function POST(
   _req: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
+  { params }: { params: Promise<{ tripId: string }> }
 ) {
   try {
     const identity = await resolveRequestIdentity()
@@ -14,7 +14,7 @@ export async function POST(
       return errorResponse("UNAUTHORIZED", "Authentication required", 401)
     }
 
-    const { id: tripId } = await params
+    const { tripId } = await params
     const supabase = createServiceClient()
 
     // Verify the trip belongs to the user
