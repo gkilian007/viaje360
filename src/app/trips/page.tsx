@@ -132,7 +132,7 @@ export default function TripsPage() {
 
   return (
     <div className="min-h-screen pb-28" style={{ background: "#131315" }}>
-      <div className="px-4 pt-16 pb-4">
+      <div className="px-4 pb-4 page-header-safe-lg">
         <h1 className="text-[24px] font-bold text-white mb-1">Mis viajes</h1>
         <p className="text-[14px] text-[#9ca3af]">
           {trips.length > 0 ? `${trips.length} viaje${trips.length > 1 ? "s" : ""} guardado${trips.length > 1 ? "s" : ""}` : ""}

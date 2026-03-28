@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation"
 import { BottomNav } from "@/components/layout/BottomNav"
 
 const FEATURES_FREE = [
-  "14 días de prueba gratis por destino",
+  "2 días de prueba gratis por destino",
   "Itinerario generado por IA",
   "Mapa interactivo",
 ]
@@ -67,7 +67,7 @@ export default function PricingPage() {
   return (
     <div className="min-h-screen pb-28 px-4" style={{ background: "#131315" }}>
       {/* Header */}
-      <div className="pt-16 pb-6 text-center">
+      <div className="pb-6 text-center page-header-safe-lg">
         <button
           onClick={() => router.back()}
           className="absolute left-4 top-14 flex items-center gap-1 text-[13px] text-[#0A84FF]"

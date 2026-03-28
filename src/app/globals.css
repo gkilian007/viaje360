@@ -142,3 +142,11 @@ html, body {
 /* Input reset */
 input:focus { outline: none; }
 textarea:focus { outline: none; }
+
+/* Safe-area padding utilities — respeta el notch del iPhone en todas las páginas */
+.page-header-safe {
+  padding-top: calc(env(safe-area-inset-top, 0px) + 1rem);
+}
+.page-header-safe-lg {
+  padding-top: calc(env(safe-area-inset-top, 0px) + 1.5rem);
+}

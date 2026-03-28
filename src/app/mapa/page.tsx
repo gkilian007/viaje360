@@ -188,7 +188,7 @@ export default function MapaPage() {
 
         {/* Header overlay */}
         <div
-          className="absolute top-0 left-0 right-0 p-4 z-[1000] pointer-events-none"
+          className="absolute top-0 left-0 right-0 z-[1000] pointer-events-none page-header-safe px-4 pb-4"
           style={{
             background:
               "linear-gradient(to bottom, rgba(15,17,23,0.98), rgba(15,17,23,0.7), transparent)",

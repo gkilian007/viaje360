@@ -488,7 +488,7 @@ export default function HomePage() {
       </header>
 
       {/* Mobile top bar */}
-      <header className="lg:hidden flex items-center justify-between px-4 pt-12 pb-3">
+      <header className="lg:hidden flex items-center justify-between px-4 pb-3 page-header-safe-lg">
         <div className="flex items-center gap-2">
           <span className="text-[24px]">✈️</span>
           <span className="text-[16px] font-bold text-white">Viaje360</span>

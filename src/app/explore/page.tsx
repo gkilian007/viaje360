@@ -87,7 +87,7 @@ export default function ExplorePage() {
     <div className="flex flex-col min-h-screen overflow-y-auto pb-28" style={{ background: "#0f1117" }}>
 
       {/* Header */}
-      <div className="px-5 pt-14 pb-5">
+      <div className="px-5 pb-5 page-header-safe-lg">
         <p className="text-[11px] uppercase tracking-widest text-[#0A84FF] font-medium mb-1">Descubrir</p>
         <h1 className="text-[28px] font-black text-white">Explorar</h1>
         <p className="text-[13px] text-[#888] mt-1">Inspírate y planea tu próximo viaje</p>
