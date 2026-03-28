@@ -5,7 +5,8 @@ import { useRouter } from "next/navigation"
 import { BottomNav } from "@/components/layout/BottomNav"
 
 const FEATURES_FREE = [
-  "2 días de prueba gratis por destino",
+  "2 días gratis desde que llegas al destino",
+  "Planifica sin límites antes del viaje",
   "Itinerario generado por IA",
   "Mapa interactivo",
 ]
