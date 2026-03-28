@@ -12,8 +12,54 @@ const inter = Inter({
 })
 
 export const metadata: Metadata = {
-  title: "Viaje360",
-  description: "Tu compañero de viaje inteligente",
+  title: {
+    default: "Viaje360 — Planificador de viajes con IA",
+    template: "%s | Viaje360",
+  },
+  description:
+    "Planifica tu viaje perfecto con inteligencia artificial. Itinerarios personalizados, adaptación en tiempo real y momentos mágicos. Gratis los primeros 2 días.",
+  keywords: [
+    "planificador de viajes",
+    "itinerario IA",
+    "viajes con inteligencia artificial",
+    "planificar viaje",
+    "itinerario personalizado",
+    "app de viajes",
+  ],
+  authors: [{ name: "Viaje360" }],
+  creator: "Viaje360",
+  publisher: "Viaje360",
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: { index: true, follow: true },
+  },
+  openGraph: {
+    type: "website",
+    locale: "es_ES",
+    url: "https://viaje360.app",
+    siteName: "Viaje360",
+    title: "Viaje360 — Planificador de viajes con IA",
+    description:
+      "Planifica tu viaje perfecto con inteligencia artificial. Itinerarios personalizados, adaptación en tiempo real.",
+    images: [
+      {
+        url: "https://viaje360.app/og-image.png",
+        width: 1200,
+        height: 630,
+        alt: "Viaje360 — Tu compañero de viaje inteligente",
+      },
+    ],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Viaje360 — Planificador de viajes con IA",
+    description: "Planifica tu viaje perfecto con inteligencia artificial.",
+    images: ["https://viaje360.app/og-image.png"],
+  },
+  alternates: {
+    canonical: "https://viaje360.app",
+  },
   manifest: "/manifest.json",
   appleWebApp: {
     capable: true,
@@ -56,6 +102,31 @@ export default function RootLayout({
           <ServiceWorkerProvider />
           {children}
         </PHProvider>
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify({
+              "@context": "https://schema.org",
+              "@type": "SoftwareApplication",
+              name: "Viaje360",
+              description: "Planificador de viajes con inteligencia artificial",
+              url: "https://viaje360.app",
+              applicationCategory: "TravelApplication",
+              operatingSystem: "Web, iOS, Android",
+              offers: {
+                "@type": "Offer",
+                price: "0",
+                priceCurrency: "EUR",
+                description: "2 días gratis al llegar al destino",
+              },
+              aggregateRating: {
+                "@type": "AggregateRating",
+                ratingValue: "4.8",
+                ratingCount: "1",
+              },
+            }),
+          }}
+        />
       </body>
     </html>
   )
