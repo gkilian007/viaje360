@@ -13,8 +13,11 @@
     </clipPath>
   </defs>
 
+  <!-- Background rounded square -->
+  <rect width="200" height="200" rx="44" ry="44" fill="#131315"/>
+
   <!-- Globe base -->
-  <circle cx="100" cy="100" r="62" fill="none" stroke="url(#line-grad)" stroke-width="1.5"/>
+  <circle cx="100" cy="100" r="62" fill="url(#globe-bg)" stroke="url(#line-grad)" stroke-width="1.5"/>
 
   <!-- Globe lines clipped -->
   <g clip-path="url(#globe-clip)">
