@@ -33,11 +33,7 @@ export function TopAppBar({ title, showBack = false }: TopAppBarProps) {
               <span className="material-symbols-outlined text-[20px]">arrow_back</span>
             </Link>
           ) : (
-            <div className="w-8 h-8 flex items-center justify-center rounded-full bg-[#0A84FF]/20">
-              <span className="material-symbols-outlined text-[18px] text-[#0A84FF]">
-                flight_takeoff
-              </span>
-            </div>
+            <img src="/logo.svg" alt="Viaje360" className="w-8 h-8 rounded-xl"/>
           )}
           <div>
             <p className="text-[11px] uppercase tracking-widest text-[#c0c6d6] font-medium leading-none">

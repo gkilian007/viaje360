@@ -82,7 +82,7 @@ export default function PricingPage() {
             background: "linear-gradient(135deg, rgba(10,132,255,0.2), rgba(88,86,214,0.2))",
           }}
         >
-          <span className="text-[32px]">✈️</span>
+          <img src="/logo.svg" alt="Viaje360" className="w-10 h-10"/>
         </div>
         <h1 className="text-[26px] font-bold text-white mb-2">Viaje360 Premium</h1>
         <p className="text-[14px] text-[#9ca3af] leading-relaxed max-w-sm mx-auto">

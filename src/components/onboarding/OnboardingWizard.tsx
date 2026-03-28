@@ -147,7 +147,10 @@ export function OnboardingWizard() {
       {/* Top bar: progress + step count */}
       <div className="safe-area-top px-5 pt-4 pb-3 flex-shrink-0">
         <div className="flex items-center justify-between mb-3">
-          <span className="text-xs text-[#c0c6d6]">Viaje360</span>
+          <div className="flex items-center gap-1.5">
+            <img src="/logo.svg" alt="Viaje360" className="w-5 h-5 rounded-md"/>
+            <span className="text-xs text-[#c0c6d6]">Viaje360</span>
+          </div>
           <span className="text-xs text-[#c0c6d6]">
             {displayStep}
           </span>

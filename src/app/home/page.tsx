@@ -467,7 +467,7 @@ export default function HomePage() {
         }}
       >
         <div className="flex items-center gap-3">
-          <span className="text-[28px]">✈️</span>
+          <img src="/logo.svg" alt="Viaje360" className="w-8 h-8 rounded-xl"/>
           <span className="text-[18px] font-bold text-white">Viaje360</span>
         </div>
         <div className="flex items-center gap-2 px-4 py-2 rounded-xl" style={{ background: "rgba(42,42,44,0.8)", border: "1px solid rgba(255,255,255,0.06)" }}>
@@ -490,7 +490,7 @@ export default function HomePage() {
       {/* Mobile top bar */}
       <header className="lg:hidden flex items-center justify-between px-4 pb-3 page-header-safe-lg">
         <div className="flex items-center gap-2">
-          <span className="text-[24px]">✈️</span>
+          <img src="/logo.svg" alt="Viaje360" className="w-7 h-7 rounded-lg"/>
           <span className="text-[16px] font-bold text-white">Viaje360</span>
         </div>
         <button className="w-9 h-9 rounded-xl flex items-center justify-center" style={{ background: "rgba(42,42,44,0.8)", border: "1px solid rgba(255,255,255,0.06)" }}>
