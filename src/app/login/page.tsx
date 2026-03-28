@@ -96,8 +96,7 @@ export default function LoginPage() {
         className="mb-10 text-center"
       >
         <div
-          className="w-20 h-20 rounded-3xl mx-auto mb-4 flex items-center justify-center"
-          style={{ border: "1px solid rgba(10,132,255,0.3)" }}
+          className="w-20 h-20 mx-auto mb-4 flex items-center justify-center"
         >
           <img src="/logo.svg" alt="Viaje360" className="w-12 h-12"/>
         </div>
