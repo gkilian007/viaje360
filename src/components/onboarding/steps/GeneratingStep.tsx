@@ -37,6 +37,12 @@ interface ErrorEnvelope {
   }
 }
 
+interface CelebrationData {
+  days: number
+  activities: number
+  destination: string
+}
+
 export function GeneratingStep() {
   const router = useRouter()
   const { data, completeOnboarding } = useOnboardingStore()
@@ -45,6 +51,7 @@ export function GeneratingStep() {
   const [error, setError] = useState<string | null>(null)
   const [isLoading, setIsLoading] = useState(true)
   const [progress, setProgress] = useState(0)
+  const [celebration, setCelebration] = useState<CelebrationData | null>(null)
 
   const generate = useCallback(async () => {
     setError(null)
@@ -80,9 +87,23 @@ export function GeneratingStep() {
       setMessageIndex(LOADING_MESSAGES.length - 1)
       setProgress(100)
 
+      // Short pause to let progress bar reach 100%, then show celebration
       setTimeout(() => {
-        completeOnboarding()
-        router.replace("/plan")
+        const totalActivities = result.data.days.reduce(
+          (acc, d) => acc + d.activities.length,
+          0
+        )
+        setCelebration({
+          days: result.data.days.length,
+          activities: totalActivities,
+          destination: result.data.trip.destination,
+        })
+
+        // After 1.5s celebration, redirect
+        setTimeout(() => {
+          completeOnboarding()
+          router.replace("/plan")
+        }, 1500)
       }, 600)
     } catch (err) {
       clearInterval(interval)
@@ -113,6 +134,61 @@ export function GeneratingStep() {
         >
           Intentar de nuevo
         </button>
+      </div>
+    )
+  }
+
+  if (celebration) {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-screen map-bg px-6">
+        {/* Big animated emoji */}
+        <motion.div
+          initial={{ scale: 0, opacity: 0 }}
+          animate={{ scale: [0, 1.2, 1], opacity: 1 }}
+          transition={{ duration: 0.6, ease: "easeOut" }}
+          className="mb-8 text-8xl select-none"
+        >
+          ✈️
+        </motion.div>
+
+        {/* Title */}
+        <motion.h1
+          initial={{ opacity: 0, y: 16 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.4, duration: 0.4 }}
+          className="text-[28px] font-bold text-white mb-3 text-center"
+        >
+          ¡Tu itinerario está listo!
+        </motion.h1>
+
+        {/* Subtitle */}
+        <motion.p
+          initial={{ opacity: 0, y: 12 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.55, duration: 0.4 }}
+          className="text-[15px] text-[#c0c6d6] text-center capitalize"
+        >
+          {celebration.days} días · {celebration.activities} actividades · {celebration.destination}
+        </motion.p>
+
+        {/* Progress bar at 100% */}
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 0.3 }}
+          className="w-full max-w-xs mt-10"
+        >
+          <div
+            className="w-full h-1.5 rounded-full overflow-hidden"
+            style={{ background: "rgba(255,255,255,0.08)" }}
+          >
+            <div
+              className="h-full rounded-full"
+              style={{ width: "100%", background: "linear-gradient(90deg, #0A84FF, #5856D6)" }}
+            />
+          </div>
+          <p className="text-[11px] text-[#9ca3af] text-right mt-1">100%</p>
+        </motion.div>
       </div>
     )
   }

@@ -1,6 +1,7 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useRef } from "react"
+import { useAnalytics } from "@/lib/analytics/useAnalytics"
 import { AnimatePresence, motion } from "framer-motion"
 import { useOnboardingStore } from "@/store/useOnboardingStore"
 import { ProgressBar } from "./ui/ProgressBar"
@@ -90,10 +91,19 @@ export function OnboardingWizard() {
 
   const [generating, setGenerating] = useState(false)
   const [hydrated, setHydrated] = useState(false)
+  const { track } = useAnalytics()
+  const startTracked = useRef(false)
 
   useEffect(() => {
     setHydrated(true)
   }, [])
+
+  useEffect(() => {
+    if (hydrated && !startTracked.current) {
+      startTracked.current = true
+      track("onboarding_started")
+    }
+  }, [hydrated, track])
 
   if (!hydrated) {
     return (
@@ -115,6 +125,7 @@ export function OnboardingWizard() {
 
   const handleNext = () => {
     if (isLastStep || isCoreLastStep) {
+      track("onboarding_completed")
       setGenerating(true)
     } else {
       nextStep()

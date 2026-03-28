@@ -1,6 +1,7 @@
 "use client"
 
-import { useState, useEffect, useRef, Suspense } from "react"
+import { useState, useEffect, useRef, Suspense, useCallback } from "react"
+import { motion, AnimatePresence } from "framer-motion"
 import { useSearchParams } from "next/navigation"
 import { BottomNav } from "@/components/layout/BottomNav"
 import { TopAppBar } from "@/components/layout/TopAppBar"
@@ -16,6 +17,7 @@ import { DiaryPromptCard } from "@/components/features/diary"
 import { PaywallModal } from "@/components/features/PaywallModal"
 import { TrialBanner } from "@/components/features/TrialBanner"
 import { useActivityEventTracker } from "@/lib/hooks/useActivityEventTracker"
+import { useAnalytics } from "@/lib/analytics/useAnalytics"
 import { useExistingDiary } from "@/lib/hooks/useExistingDiary"
 import { useAccess } from "@/lib/hooks/useAccess"
 import { useWalkingTimes } from "@/lib/hooks/useWalkingTimes"
@@ -112,7 +114,10 @@ function PlanPageContent() {
   const [selectedActivityId, setSelectedActivityId] = useState<string | null>(null)
   const [showDiarySaved, setShowDiarySaved] = useState(false)
   const [shareCopied, setShareCopied] = useState(false)
+  const [showTourBanner, setShowTourBanner] = useState(false)
+  const [showShareToast, setShowShareToast] = useState(false)
   const { trackEvent } = useActivityEventTracker()
+  const { track } = useAnalytics()
   const { hasExistingDiary } = useExistingDiary(currentTrip?.id ?? null, selectedDay)
   const access = useAccess(currentTrip?.destination, currentTrip?.startDate)
   const [showPaywall, setShowPaywall] = useState(false)
@@ -132,6 +137,38 @@ function PlanPageContent() {
     setHydrated(true)
   }, [])
 
+  // First-visit tour banner
+  useEffect(() => {
+    if (!hydrated) return
+    const key = "viaje360_plan_toured_v1"
+    if (!localStorage.getItem(key)) {
+      setShowTourBanner(true)
+      const timer = setTimeout(() => {
+        setShowTourBanner(false)
+        localStorage.setItem(key, "1")
+      }, 4000)
+      return () => clearTimeout(timer)
+    }
+  }, [hydrated])
+
+  const dismissTourBanner = useCallback(() => {
+    setShowTourBanner(false)
+    localStorage.setItem("viaje360_plan_toured_v1", "1")
+  }, [])
+
+  const handleShare = useCallback(() => {
+    if (!currentTrip?.id) return
+    const shareUrl = `https://viaje360.app/share/${currentTrip.id}`
+    navigator.clipboard.writeText(shareUrl).then(() => {
+      setShareCopied(true)
+      setShowShareToast(true)
+      setTimeout(() => {
+        setShareCopied(false)
+        setShowShareToast(false)
+      }, 2500)
+    }).catch(() => {})
+  }, [currentTrip?.id])
+
   // Always rehydrate from server to get rich activity fields and ensure trip is loaded
   useEffect(() => {
     async function rehydrate() {
@@ -145,6 +182,10 @@ function PlanPageContent() {
           if (payload.data.chatMessages) {
             replaceChatMessages(payload.data.chatMessages)
           }
+          track("plan_viewed", {
+            destination: payload.data.trip.destination,
+            tripId: payload.data.trip.id,
+          })
 
           // Backfill geocoding for legacy trips that have no lat/lng
           const days: Array<{ activities: Array<{ lat?: number; lng?: number }> }> = payload.data.days ?? []
@@ -323,6 +364,34 @@ function PlanPageContent() {
             </div>
           )}
 
+          {/* First-visit tour banner */}
+          <AnimatePresence>
+            {showTourBanner && (
+              <motion.div
+                initial={{ opacity: 0, y: -12 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -12 }}
+                transition={{ duration: 0.3 }}
+                className="mx-5 mb-3 flex items-center justify-between gap-3 px-4 py-3 rounded-2xl"
+                style={{
+                  background: "rgba(10,132,255,0.12)",
+                  border: "1px solid rgba(10,132,255,0.35)",
+                  backdropFilter: "blur(12px)",
+                }}
+              >
+                <p className="text-[13px] text-[#c0c6d6] flex-1">
+                  💡 Pulsa cualquier actividad para ver más detalles, reservar y adaptar
+                </p>
+                <button
+                  onClick={dismissTourBanner}
+                  className="shrink-0 text-[11px] font-semibold text-[#0A84FF] hover:text-white transition-colors"
+                >
+                  Entendido
+                </button>
+              </motion.div>
+            )}
+          </AnimatePresence>
+
           {/* Proactive adaptation banner — shows top trip issue (weather, heat, fatigue, ...) */}
           {topIssue && currentTrip?.id && (
             <ProactiveAdaptationBanner
@@ -426,23 +495,30 @@ function PlanPageContent() {
             </div>
           )}
 
-          {/* Share plan button */}
+          {/* Share plan button — prominent CTA */}
           {currentTrip?.id && (
             <div className="px-5 pb-2">
               <button
-                onClick={() => {
-                  const shareUrl = `https://viaje360.app/share/${currentTrip.id}`
-                  navigator.clipboard.writeText(shareUrl).then(() => {
-                    setShareCopied(true)
-                    setTimeout(() => setShareCopied(false), 2500)
-                  }).catch(() => {})
+                onClick={handleShare}
+                className="flex items-center gap-3 w-full py-3.5 px-4 rounded-2xl transition-all active:scale-95"
+                style={{
+                  background: shareCopied
+                    ? "rgba(48,209,88,0.15)"
+                    : "rgba(10,132,255,0.12)",
+                  border: shareCopied
+                    ? "1px solid rgba(48,209,88,0.35)"
+                    : "1px solid rgba(10,132,255,0.35)",
                 }}
-                className="flex items-center gap-2 w-full py-3 px-4 rounded-2xl text-[12px] text-[#888] hover:text-white transition-colors"
-                style={{ background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.06)" }}
               >
-                <span className="material-symbols-outlined text-[16px] text-[#0A84FF]">share</span>
-                <span>{shareCopied ? "✅ Enlace copiado" : "Compartir plan"}</span>
-                <span className="material-symbols-outlined text-[14px] ml-auto">link</span>
+                <span className="material-symbols-outlined text-[18px] text-[#0A84FF]">
+                  {shareCopied ? "check_circle" : "share"}
+                </span>
+                <span className="text-[13px] font-medium text-white flex-1 text-left">
+                  {shareCopied ? "¡Enlace copiado!" : "Compartir plan"}
+                </span>
+                {!shareCopied && (
+                  <span className="material-symbols-outlined text-[14px] text-[#0A84FF]">link</span>
+                )}
               </button>
             </div>
           )}

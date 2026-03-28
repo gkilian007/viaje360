@@ -1,6 +1,7 @@
 "use client"
 
-import { useCallback, useState } from "react"
+import { useCallback, useEffect, useState } from "react"
+import { useAnalytics } from "@/lib/analytics/useAnalytics"
 
 interface PaywallModalProps {
   destination: string
@@ -14,6 +15,12 @@ export function PaywallModal({ destination, onClose }: PaywallModalProps) {
   const [view, setView] = useState<PaywallView>("options")
   const [error, setError] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
+  const { track } = useAnalytics()
+
+  useEffect(() => {
+    track("paywall_shown", { destination, reason: "trial_ended" })
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
 
   const handleBackdrop = useCallback(
     (e: React.MouseEvent) => {
@@ -43,6 +50,7 @@ export function PaywallModal({ destination, onClose }: PaywallModalProps) {
         throw new Error("Stripe no devolvió una URL de checkout")
       }
 
+      track("paywall_converted", { destination, plan: kind })
       window.location.href = url
     } catch (err: any) {
       setLoading(false)

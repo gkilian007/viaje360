@@ -1,4 +1,5 @@
 import * as Sentry from "@sentry/nextjs"
+import { PostHog } from "posthog-node"
 import { NextRequest } from "next/server"
 import { rateLimit } from "@/lib/rate-limit"
 import { onboardingRequestSchema } from "@/lib/api/contracts"
@@ -149,6 +150,32 @@ export async function POST(req: NextRequest) {
         ])
       )
     ).catch((err) => console.warn("[generate] activity-assets Promise.allSettled error:", err))
+
+    // PostHog server-side tracking
+    try {
+      const phKey = process.env.POSTHOG_KEY ?? process.env.NEXT_PUBLIC_POSTHOG_KEY
+      if (phKey && phKey !== "placeholder") {
+        const ph = new PostHog(phKey, {
+          host: process.env.NEXT_PUBLIC_POSTHOG_HOST ?? "https://eu.i.posthog.com",
+          flushAt: 1,
+          flushInterval: 0,
+        })
+        const distinctId = identity.userId ?? `anon-${req.headers.get("x-forwarded-for") ?? "unknown"}`
+        ph.capture({
+          distinctId,
+          event: "itinerary_generated",
+          properties: {
+            destination: body.destination,
+            days: generatedItinerary.days.length,
+            companion: body.companion ?? "solo",
+            budget: body.budget ?? "moderado",
+          },
+        })
+        await ph.shutdown()
+      }
+    } catch {
+      // analytics must never block the response
+    }
 
     return successResponse({
       trip: {
