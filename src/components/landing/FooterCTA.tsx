@@ -58,7 +58,7 @@ export function FooterCTA({ isAuthenticated = false }: FooterCTAProps) {
           transition={{ duration: 0.7, delay: 0.2 }}
         >
           <Link
-            href={isAuthenticated ? "/home" : "/onboarding"}
+            href={isAuthenticated ? "/home" : "/login"}
             prefetch
             className="px-10 py-5 rounded-2xl bg-gradient-to-r from-[#0A84FF] to-[#5856D6] text-white font-bold text-xl hover:opacity-90 transition-opacity shadow-2xl shadow-blue-500/30 inline-block"
           >

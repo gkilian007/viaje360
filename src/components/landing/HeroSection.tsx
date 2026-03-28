@@ -122,7 +122,7 @@ export function HeroSection({ isAuthenticated = false }: HeroSectionProps) {
             </Link>
           ) : (
             <Link
-              href="/onboarding"
+              href="/login"
               prefetch
               className="px-8 py-4 rounded-2xl bg-gradient-to-r from-[#0A84FF] to-[#5856D6] text-white font-semibold text-lg hover:opacity-90 transition-opacity shadow-lg shadow-blue-500/25"
             >
