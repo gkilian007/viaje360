@@ -52,12 +52,23 @@ export function GeneratingStep() {
   const [isLoading, setIsLoading] = useState(true)
   const [progress, setProgress] = useState(0)
   const [celebration, setCelebration] = useState<CelebrationData | null>(null)
+  const [slowWarning, setSlowWarning] = useState(false)
+  const [status, setStatus] = useState<"idle" | "generating" | "done" | "error">("idle")
+
+  // Show slow warning after 30s of generating
+  useEffect(() => {
+    if (status !== "generating") return
+    const t = setTimeout(() => setSlowWarning(true), 30000)
+    return () => clearTimeout(t)
+  }, [status])
 
   const generate = useCallback(async () => {
     setError(null)
     setIsLoading(true)
     setMessageIndex(0)
     setProgress(0)
+    setSlowWarning(false)
+    setStatus("generating")
 
     let currentIndex = 0
     const interval = setInterval(() => {
@@ -66,13 +77,18 @@ export function GeneratingStep() {
       setProgress(PROGRESS_MILESTONES[currentIndex] ?? 98)
     }, 1400)
 
+    const abortController = new AbortController()
+    const timeoutId = setTimeout(() => abortController.abort(), 90000)
+
     try {
       const res = await fetch("/api/itinerary/generate", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ ...data, language: navigator.language?.split("-")[0] || "es" }),
+        signal: abortController.signal,
       })
 
+      clearTimeout(timeoutId)
       clearInterval(interval)
 
       if (!res.ok) {
@@ -86,6 +102,7 @@ export function GeneratingStep() {
       setGeneratedItinerary(result.data.days)
       setMessageIndex(LOADING_MESSAGES.length - 1)
       setProgress(100)
+      setStatus("done")
 
       // Short pause to let progress bar reach 100%, then show celebration
       setTimeout(() => {
@@ -106,10 +123,20 @@ export function GeneratingStep() {
         }, 1500)
       }, 600)
     } catch (err) {
+      clearTimeout(timeoutId)
       clearInterval(interval)
       console.error("GeneratingStep error:", err)
-      setError(err instanceof Error ? err.message : "Error desconocido")
+
+      const isAbort = err instanceof Error && err.name === "AbortError"
+      setError(
+        isAbort
+          ? "La generación tardó demasiado (más de 90s). Por favor inténtalo de nuevo."
+          : err instanceof Error
+          ? err.message
+          : "Error desconocido"
+      )
       setIsLoading(false)
+      setStatus("error")
     }
   }, [data, completeOnboarding, router, setCurrentTrip, setGeneratedItinerary])
 
@@ -232,6 +259,13 @@ export function GeneratingStep() {
           </motion.p>
         </AnimatePresence>
       </div>
+
+      {/* Slow warning message */}
+      {slowWarning && (
+        <p className="text-[12px] text-[#888] text-center mt-2 animate-pulse">
+          Esto está tardando un poco más... Gemini está trabajando en los detalles ✨
+        </p>
+      )}
 
       {/* Progress dots */}
       <div className="flex gap-2 mt-8">

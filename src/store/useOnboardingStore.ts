@@ -119,8 +119,11 @@ export const useOnboardingStore = create<OnboardingState>()(
         const { data, currentStepId } = get()
         switch (currentStepId) {
           // Core steps
-          case "core-destination":
-            return data.destination.trim().length > 0 && data.startDate.length > 0 && data.endDate.length > 0
+          case "core-destination": {
+            const dest = data.destination.trim()
+            const isValidDest = dest.length >= 3 && !/^\d+$/.test(dest) && !/^[^a-zA-ZáéíóúàèìòùäëïöüÁÉÍÓÚÀÈÌÒÙÄËÏÖÜñÑçÇ\s-]+$/.test(dest)
+            return isValidDest && data.startDate.length > 0 && data.endDate.length > 0
+          }
           case "core-companions":
             return data.companion !== null
           case "core-finalize":

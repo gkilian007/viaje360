@@ -11,8 +11,17 @@ const timeChips: { id: ArrivalTime; label: string; emoji: string }[] = [
   { id: "night", label: "Madrugada", emoji: "🌙" },
 ]
 
+function isValidDestination(value: string): boolean {
+  const trimmed = value.trim()
+  if (trimmed.length < 3) return false
+  if (/^\d+$/.test(trimmed)) return false // solo números
+  if (/^[^a-zA-ZáéíóúàèìòùäëïöüÁÉÍÓÚÀÈÌÒÙÄËÏÖÜñÑçÇ\s-]+$/.test(trimmed)) return false
+  return true
+}
+
 export function CoreDestinationStep() {
   const { data, setField } = useOnboardingStore()
+  const today = new Date().toISOString().split("T")[0]
 
   return (
     <div>
@@ -38,6 +47,11 @@ export function CoreDestinationStep() {
               className="flex-1 bg-transparent text-[#e4e2e4] placeholder:text-[#c0c6d6]/50 text-sm"
             />
           </div>
+          {data.destination.trim().length > 2 && !isValidDestination(data.destination) && (
+            <p className="text-[12px] text-[#FF453A] mt-1">
+              Introduce el nombre de una ciudad o destino real
+            </p>
+          )}
         </div>
 
         {/* Dates */}
@@ -50,6 +64,7 @@ export function CoreDestinationStep() {
               <input
                 type="date"
                 value={data.startDate}
+                min={today}
                 onChange={(e) => setField("startDate", e.target.value)}
                 className="w-full bg-transparent text-[#e4e2e4] text-sm [color-scheme:dark]"
               />
@@ -63,6 +78,7 @@ export function CoreDestinationStep() {
               <input
                 type="date"
                 value={data.endDate}
+                min={data.startDate || today}
                 onChange={(e) => setField("endDate", e.target.value)}
                 className="w-full bg-transparent text-[#e4e2e4] text-sm [color-scheme:dark]"
               />

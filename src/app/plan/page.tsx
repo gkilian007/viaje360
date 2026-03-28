@@ -42,26 +42,40 @@ function DaySelector({
   days,
   selectedDay,
   onSelect,
+  tripStartDate,
 }: {
   days: number
   selectedDay: number
   onSelect: (day: number) => void
+  tripStartDate?: string | null
 }) {
+  const todayDayNumber = tripStartDate
+    ? Math.floor((Date.now() - new Date(tripStartDate).getTime()) / 86400000) + 1
+    : null
+
   return (
     <div className="flex gap-2 overflow-x-auto no-scrollbar px-1 py-1">
-      {Array.from({ length: days }, (_, i) => i + 1).map((day) => (
-        <button
-          key={day}
-          onClick={() => onSelect(day)}
-          className={`shrink-0 px-4 py-2 rounded-xl text-[13px] font-semibold transition-all ${
-            selectedDay === day
-              ? "bg-[#0A84FF] text-white shadow-[0_0_12px_rgba(10,132,255,0.4)]"
-              : "bg-[#2a2a2c] text-[#c0c6d6] hover:bg-[#3a3a3c]"
-          }`}
-        >
-          Día {day}
-        </button>
-      ))}
+      {Array.from({ length: days }, (_, i) => i + 1).map((day) => {
+        const isToday = todayDayNumber !== null && todayDayNumber === day
+        return (
+          <button
+            key={day}
+            onClick={() => onSelect(day)}
+            className={`relative shrink-0 px-4 py-2 rounded-xl text-[13px] font-semibold transition-all ${
+              selectedDay === day
+                ? "bg-[#0A84FF] text-white shadow-[0_0_12px_rgba(10,132,255,0.4)]"
+                : "bg-[#2a2a2c] text-[#c0c6d6] hover:bg-[#3a3a3c]"
+            }`}
+          >
+            Día {day}
+            {isToday && (
+              <span className="absolute -top-1 -right-1 text-[8px] bg-[#0A84FF] text-white px-1 rounded-full font-bold leading-tight">
+                HOY
+              </span>
+            )}
+          </button>
+        )
+      })}
     </div>
   )
 }
@@ -374,7 +388,7 @@ function PlanPageContent() {
 
           {/* Day selector */}
           <div className="px-5 pb-3">
-            <DaySelector days={totalDays} selectedDay={selectedDay} onSelect={setSelectedDay} />
+            <DaySelector days={totalDays} selectedDay={selectedDay} onSelect={setSelectedDay} tripStartDate={currentTrip?.startDate} />
           </div>
 
           {/* Day theme */}
@@ -613,7 +627,7 @@ function PlanPageContent() {
 
               {/* Day selector */}
               <div className="px-6 py-3 border-b border-white/5">
-                <DaySelector days={totalDays} selectedDay={selectedDay} onSelect={setSelectedDay} />
+                <DaySelector days={totalDays} selectedDay={selectedDay} onSelect={setSelectedDay} tripStartDate={currentTrip?.startDate} />
               </div>
 
               {/* Timeline */}
