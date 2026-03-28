@@ -96,9 +96,9 @@ export default function LoginPage() {
         className="mb-10 text-center"
       >
         <div
-          className="w-20 h-20 mx-auto mb-4 flex items-center justify-center"
+          className="w-32 h-32 mx-auto mb-4 flex items-center justify-center"
         >
-          <img src="/logo.svg" alt="Viaje360" className="w-16 h-16"/>
+          <img src="/logo.svg" alt="Viaje360" className="w-32 h-32"/>
         </div>
         <h1 className="text-[28px] font-bold text-white">Viaje360</h1>
         <p className="text-[14px] text-[#9ca3af] mt-1">Tu compañero de viaje inteligente</p>
