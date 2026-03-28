@@ -35,7 +35,7 @@ export default function LandingPage() {
   // Avoid layout shift — render immediately with unauthenticated state,
   // then swap CTA copy once auth check resolves (checked = true).
   return (
-    <main className="bg-[#0a0a0c] text-white overflow-x-hidden">
+    <main className="bg-[#0a0a0c] text-white" style={{ overflowX: "clip" }}>
       <HeroSection isAuthenticated={checked ? isAuthenticated : false} />
       <HowItWorks />
       <FeaturesCarousel />

@@ -47,9 +47,9 @@ export function FeaturesCarousel() {
   const activeIdx = useTransform(scrollYProgress, [0, 1], [0, features.length - 1])
 
   return (
-    <section ref={ref} className="relative" style={{ height: "400vh" }}>
-      {/* Sticky container — stays pinned while user scrolls through the 400vh */}
-      <div className="sticky top-0 h-screen overflow-hidden bg-[#131315] flex flex-col">
+    <section ref={ref} className="relative bg-[#131315]" style={{ height: "400vh" }}>
+      {/* Sticky container — stays pinned at viewport top while user scrolls through the 400vh */}
+      <div className="sticky top-0 h-[100dvh] overflow-hidden bg-[#131315] flex flex-col" style={{ zIndex: 10 }}>
         {/* Title */}
         <div className="pt-16 pb-6 text-center px-6 flex-shrink-0">
           <motion.h2
