@@ -150,3 +150,12 @@ textarea:focus { outline: none; }
 .page-header-safe-lg {
   padding-top: calc(env(safe-area-inset-top, 0px) + 1.5rem);
 }
+
+/* Spline 3D — transparent background */
+canvas[data-engine] {
+  background: transparent !important;
+}
+div[style*="spline"] canvas,
+div > canvas {
+  background: transparent !important;
+}

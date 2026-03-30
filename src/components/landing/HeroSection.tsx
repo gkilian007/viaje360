@@ -150,7 +150,7 @@ export function HeroSection({ isAuthenticated = false }: HeroSectionProps) {
 
         {/* Right side — 3D Globe (desktop) / smaller below text (mobile) */}
         <motion.div
-          className="flex-shrink-0 w-[280px] h-[280px] sm:w-[320px] sm:h-[320px] lg:w-[480px] lg:h-[480px] xl:w-[540px] xl:h-[540px] relative"
+          className="flex-shrink-0 w-[320px] h-[320px] sm:w-[400px] sm:h-[400px] lg:w-[560px] lg:h-[560px] xl:w-[640px] xl:h-[640px] relative"
           style={{ y: globeY, opacity: globeOpacity, willChange: "transform" }}
           initial={{ opacity: 0, scale: 0.7 }}
           animate={{ opacity: 1, scale: 1 }}
@@ -166,8 +166,12 @@ export function HeroSection({ isAuthenticated = false }: HeroSectionProps) {
             <Spline
               scene={SPLINE_SCENE}
               onLoad={() => setSplineLoaded(true)}
-              style={{ width: "100%", height: "100%" }}
+              style={{ width: "100%", height: "100%", background: "transparent" }}
             />
+            {/* Override Spline canvas black background */}
+            <style jsx global>{`
+              .spline-watermark { display: none !important; }
+            `}</style>
           </Suspense>
 
           {/* Glow effect behind globe */}
