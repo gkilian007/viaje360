@@ -153,6 +153,42 @@ function MiniMapStrip({ activities, destination }: { activities: TimelineActivit
   )
 }
 
+function PlanSkeleton() {
+  return (
+    <div className="min-h-screen bg-[#0f1117] lg:hidden">
+      <div className="fixed top-0 left-0 right-0 z-40 flex items-center gap-3 px-5 h-[72px]"
+        style={{ background: "rgba(19,19,21,0.92)", borderBottom: "1px solid rgba(255,255,255,0.06)" }}>
+        <div className="w-8 h-8 rounded-full bg-white/10 animate-pulse" />
+        <div className="flex-1 h-4 rounded-full bg-white/10 animate-pulse max-w-[140px]" />
+      </div>
+      <div className="pt-[72px] pb-24 px-5 space-y-4">
+        <div className="flex gap-3 pt-4">
+          {[1,2,3].map(i => (
+            <div key={i} className="shrink-0 w-28 h-16 rounded-2xl bg-white/[0.05] animate-pulse" />
+          ))}
+        </div>
+        <div className="flex gap-2">
+          {[1,2,3,4].map(i => (
+            <div key={i} className="w-16 h-9 rounded-xl bg-white/[0.05] animate-pulse" />
+          ))}
+        </div>
+        <div className="h-16 rounded-2xl bg-white/[0.04] animate-pulse" />
+        {[1,2,3,4].map(i => (
+          <div key={i} className="flex gap-3">
+            <div className="flex flex-col items-center w-14 shrink-0">
+              <div className="w-10 h-3 rounded-full bg-white/[0.07] animate-pulse mb-2" />
+              <div className="w-7 h-7 rounded-full bg-white/[0.07] animate-pulse" />
+              {i < 4 && <div className="w-px bg-white/[0.05] mt-1" style={{ minHeight: 72 }} />}
+            </div>
+            <div className="flex-1 h-[88px] rounded-xl bg-white/[0.04] animate-pulse mb-3"
+              style={{ animationDelay: `${i * 80}ms` }} />
+          </div>
+        ))}
+      </div>
+    </div>
+  )
+}
+
 function PlanPageContent() {
   const { pendingAchievement, currentTrip, generatedItinerary, setGeneratedItinerary, setCurrentTrip, replaceChatMessages, updateActivity } = useAppStore()
   const searchParams = useSearchParams()
@@ -164,6 +200,7 @@ function PlanPageContent() {
   const [shareCopied, setShareCopied] = useState(false)
   const [showTourBanner, setShowTourBanner] = useState(false)
   const [showShareToast, setShowShareToast] = useState(false)
+  const [showGuestBanner, setShowGuestBanner] = useState(false)
   const { trackEvent } = useActivityEventTracker()
   const { track } = useAnalytics()
   const { hasExistingDiary } = useExistingDiary(currentTrip?.id ?? null, selectedDay)
@@ -258,40 +295,41 @@ function PlanPageContent() {
             destination: payload.data.trip.destination,
             tripId: payload.data.trip.id,
           })
+        } else if (useAppStore.getState().currentTrip) {
+          // Server has no trip but we have one in localStorage → guest mode
+          setShowGuestBanner(true)
+        }
 
-          // Backfill geocoding for legacy trips that have no lat/lng
-          const days: Array<{ activities: Array<{ lat?: number; lng?: number }> }> = payload.data.days ?? []
-          const missingCoords = days.some(d =>
-            d.activities.some(a => !a.lat || !a.lng)
-          )
-          if (missingCoords) {
-            // Backfill geocoding in background — call multiple times until all done
-            async function runBackfill() {
-              let remaining = Infinity
-              let totalUpdated = 0
-              while (remaining > 0) {
-                try {
-                  const r = await fetch("/api/trips/backfill-geocode", { method: "POST" })
-                  const result = await r.json()
-                  totalUpdated += result?.data?.updated ?? 0
-                  remaining = result?.data?.remaining ?? 0
-                } catch {
-                  break
-                }
-              }
-              if (totalUpdated > 0) {
-                // Reload with fresh coords
-                try {
-                  const freshRes = await fetch("/api/trips/active", { cache: "no-store" })
-                  const freshPayload = await freshRes.json()
-                  if (freshPayload?.data?.days) {
-                    setGeneratedItinerary(freshPayload.data.days)
-                  }
-                } catch {}
+        // Backfill geocoding for legacy trips that have no lat/lng
+        const days: Array<{ activities: Array<{ lat?: number; lng?: number }> }> = payload?.data?.days ?? []
+        const missingCoords = days.some(d =>
+          d.activities.some(a => !a.lat || !a.lng)
+        )
+        if (missingCoords && payload?.data?.trip) {
+          async function runBackfill() {
+            let remaining = Infinity
+            let totalUpdated = 0
+            while (remaining > 0) {
+              try {
+                const r = await fetch("/api/trips/backfill-geocode", { method: "POST" })
+                const result = await r.json()
+                totalUpdated += result?.data?.updated ?? 0
+                remaining = result?.data?.remaining ?? 0
+              } catch {
+                break
               }
             }
-            void runBackfill()
+            if (totalUpdated > 0) {
+              try {
+                const freshRes = await fetch("/api/trips/active", { cache: "no-store" })
+                const freshPayload = await freshRes.json()
+                if (freshPayload?.data?.days) {
+                  setGeneratedItinerary(freshPayload.data.days)
+                }
+              } catch {}
+            }
           }
+          void runBackfill()
         }
       } catch {} finally {
         setServerLoaded(true)
@@ -395,14 +433,7 @@ function PlanPageContent() {
   })
 
   if (!hydrated || !serverLoaded) {
-    return (
-      <div className="min-h-screen map-bg flex items-center justify-center">
-        <div className="flex flex-col items-center gap-3">
-          <div className="w-8 h-8 border-2 border-[#0A84FF] border-t-transparent rounded-full animate-spin" />
-          <div className="text-[#c0c6d6] text-sm">Cargando itinerario...</div>
-        </div>
-      </div>
-    )
+    return <PlanSkeleton />
   }
 
   if (!currentTrip || totalDays === 0) {
@@ -474,6 +505,44 @@ function PlanPageContent() {
               destination={currentTrip?.destination ?? ""}
             />
           )}
+
+          {/* Guest save banner — shown when itinerary is only in localStorage */}
+          <AnimatePresence>
+            {showGuestBanner && (
+              <motion.div
+                initial={{ opacity: 0, y: -12 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -12 }}
+                transition={{ duration: 0.3 }}
+                className="mx-5 mb-3 flex items-center justify-between gap-3 px-4 py-3 rounded-2xl"
+                style={{
+                  background: "rgba(88,86,214,0.14)",
+                  border: "1px solid rgba(88,86,214,0.35)",
+                  backdropFilter: "blur(12px)",
+                }}
+              >
+                <p className="text-[13px] text-[#c0c6d6] flex-1">
+                  💾 ¿Quieres guardar este itinerario? Inicia sesión para no perderlo.
+                </p>
+                <div className="flex items-center gap-2 shrink-0">
+                  <a
+                    href="/login"
+                    className="text-[11px] font-semibold px-2.5 py-1.5 rounded-lg"
+                    style={{ background: "rgba(88,86,214,0.3)", color: "#c4b5fd" }}
+                  >
+                    Guardar
+                  </a>
+                  <button
+                    onClick={() => setShowGuestBanner(false)}
+                    className="text-[11px] text-[#666] hover:text-white transition-colors"
+                    aria-label="Cerrar"
+                  >
+                    ✕
+                  </button>
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
 
           {/* First-visit tour banner */}
           <AnimatePresence>
@@ -888,11 +957,7 @@ function PlanPageContent() {
 
 export default function PlanPage() {
   return (
-    <Suspense fallback={
-      <div className="min-h-screen map-bg flex items-center justify-center">
-        <div className="text-[#c0c6d6] text-sm">Cargando itinerario...</div>
-      </div>
-    }>
+    <Suspense fallback={<PlanSkeleton />}>
       <PlanPageContent />
     </Suspense>
   )
