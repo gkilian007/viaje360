@@ -32,7 +32,7 @@ export async function GET(req: NextRequest) {
     // Load trip
     const { data: trip } = await supabase
       .from("trips")
-      .select("id, name, destination, country, start_date, end_date, status")
+      .select("id, name, destination, country, start_date, end_date, status, image_url")
       .eq("id", tripId)
       .single()
 
@@ -124,6 +124,7 @@ La narración debe sonar como si el viajero mismo la contara a un amigo, captura
         startDate: trip.start_date,
         endDate: trip.end_date,
         status: trip.status,
+        imageUrl: (trip as Record<string, unknown>).image_url as string | null ?? null,
       },
       days,
       aiNarrative,

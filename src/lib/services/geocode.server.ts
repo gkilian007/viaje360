@@ -284,11 +284,11 @@ export async function geocodeItinerary(
   }
 
   if (tasks.length === 0) {
-    console.log(`[geocode] all ${llmOk} activities have valid LLM coords (${llmRejected} rejected)`)
+    console.info(`[geocode] all ${llmOk} activities have valid LLM coords (${llmRejected} rejected)`)
     return itinerary
   }
 
-  console.log(`[geocode] ${llmOk} LLM coords ok, ${llmRejected} rejected, ${tasks.length} need Nominatim for "${destination}"`)
+  console.info(`[geocode] ${llmOk} LLM coords ok, ${llmRejected} rejected, ${tasks.length} need Nominatim for "${destination}"`)
 
   // Use a simple cache for duplicate locations within same itinerary
   const cache = new Map<string, Coords | null>()
@@ -315,7 +315,7 @@ export async function geocodeItinerary(
   }
 
   const resolved = tasks.filter(t => hasValidCoords(t.activity.lat, t.activity.lng)).length
-  console.log(`[geocode] resolved ${resolved}/${tasks.length} activities`)
+  console.info(`[geocode] resolved ${resolved}/${tasks.length} activities`)
 
   return itinerary
 }

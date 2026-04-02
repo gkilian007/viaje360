@@ -75,7 +75,7 @@ export async function POST(request: NextRequest) {
       return successResponse({ updated: 0, message: "No activities need geocoding" })
     }
 
-    console.log(`[backfill-geocode] ${activities.length} activities without coords for trip ${trip.id} (${destination})`)
+    console.info(`[backfill-geocode] ${activities.length} activities without coords for trip ${trip.id} (${destination})`)
 
     const cache = new Map<string, { lat: number; lng: number } | null>()
     let updated = 0
@@ -127,7 +127,7 @@ export async function POST(request: NextRequest) {
     }
 
     const remaining = activities.length - batch.length
-    console.log(`[backfill-geocode] updated ${updated}/${batch.length} activities (${remaining} remaining)`)
+    console.info(`[backfill-geocode] updated ${updated}/${batch.length} activities (${remaining} remaining)`)
     return successResponse({ updated, total: activities.length, remaining })
   } catch (error) {
     console.error("backfill-geocode error:", error)

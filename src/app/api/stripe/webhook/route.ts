@@ -9,10 +9,8 @@ import {
   extractUserIdFromEvent,
 } from "./webhook.helpers"
 
-// Disable Next.js default body parser — we need the raw body for Stripe signature verification
-export const config = {
-  api: { bodyParser: false },
-}
+// In App Router, body parsing is handled by req.text() — no config needed.
+// (Next.js 16 ignores the old `config` export in route handlers.)
 
 export async function POST(req: NextRequest) {
   const sig = req.headers.get("stripe-signature")

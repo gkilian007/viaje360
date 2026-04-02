@@ -105,6 +105,6 @@ export async function scheduleNotificationsForTrip(
     // Non-fatal: scheduling failures must never break itinerary generation
     console.warn("[notification-scheduler] Failed to schedule notifications:", error.message)
   } else {
-    console.log(`[notification-scheduler] Scheduled ${rows.length} notifications for trip ${opts.tripId}`)
+    console.info(`[notification-scheduler] Scheduled ${rows.length} notifications for trip ${opts.tripId}`)
   }
 }
