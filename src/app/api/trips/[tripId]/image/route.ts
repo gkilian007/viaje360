@@ -33,7 +33,7 @@ export async function POST(
     }
 
     if (trip.user_id !== identity.userId) {
-      return errorResponse("FORBIDDEN", "Access denied", 403)
+      return errorResponse("UNAUTHORIZED", "Access denied", 403)
     }
 
     // Return cached URL if already stored
