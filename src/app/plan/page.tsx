@@ -283,7 +283,12 @@ function PlanPageContent() {
     async function rehydrate() {
       try {
         const res = await fetch("/api/trips/active", { cache: "no-store" })
-        if (!res.ok) { setServerLoaded(true); return }
+        if (!res.ok) {
+          // Unauthenticated or server error — show guest banner if store has data from onboarding
+          if (useAppStore.getState().currentTrip) setShowGuestBanner(true)
+          setServerLoaded(true)
+          return
+        }
         const payload = await res.json()
         if (payload?.data?.trip) {
           setCurrentTrip(payload.data.trip)
