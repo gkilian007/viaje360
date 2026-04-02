@@ -43,6 +43,7 @@ interface AppState {
   setPendingAchievement: (achievement: Achievement | null) => void
   setCurrentTrip: (trip: Trip | null) => void
   setGeneratedItinerary: (itinerary: DayItinerary[] | null) => void
+  updateActivity: (activityId: string, patch: Partial<TimelineActivity>) => void
 }
 
 export const useAppStore = create<AppState>()(
@@ -130,6 +131,16 @@ export const useAppStore = create<AppState>()(
       setCurrentTrip: (trip) => set({ currentTrip: trip }),
 
       setGeneratedItinerary: (itinerary) => set({ generatedItinerary: itinerary }),
+
+      updateActivity: (activityId, patch) =>
+        set((state) => ({
+          generatedItinerary: state.generatedItinerary?.map((day) => ({
+            ...day,
+            activities: day.activities.map((a) =>
+              a.id === activityId ? { ...a, ...patch } : a
+            ),
+          })) ?? null,
+        })),
     }),
     {
       name: "viaje360-app-store",

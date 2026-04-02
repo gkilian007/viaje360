@@ -154,7 +154,7 @@ function MiniMapStrip({ activities, destination }: { activities: TimelineActivit
 }
 
 function PlanPageContent() {
-  const { pendingAchievement, currentTrip, generatedItinerary, setGeneratedItinerary, setCurrentTrip, replaceChatMessages } = useAppStore()
+  const { pendingAchievement, currentTrip, generatedItinerary, setGeneratedItinerary, setCurrentTrip, replaceChatMessages, updateActivity } = useAppStore()
   const searchParams = useSearchParams()
   const itinerary = generatedItinerary ?? []
   const [selectedDay, setSelectedDay] = useState(1)
@@ -180,6 +180,23 @@ function PlanPageContent() {
     setSelectedActivityId(activity.id)
     trackEvent(activity.id, "detail_opened", { source: "timeline-card", dayNumber: selectedDay })
   }
+
+  const handleActivityEdit = useCallback(async (
+    activityId: string,
+    patch: { name: string; time: string; duration: number }
+  ) => {
+    const res = await fetch(`/api/activities/${activityId}`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ name: patch.name, time: patch.time, duration: patch.duration }),
+    })
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}))
+      throw new Error(err?.error?.message ?? "Error al guardar")
+    }
+    // Update local store so map markers and walking times refresh
+    updateActivity(activityId, { name: patch.name, time: patch.time, duration: patch.duration })
+  }, [updateActivity])
 
   useEffect(() => {
     setHydrated(true)
@@ -494,6 +511,7 @@ function PlanPageContent() {
                     isLast={i === today.activities.length - 1}
                     isCurrent={activity.id === liveStatus.current?.id}
                     onClick={handleActivityClick}
+                    onEdit={currentTrip?.id ? handleActivityEdit : undefined}
                   />
                   {seg && offerTransit && next && (
                     <TransitChoiceCard
