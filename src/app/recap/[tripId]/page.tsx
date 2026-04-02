@@ -116,7 +116,7 @@ export default function RecapPage() {
           <span className="text-[56px]">😕</span>
           <p className="text-white text-[18px] font-bold mt-4 mb-2">No encontrado</p>
           <p className="text-[#888] text-[13px] mb-6">{error ?? "Este recap no existe"}</p>
-          <button onClick={() => router.push("/plan")} className="text-[#0A84FF] text-[13px]">← Volver al plan</button>
+          <button onClick={() => router.push("/trips")} className="text-[#0A84FF] text-[13px]">← Mis viajes</button>
         </div>
       </div>
     )
@@ -262,12 +262,20 @@ export default function RecapPage() {
             {copied ? "¡Enlace copiado!" : "Compartir este viaje"}
           </button>
 
-          <button
-            onClick={() => router.push("/plan")}
-            className="w-full mt-3 py-3 text-[13px] text-[#666] hover:text-[#aaa] transition-colors"
-          >
-            ← Volver al plan
-          </button>
+          <div className="flex gap-3 mt-3">
+            <button
+              onClick={() => router.push("/trips")}
+              className="flex-1 py-3 text-[13px] text-[#666] hover:text-[#aaa] transition-colors"
+            >
+              ← Mis viajes
+            </button>
+            <button
+              onClick={() => router.push("/plan")}
+              className="flex-1 py-3 text-[13px] text-[#666] hover:text-[#aaa] transition-colors"
+            >
+              Ir al plan →
+            </button>
+          </div>
         </motion.div>
       </div>
     </div>

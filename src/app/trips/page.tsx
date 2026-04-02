@@ -25,6 +25,7 @@ function TripRow({
 }) {
   const router = useRouter()
   const isActive = trip.status === "active"
+  const isCompleted = trip.status === "completed"
 
   return (
     <div
@@ -32,8 +33,14 @@ function TripRow({
       style={{
         background: isActive
           ? "linear-gradient(135deg, rgba(10,132,255,0.1), rgba(88,86,214,0.08))"
+          : isCompleted
+          ? "rgba(28,28,32,0.85)"
           : "rgba(30,30,32,0.9)",
-        border: isActive ? "1px solid rgba(10,132,255,0.3)" : "1px solid rgba(255,255,255,0.07)",
+        border: isActive
+          ? "1px solid rgba(10,132,255,0.3)"
+          : isCompleted
+          ? "1px solid rgba(120,200,140,0.15)"
+          : "1px solid rgba(255,255,255,0.07)",
       }}
     >
       <div className="flex items-start justify-between gap-3 mb-2">
@@ -45,6 +52,14 @@ function TripRow({
                 style={{ background: "rgba(10,132,255,0.2)", color: "#0A84FF" }}
               >
                 ACTIVO
+              </span>
+            )}
+            {isCompleted && (
+              <span
+                className="px-2 py-0.5 rounded-full text-[10px] font-bold"
+                style={{ background: "rgba(80,80,90,0.5)", color: "#a8e6b8", border: "1px solid rgba(120,200,140,0.25)" }}
+              >
+                COMPLETADO
               </span>
             )}
             <h3 className="text-[15px] font-semibold text-white truncate">{trip.name}</h3>
@@ -68,37 +83,67 @@ function TripRow({
       </div>
 
       <div className="flex gap-2">
-        <button
-          onClick={() => router.push(`/recap/${trip.id}`)}
-          className="flex-1 py-2 rounded-xl text-[13px] font-medium transition-all active:scale-95"
-          style={{
-            background: "rgba(255,255,255,0.07)",
-            border: "1px solid rgba(255,255,255,0.1)",
-            color: "#e4e2e4",
-          }}
-        >
-          Ver recap
-        </button>
+        {isCompleted ? (
+          <>
+            <button
+              onClick={() => router.push(`/recap/${trip.id}`)}
+              className="flex-1 py-2 rounded-xl text-[13px] font-semibold transition-all active:scale-95"
+              style={{
+                background: "rgba(80,80,90,0.5)",
+                border: "1px solid rgba(120,200,140,0.25)",
+                color: "#a8e6b8",
+              }}
+            >
+              Ver recap
+            </button>
+            <button
+              onClick={() => onActivate(trip.id)}
+              disabled={activating === trip.id}
+              className="flex-1 py-2 rounded-xl text-[13px] font-medium transition-all active:scale-95 disabled:opacity-60"
+              style={{
+                background: "rgba(255,255,255,0.06)",
+                border: "1px solid rgba(255,255,255,0.09)",
+                color: "#9ca3af",
+              }}
+            >
+              {activating === trip.id ? "Reactivando…" : "Reactivar"}
+            </button>
+          </>
+        ) : (
+          <>
+            <button
+              onClick={() => router.push(`/recap/${trip.id}`)}
+              className="flex-1 py-2 rounded-xl text-[13px] font-medium transition-all active:scale-95"
+              style={{
+                background: "rgba(255,255,255,0.07)",
+                border: "1px solid rgba(255,255,255,0.1)",
+                color: "#e4e2e4",
+              }}
+            >
+              Ver recap
+            </button>
 
-        {!isActive && (
-          <button
-            onClick={() => onActivate(trip.id)}
-            disabled={activating === trip.id}
-            className="flex-1 py-2 rounded-xl text-[13px] font-semibold text-white transition-all active:scale-95 disabled:opacity-60"
-            style={{ background: "linear-gradient(135deg, #0A84FF, #5856D6)" }}
-          >
-            {activating === trip.id ? "Activando…" : "Continuar"}
-          </button>
-        )}
+            {!isActive && (
+              <button
+                onClick={() => onActivate(trip.id)}
+                disabled={activating === trip.id}
+                className="flex-1 py-2 rounded-xl text-[13px] font-semibold text-white transition-all active:scale-95 disabled:opacity-60"
+                style={{ background: "linear-gradient(135deg, #0A84FF, #5856D6)" }}
+              >
+                {activating === trip.id ? "Activando…" : "Continuar"}
+              </button>
+            )}
 
-        {isActive && (
-          <button
-            onClick={() => router.push("/plan")}
-            className="flex-1 py-2 rounded-xl text-[13px] font-semibold text-white transition-all active:scale-95"
-            style={{ background: "rgba(10,132,255,0.2)", border: "1px solid rgba(10,132,255,0.3)" }}
-          >
-            Ver plan →
-          </button>
+            {isActive && (
+              <button
+                onClick={() => router.push("/plan")}
+                className="flex-1 py-2 rounded-xl text-[13px] font-semibold text-white transition-all active:scale-95"
+                style={{ background: "rgba(10,132,255,0.2)", border: "1px solid rgba(10,132,255,0.3)" }}
+              >
+                Ver plan →
+              </button>
+            )}
+          </>
         )}
       </div>
     </div>

@@ -161,7 +161,8 @@ function TripCard({
   onViewRecap: () => void
   onShare: () => void
 }) {
-  const imageUrl = getDestinationImageUrl(trip.destination)
+  const imageUrl = trip.imageUrl ?? getDestinationImageUrl(trip.destination)
+  const isCompleted = trip.status === "completed"
 
   return (
     <motion.div
@@ -180,6 +181,7 @@ function TripCard({
           src={imageUrl}
           alt={trip.destination}
           className="absolute inset-0 w-full h-full object-cover"
+          style={isCompleted ? { filter: "saturate(0.5) brightness(0.85)" } : undefined}
           onError={(e) => {
             (e.currentTarget as HTMLImageElement).style.display = "none"
           }}
@@ -197,13 +199,15 @@ function TripCard({
           style={{
             background: trip.status === "active"
               ? "rgba(48,209,88,0.85)"
+              : isCompleted
+              ? "rgba(80,80,90,0.85)"
               : "rgba(0,0,0,0.55)",
-            color: trip.status === "active" ? "#fff" : "#ccc",
+            color: trip.status === "active" ? "#fff" : isCompleted ? "#a8e6b8" : "#ccc",
             backdropFilter: "blur(8px)",
-            border: `1px solid ${trip.status === "active" ? "rgba(48,209,88,0.5)" : "rgba(255,255,255,0.15)"}`,
+            border: `1px solid ${trip.status === "active" ? "rgba(48,209,88,0.5)" : isCompleted ? "rgba(120,200,140,0.3)" : "rgba(255,255,255,0.15)"}`,
           }}
         >
-          {trip.status === "active" ? "● En curso" : trip.status === "planning" ? "Planificando" : "Completado"}
+          {trip.status === "active" ? "● En curso" : trip.status === "planning" ? "Planificando" : "✓ Completado"}
         </div>
         {/* Destination label at bottom-left */}
         <div className="absolute bottom-3 left-3">
@@ -229,22 +233,40 @@ function TripCard({
             <span className="material-symbols-outlined text-[18px]">share</span>
             Compartir
           </button>
-          <button
-            onClick={onViewRecap}
-            className="flex items-center gap-1.5 text-[12px] text-[#888] hover:text-white transition-colors"
-          >
-            <span className="material-symbols-outlined text-[18px]">auto_stories</span>
-            Recap
-          </button>
-          <motion.button
-            whileTap={{ scale: 0.97 }}
-            onClick={onContinue}
-            className="ml-auto flex items-center gap-1.5 px-4 py-2 rounded-xl text-[12px] font-semibold text-white"
-            style={{ background: "linear-gradient(135deg, #0A84FF, #5856D6)" }}
-          >
-            <span className="material-symbols-outlined text-[16px]">arrow_forward</span>
-            Ver itinerario
-          </motion.button>
+          {!isCompleted && (
+            <button
+              onClick={onViewRecap}
+              className="flex items-center gap-1.5 text-[12px] text-[#888] hover:text-white transition-colors"
+            >
+              <span className="material-symbols-outlined text-[18px]">auto_stories</span>
+              Recap
+            </button>
+          )}
+          {isCompleted ? (
+            <motion.button
+              whileTap={{ scale: 0.97 }}
+              onClick={onViewRecap}
+              className="ml-auto flex items-center gap-1.5 px-4 py-2 rounded-xl text-[12px] font-semibold"
+              style={{
+                background: "rgba(80,80,90,0.6)",
+                border: "1px solid rgba(120,200,140,0.25)",
+                color: "#a8e6b8",
+              }}
+            >
+              <span className="material-symbols-outlined text-[16px]">auto_stories</span>
+              Ver recap
+            </motion.button>
+          ) : (
+            <motion.button
+              whileTap={{ scale: 0.97 }}
+              onClick={onContinue}
+              className="ml-auto flex items-center gap-1.5 px-4 py-2 rounded-xl text-[12px] font-semibold text-white"
+              style={{ background: "linear-gradient(135deg, #0A84FF, #5856D6)" }}
+            >
+              <span className="material-symbols-outlined text-[16px]">arrow_forward</span>
+              Ver itinerario
+            </motion.button>
+          )}
         </div>
       </div>
     </motion.div>
