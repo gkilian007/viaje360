@@ -1,4 +1,5 @@
 import { NextRequest } from "next/server"
+import { rateLimit } from "@/lib/rate-limit"
 import { generateChatResponse } from "@/lib/gemini"
 import { resolveRequestIdentity } from "@/lib/auth/server"
 import { chatRequestSchema } from "@/lib/api/contracts"
@@ -15,6 +16,9 @@ function isPersistedTripId(tripId: string) {
 }
 
 export async function POST(req: NextRequest) {
+  const rl = await rateLimit(req, "chat", 30, "1 m")
+  if (!rl.ok) return rl.response!
+
   try {
     const body = await parseJsonBody(req, chatRequestSchema)
     const identity = await resolveRequestIdentity()

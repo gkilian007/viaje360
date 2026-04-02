@@ -1,7 +1,11 @@
 import { NextRequest, NextResponse } from "next/server"
+import { rateLimit } from "@/lib/rate-limit"
 import { getForecast } from "@/lib/services/weather.service"
 
 export async function GET(req: NextRequest) {
+  const rl = await rateLimit(req, "weather", 30, "1 m")
+  if (!rl.ok) return rl.response!
+
   const sp = req.nextUrl.searchParams
   const lat = parseFloat(sp.get("lat") ?? "")
   const lng = parseFloat(sp.get("lng") ?? "")

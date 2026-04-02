@@ -1,7 +1,23 @@
 "use client"
 import posthog from "posthog-js"
 import { PostHogProvider } from "posthog-js/react"
-import { useEffect } from "react"
+import { useEffect, Suspense } from "react"
+import { usePathname, useSearchParams } from "next/navigation"
+
+function PostHogPageView() {
+  const pathname = usePathname()
+  const searchParams = useSearchParams()
+
+  useEffect(() => {
+    if (!pathname) return
+    let url = window.location.origin + pathname
+    const qs = searchParams?.toString()
+    if (qs) url += `?${qs}`
+    posthog.capture("$pageview", { $current_url: url })
+  }, [pathname, searchParams])
+
+  return null
+}
 
 export function PHProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
@@ -13,5 +29,13 @@ export function PHProvider({ children }: { children: React.ReactNode }) {
       capture_pageview: false,
     })
   }, [])
-  return <PostHogProvider client={posthog}>{children}</PostHogProvider>
+
+  return (
+    <PostHogProvider client={posthog}>
+      <Suspense fallback={null}>
+        <PostHogPageView />
+      </Suspense>
+      {children}
+    </PostHogProvider>
+  )
 }

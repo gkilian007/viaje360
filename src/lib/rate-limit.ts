@@ -142,6 +142,7 @@ export async function rateLimit(
     }
 
     if (!success) {
+      console.warn(`[rate-limit] action=${action} client=${id} → 429`)
       return {
         ok: false,
         remaining: 0,

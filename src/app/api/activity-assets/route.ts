@@ -1,5 +1,6 @@
 import { NextRequest } from "next/server"
 import { z } from "zod"
+import { rateLimit } from "@/lib/rate-limit"
 import { createServiceClient, isSupabaseConfigured } from "@/lib/supabase/server"
 import { normalizeRouteError, parseJsonBody, successResponse } from "@/lib/api/route-helpers"
 
@@ -146,6 +147,9 @@ function chooseBestUrl(input: {
 }
 
 export async function POST(req: NextRequest) {
+  const rl = await rateLimit(req, "activity-assets", 60, "1 m")
+  if (!rl.ok) return rl.response!
+
   try {
     const body = await parseJsonBody(req, requestSchema)
     const normalizedName = normalizeName(body.name)

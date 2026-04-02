@@ -91,6 +91,7 @@ export function OnboardingWizard() {
 
   const [generating, setGenerating] = useState(false)
   const [hydrated, setHydrated] = useState(false)
+  const [honeypot, setHoneypot] = useState("")
   const { track } = useAnalytics()
   const startTracked = useRef(false)
 
@@ -125,6 +126,7 @@ export function OnboardingWizard() {
 
   const handleNext = () => {
     if (isLastStep || isCoreLastStep) {
+      if (honeypot) return // bot detected — silently drop
       track("onboarding_completed")
       setGenerating(true)
     } else {
@@ -144,6 +146,17 @@ export function OnboardingWizard() {
 
   return (
     <div className="h-dvh map-bg flex flex-col overflow-hidden">
+      {/* Honeypot: hidden from real users, catches bots that autofill */}
+      <input
+        type="text"
+        name="website"
+        value={honeypot}
+        onChange={(e) => setHoneypot(e.target.value)}
+        tabIndex={-1}
+        aria-hidden="true"
+        style={{ position: "absolute", left: "-9999px", width: 0, height: 0, opacity: 0 }}
+        autoComplete="off"
+      />
       {/* Top bar: progress + step count */}
       <div className="safe-area-top px-5 pt-4 pb-3 flex-shrink-0">
         <div className="flex items-center justify-between mb-3">

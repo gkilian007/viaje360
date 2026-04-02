@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server"
+import { rateLimit } from "@/lib/rate-limit"
 
 const NOMINATIM_URL = "https://nominatim.openstreetmap.org/search"
 
@@ -28,6 +29,9 @@ const CITY_VIEWBOXES: Record<string, string> = {
 }
 
 export async function GET(req: NextRequest) {
+  const rl = await rateLimit(req, "geocode", 30, "1 m")
+  if (!rl.ok) return rl.response!
+
   const q = req.nextUrl.searchParams.get("q")
   const near = req.nextUrl.searchParams.get("near") // destination city for context
   if (!q) {

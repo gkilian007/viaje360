@@ -1,4 +1,5 @@
 import { NextRequest } from "next/server"
+import { rateLimit } from "@/lib/rate-limit"
 import { successResponse, errorResponse, normalizeRouteError } from "@/lib/api/route-helpers"
 import { overpassResultToNearbyPOI } from "@/lib/magic-moment"
 
@@ -21,6 +22,9 @@ function buildOverpassQuery(lat: number, lng: number, radiusMeters: number): str
 }
 
 export async function GET(req: NextRequest) {
+  const rl = await rateLimit(req, "nearby", 30, "1 m")
+  if (!rl.ok) return rl.response!
+
   try {
     const sp = req.nextUrl.searchParams
     const lat = parseFloat(sp.get("lat") ?? "")

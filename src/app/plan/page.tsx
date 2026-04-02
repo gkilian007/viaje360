@@ -266,10 +266,12 @@ function PlanPageContent() {
     if (navigator.share) {
       try {
         await navigator.share({ title: shareText, url: shareUrl })
+        track("trip_shared", { destination: currentTrip.destination, method: "native" })
         return
       } catch {}
     }
     navigator.clipboard.writeText(shareUrl).then(() => {
+      track("trip_shared", { destination: currentTrip.destination, method: "clipboard" })
       setShareCopied(true)
       setShowShareToast(true)
       setTimeout(() => {
@@ -277,7 +279,7 @@ function PlanPageContent() {
         setShowShareToast(false)
       }, 2500)
     }).catch(() => {})
-  }, [currentTrip?.id, currentTrip?.destination])
+  }, [currentTrip?.id, currentTrip?.destination, track])
 
   // Always rehydrate from server to get rich activity fields and ensure trip is loaded
   useEffect(() => {
@@ -753,44 +755,20 @@ function PlanPageContent() {
                   isDayOver={liveStatus.isDayOver}
                   isDayNotStarted={liveStatus.isDayNotStarted}
                 />
-                {today?.activities.map((activity, i) => {
-                  const next = today.activities[i + 1]
-                  const seg = next ? getSegment(activity.id, next.id) : undefined
-                  const totalActivities = today.activities.length
-                  const dayProgress = totalActivities > 1 ? i / (totalActivities - 1) : 0
-                  const offerTransit = seg
-                    ? shouldOfferTransitChoice(seg.distanceMeters, mobilityProfile.key)
-                    : false
-                  return (
-                    <div key={activity.id}>
-                      <TimelineItem
-                        activity={activity}
-                        isFirst={i === 0}
-                        isLast={i === today.activities.length - 1}
-                        isCurrent={activity.id === liveStatus.current?.id}
-                        onClick={handleActivityClick}
-                      />
-                      {seg && offerTransit && next && (
-                        <TransitChoiceCard
-                          fromActivity={activity.name}
-                          toActivity={next.name}
-                          distanceMeters={seg.distanceMeters}
-                          walkingMinutes={seg.walkingMinutes}
-                          destination={currentTrip?.destination ?? ""}
-                          dayProgress={dayProgress}
-                          walkingMapsUrl={seg.mapsUrl}
-                        />
-                      )}
-                      {seg && !offerTransit && (
-                        <WalkingChip
-                          walkingMinutes={seg.walkingMinutes}
-                          distanceMeters={seg.distanceMeters}
-                          mapsUrl={seg.mapsUrl}
-                        />
-                      )}
-                    </div>
-                  )
-                })}
+                <SortableTimeline
+                  activities={today?.activities ?? []}
+                  dayNumber={selectedDay}
+                  tripId={currentTrip?.id}
+                  isCurrent={(id) => id === liveStatus.current?.id}
+                  onClick={handleActivityClick}
+                  onEdit={currentTrip?.id ? handleActivityEdit : undefined}
+                  getSegment={(fromId, toId) => getSegment(fromId, toId)}
+                  shouldOfferTransit={(distanceMeters) =>
+                    shouldOfferTransitChoice(distanceMeters, mobilityProfile.key)
+                  }
+                  destination={currentTrip?.destination ?? ""}
+                  onReorder={reorderDayActivities}
+                />
               </div>
 
               {/* Adapt input */}

@@ -3,6 +3,7 @@
 import { useState } from "react"
 import { createClient, isSupabaseBrowserConfigured } from "@/lib/supabase/client"
 import { motion } from "framer-motion"
+import posthog from "posthog-js"
 
 type AuthMode = "login" | "register"
 
@@ -45,6 +46,7 @@ export default function LoginPage() {
           password,
         })
         if (signInError) throw signInError
+        try { posthog.identify(email) } catch {}
         window.location.href = "/home"
       }
     } catch (err: any) {

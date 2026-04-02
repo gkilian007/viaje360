@@ -31,6 +31,7 @@ export function PaywallModal({ destination, onClose }: PaywallModalProps) {
 
   async function startStripeCheckout(kind: "trip" | "annual") {
     try {
+      track("checkout_started", { destination, plan: kind })
       setLoading(true)
       setError(null)
 
