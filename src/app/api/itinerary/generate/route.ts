@@ -15,6 +15,7 @@ import { getPersonalRecommendationContext } from "@/lib/services/personal-recomm
 import { ingestItineraryKnowledge } from "@/lib/services/trip-learning.db"
 import { createTrip } from "@/lib/services/trip.service"
 import { createServiceClient } from "@/lib/supabase/server"
+import { requireAccess } from "@/lib/api/access-guard"
 
 export async function POST(req: NextRequest) {
   // Rate limit: max 5 generations per IP per day
@@ -24,6 +25,11 @@ export async function POST(req: NextRequest) {
   try {
     const body = await parseJsonBody(req, onboardingRequestSchema)
     const identity = await resolveRequestIdentity()
+
+    // Access guard: check canGenerate
+    const guard = await requireAccess(identity.userId, body.destination, "canGenerate", body.startDate)
+    if (!guard.ok) return guard.response
+
     const personalization = await getPersonalRecommendationContext({
       userId: identity.userId,
       destination: body.destination,

@@ -2,6 +2,8 @@ import * as Sentry from "@sentry/nextjs"
 import { NextRequest, NextResponse } from "next/server"
 import { resolveRequestIdentity } from "@/lib/auth/server"
 import { getDiaryEntry, saveDiaryEntry } from "@/lib/services/diary.service"
+import { requireAccess } from "@/lib/api/access-guard"
+import { createServiceClient } from "@/lib/supabase/server"
 import type { DiaryMessage } from "@/lib/services/trip-learning"
 
 interface DiaryRequestBody {
@@ -34,6 +36,19 @@ export async function POST(request: NextRequest) {
     }
 
     const identity = await resolveRequestIdentity()
+
+    // Access guard: check canDiary
+    const supabase = createServiceClient()
+    const { data: tripForAccess } = await supabase
+      .from("trips")
+      .select("destination, start_date")
+      .eq("id", body.tripId)
+      .single()
+    if (tripForAccess?.destination) {
+      const guard = await requireAccess(identity.userId, tripForAccess.destination, "canDiary", tripForAccess.start_date)
+      if (!guard.ok) return guard.response
+    }
+
     const saved = await saveDiaryEntry({
       tripId: body.tripId,
       userId: identity.isAuthenticated ? identity.userId : null,

@@ -11,6 +11,8 @@ import {
 import { geocodeItinerary } from "@/lib/services/geocode.server"
 import { adaptItinerary } from "@/lib/services/itinerary.service"
 import { createServiceClient } from "@/lib/supabase/server"
+import { resolveRequestIdentity } from "@/lib/auth/server"
+import { requireAccess } from "@/lib/api/access-guard"
 
 export async function POST(req: NextRequest) {
   // Rate limit: max 20 adaptations per IP per day
@@ -19,6 +21,20 @@ export async function POST(req: NextRequest) {
 
   try {
     const body = await parseJsonBody(req, adaptRequestSchema)
+    const identity = await resolveRequestIdentity()
+
+    // Access guard: resolve destination from trip, check canAdapt
+    const supabaseGuard = createServiceClient()
+    const { data: tripForAccess } = await supabaseGuard
+      .from("trips")
+      .select("destination, start_date")
+      .eq("id", body.tripId)
+      .single()
+    if (tripForAccess?.destination) {
+      const guard = await requireAccess(identity.userId, tripForAccess.destination, "canAdapt", tripForAccess.start_date)
+      if (!guard.ok) return guard.response
+    }
+
     const adapted = await adaptItinerary(body.tripId, body.reason, body.source, body.startFromDayNumber)
 
     if (!adapted) {
