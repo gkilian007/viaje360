@@ -7,6 +7,7 @@ import { HowItWorks } from "@/components/landing/HowItWorks"
 import { FeaturesCarousel } from "@/components/landing/FeaturesCarousel"
 import { Destinations } from "@/components/landing/Destinations"
 import { PricingSection } from "@/components/landing/PricingSection"
+import { Testimonials } from "@/components/landing/Testimonials"
 import { FooterCTA } from "@/components/landing/FooterCTA"
 
 export default function LandingPage() {
@@ -40,6 +41,7 @@ export default function LandingPage() {
       <HowItWorks />
       <FeaturesCarousel />
       <Destinations />
+      <Testimonials />
       <PricingSection />
       <FooterCTA isAuthenticated={checked ? isAuthenticated : false} />
     </main>

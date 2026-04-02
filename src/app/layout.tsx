@@ -3,6 +3,7 @@ import { Inter } from "next/font/google"
 import { AppBootstrap } from "@/components/AppBootstrap"
 import { ServiceWorkerProvider } from "@/components/ServiceWorkerProvider"
 import { PHProvider } from "@/lib/analytics/posthog"
+import { I18nProvider } from "@/lib/i18n-context"
 import "./globals.css"
 
 const inter = Inter({
@@ -98,9 +99,11 @@ export default function RootLayout({
       </head>
       <body className="h-full bg-[#131315] text-[#e4e2e4] font-[family-name:var(--font-inter)]">
         <PHProvider>
-          <AppBootstrap />
-          <ServiceWorkerProvider />
-          {children}
+          <I18nProvider>
+            <AppBootstrap />
+            <ServiceWorkerProvider />
+            {children}
+          </I18nProvider>
         </PHProvider>
         <script
           type="application/ld+json"

@@ -3,6 +3,21 @@
 import { useRef } from "react"
 import Image from "next/image"
 import Link from "next/link"
+import { useI18n } from "@/lib/i18n-context"
+import type { Locale } from "@/lib/i18n"
+
+function LanguageSwitcher() {
+  const { locale, setLocale } = useI18n()
+  const other: Locale = locale === "es" ? "en" : "es"
+  return (
+    <button
+      onClick={() => setLocale(other)}
+      className="hover:text-white transition-colors flex items-center gap-1"
+    >
+      {locale === "es" ? "🇬🇧 English" : "🇪🇸 Español"}
+    </button>
+  )
+}
 import { motion, useScroll, useTransform, useSpring } from "framer-motion"
 
 interface FooterCTAProps {
@@ -87,6 +102,8 @@ export function FooterCTA({ isAuthenticated = false }: FooterCTAProps) {
           </Link>
           <span>·</span>
           <span>© 2026 Viaje360</span>
+          <span>·</span>
+          <LanguageSwitcher />
         </motion.div>
       </div>
     </section>
