@@ -182,56 +182,59 @@ export default function ExplorePage() {
       {/* Main content (no search) */}
       {!isSearching && (
         <>
-          {/* Featured destinations — horizontal scroll */}
-          <div className="mb-6">
-            <div className="px-5 mb-3 flex items-center justify-between">
-              <p className="text-[13px] font-bold text-white">✈️ Destinos populares</p>
-              <p className="text-[11px] text-[#555]">Toca para planear</p>
-            </div>
-            <div className="flex gap-3 px-5 overflow-x-auto pb-2 scrollbar-none">
-              {FEATURED_DESTINATIONS.map((dest, idx) => (
-                <motion.button
-                  key={dest.name}
-                  initial={{ opacity: 0, x: 20 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  transition={{ delay: idx * 0.04 }}
-                  whileTap={{ scale: 0.95 }}
-                  onClick={() => handleDestinationSelect(dest.name)}
-                  className="shrink-0 w-36 rounded-2xl overflow-hidden text-left"
-                  style={{ background: "rgba(22,22,30,0.95)", border: "1px solid rgba(255,255,255,0.07)" }}
-                >
-                  <div
-                    className="h-20 flex items-center justify-center"
-                    style={{ background: `${dest.color}18` }}
+          {/* Featured destinations + Travel styles — side by side on desktop */}
+          <div className="px-5 mb-6 lg:flex lg:gap-6">
+            {/* Featured destinations */}
+            <div className="lg:flex-1 mb-6 lg:mb-0">
+              <div className="mb-3 flex items-center justify-between">
+                <p className="text-[13px] font-bold text-white">✈️ Destinos populares</p>
+                <p className="text-[11px] text-[#555]">Toca para planear</p>
+              </div>
+              <div className="flex gap-3 overflow-x-auto pb-2 scrollbar-none lg:grid lg:grid-cols-3 lg:overflow-visible">
+                {FEATURED_DESTINATIONS.map((dest, idx) => (
+                  <motion.button
+                    key={dest.name}
+                    initial={{ opacity: 0, x: 20 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ delay: idx * 0.04 }}
+                    whileTap={{ scale: 0.95 }}
+                    onClick={() => handleDestinationSelect(dest.name)}
+                    className="shrink-0 w-36 lg:w-auto rounded-2xl overflow-hidden text-left"
+                    style={{ background: "rgba(22,22,30,0.95)", border: "1px solid rgba(255,255,255,0.07)" }}
                   >
-                    <span className="text-[44px]">{dest.emoji}</span>
-                  </div>
-                  <div className="p-3">
-                    <p className="text-[13px] font-bold text-white">{dest.name}</p>
-                    <p className="text-[10px] text-[#666] mt-0.5">{dest.tag}</p>
-                  </div>
-                </motion.button>
-              ))}
+                    <div
+                      className="h-20 flex items-center justify-center"
+                      style={{ background: `${dest.color}18` }}
+                    >
+                      <span className="text-[44px]">{dest.emoji}</span>
+                    </div>
+                    <div className="p-3">
+                      <p className="text-[13px] font-bold text-white">{dest.name}</p>
+                      <p className="text-[10px] text-[#666] mt-0.5">{dest.tag}</p>
+                    </div>
+                  </motion.button>
+                ))}
+              </div>
             </div>
-          </div>
 
-          {/* Travel styles */}
-          <div className="px-5 mb-6">
-            <p className="text-[13px] font-bold text-white mb-3">🧭 Estilo de viaje</p>
-            <div className="grid grid-cols-2 gap-2">
-              {TRAVEL_STYLES.map(style => (
-                <motion.button
-                  key={style.label}
-                  whileTap={{ scale: 0.96 }}
-                  onClick={() => handleStyleSelect(style.companion)}
-                  className="flex flex-col items-center gap-1.5 p-4 rounded-2xl"
-                  style={{ background: "rgba(22,22,30,0.95)", border: "1px solid rgba(255,255,255,0.07)" }}
-                >
-                  <span className="text-[32px]">{style.emoji}</span>
-                  <p className="text-[13px] font-bold text-white">{style.label}</p>
-                  <p className="text-[10px] text-[#666]">{style.desc}</p>
-                </motion.button>
-              ))}
+            {/* Travel styles */}
+            <div className="lg:flex-1">
+              <p className="text-[13px] font-bold text-white mb-3">🧭 Estilo de viaje</p>
+              <div className="grid grid-cols-2 gap-2">
+                {TRAVEL_STYLES.map(style => (
+                  <motion.button
+                    key={style.label}
+                    whileTap={{ scale: 0.96 }}
+                    onClick={() => handleStyleSelect(style.companion)}
+                    className="flex flex-col items-center gap-1.5 p-4 rounded-2xl"
+                    style={{ background: "rgba(22,22,30,0.95)", border: "1px solid rgba(255,255,255,0.07)" }}
+                  >
+                    <span className="text-[32px]">{style.emoji}</span>
+                    <p className="text-[13px] font-bold text-white">{style.label}</p>
+                    <p className="text-[10px] text-[#666]">{style.desc}</p>
+                  </motion.button>
+                ))}
+              </div>
             </div>
           </div>
 
