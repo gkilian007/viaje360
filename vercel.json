@@ -9,6 +9,22 @@
     },
     "src/app/api/chat/route.ts": {
       "maxDuration": 30
+    },
+    "src/app/api/cron/dispatch-notifications/route.ts": {
+      "maxDuration": 30
+    },
+    "src/app/api/proactive/evaluate/route.ts": {
+      "maxDuration": 15
     }
-  }
+  },
+  "crons": [
+    {
+      "path": "/api/cron/dispatch-notifications",
+      "schedule": "0 6 * * *"
+    },
+    {
+      "path": "/api/cron/dispatch-notifications",
+      "schedule": "0 19 * * *"
+    }
+  ]
 }

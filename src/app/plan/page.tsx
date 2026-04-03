@@ -33,7 +33,9 @@ import { WeatherBadge } from "@/components/features/WeatherBadge"
 import { useWeather } from "@/lib/hooks/useWeather"
 import { ProactiveAdaptationBanner } from "@/components/features/ProactiveAdaptationBanner"
 import { AutoAdaptedBanner } from "@/components/features/AutoAdaptedBanner"
+import { ProactiveInsightCard } from "@/components/features/ProactiveInsightCard"
 import { useProactiveAdaptation } from "@/lib/hooks/useProactiveAdaptation"
+import { useProactiveInsights } from "@/lib/hooks/useProactiveInsights"
 import { MagicMomentCard } from "@/components/features/MagicMomentCard"
 import { useMagicMoment } from "@/lib/hooks/useMagicMoment"
 import { NotificationBanner } from "@/components/features/NotificationBanner"
@@ -383,6 +385,20 @@ function PlanPageContent() {
       onAdapted: (days) => setGeneratedItinerary(days),
     })
 
+  // Proactive Companion insights (briefings, budget, tips)
+  const isTripActive = !!(currentTrip?.startDate && currentTrip?.endDate &&
+    new Date(currentTrip.startDate) <= new Date(Date.now() + 86400000) &&
+    new Date(currentTrip.endDate) >= new Date())
+  const {
+    topInsight: proactiveInsight,
+    dismiss: dismissInsight,
+    handleAction: handleInsightAction,
+    isAdapting: isAdaptingInsight,
+  } = useProactiveInsights({
+    tripId: currentTrip?.id ?? null,
+    isActive: isTripActive,
+  })
+
   // Magic Moment: nearby hidden gem detection while between activities
   // Only activates once the trip has started and user is physically in destination
   const { suggestion: magicSuggestion, dismiss: dismissMagic, accept: acceptMagic } =
@@ -599,6 +615,16 @@ function PlanPageContent() {
             />
           )}
 
+          {/* Proactive Companion insight — briefings, tips, budget */}
+          {proactiveInsight && (
+            <ProactiveInsightCard
+              insight={proactiveInsight}
+              isAdapting={isAdaptingInsight}
+              onAction={(action) => handleInsightAction(action, proactiveInsight)}
+              onDismiss={() => dismissInsight(proactiveInsight.id)}
+            />
+          )}
+
           {/* Live activity banner */}
           <CurrentActivityBanner
             current={liveStatus.current}
@@ -754,6 +780,14 @@ function PlanPageContent() {
                     isAdapting={isAdaptingIssue}
                     onAdapt={adaptIssue}
                     onDismiss={dismissIssue}
+                  />
+                )}
+                {proactiveInsight && (
+                  <ProactiveInsightCard
+                    insight={proactiveInsight}
+                    isAdapting={isAdaptingInsight}
+                    onAction={(action) => handleInsightAction(action, proactiveInsight)}
+                    onDismiss={() => dismissInsight(proactiveInsight.id)}
                   />
                 )}
                 <CurrentActivityBanner
