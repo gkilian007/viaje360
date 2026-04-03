@@ -583,14 +583,14 @@ function createConstraintFriendlyReplacement(activity: GeneratedActivity, contex
 
   if (isPetCase) {
     return {
-      name: "Pet-friendly park break",
+      name: `Paseo por los parques de ${context.destination}`,
       type: "park",
       location: activity.location || context.destination,
       time: start,
       endTime: addMinutes(start, duration),
       duration,
       cost: Math.min(activity.cost, 10),
-      notes: "Auto-replaced to keep the plan pet-friendly",
+      notes: `Alternativa pet-friendly cerca de ${activity.name}`,
       icon: DEFAULT_ICON_BY_TYPE.park,
       indoor: false,
       weatherDependent: true,
@@ -601,14 +601,14 @@ function createConstraintFriendlyReplacement(activity: GeneratedActivity, contex
   }
 
   return {
-    name: "Accessible low-effort stop",
+    name: `Paseo tranquilo por ${context.destination}`,
     type: "tour",
     location: activity.location || context.destination,
     time: start,
     endTime: addMinutes(start, duration),
     duration,
     cost: Math.min(activity.cost, 20),
-    notes: "Auto-replaced to respect mobility/family constraints",
+    notes: `Alternativa accesible en lugar de ${activity.name}`,
     icon: DEFAULT_ICON_BY_TYPE.tour,
     indoor: true,
     weatherDependent: false,
@@ -635,7 +635,8 @@ function applyConstraintChecks(day: GeneratedDay, context: NormalizedGenerationC
       warnings.push({ code: "constraint_replaced", message: `Replaced kid-unfriendly activity '${activity.name}'` })
       return {
         ...createConstraintFriendlyReplacement(activity, context),
-        name: "Family-friendly break",
+        name: `Actividad familiar en ${context.destination}`,
+        notes: `Alternativa para familias en lugar de ${activity.name}`,
         kidFriendly: true,
         petFriendly: false,
       }
