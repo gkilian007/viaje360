@@ -2166,5 +2166,2281 @@
         }
       }
     ]
+  },
+  {
+    "city": "Florencia",
+    "country": "Italia",
+    "wiki": "Florence",
+    "hero": {
+      "url": "https://upload.wikimedia.org/wikipedia/commons/d/d2/FirenzeDec092023_01.jpg",
+      "width": 4000,
+      "height": 2668,
+      "source": "wikipedia",
+      "articleTitle": "Florence",
+      "method": "wikipedia_main"
+    },
+    "pois": [
+      {
+        "name": "Florence Cathedral",
+        "photo": {
+          "url": "https://upload.wikimedia.org/wikipedia/commons/c/c7/Cattedrale_di_Santa_Maria_del_Fiore_%E2%80%93_Il_Duomo_di_Firenze.jpg",
+          "width": 3872,
+          "height": 2592,
+          "source": "wikipedia",
+          "articleTitle": "Florence Cathedral",
+          "method": "wikipedia_main"
+        }
+      },
+      {
+        "name": "Uffizi",
+        "photo": {
+          "url": "https://upload.wikimedia.org/wikipedia/commons/d/d7/Florence%2C_Italy_-_panoramio_%28125%29.jpg",
+          "width": 3456,
+          "height": 2304,
+          "source": "wikipedia",
+          "articleTitle": "Uffizi",
+          "method": "wikipedia_main"
+        }
+      },
+      {
+        "name": "Ponte Vecchio",
+        "photo": {
+          "url": "https://upload.wikimedia.org/wikipedia/commons/7/7d/Ponte_Vecchio_from_Ponte_alle_Grazie.jpg",
+          "width": 6000,
+          "height": 3340,
+          "source": "wikipedia",
+          "articleTitle": "Ponte Vecchio",
+          "method": "wikipedia_main"
+        }
+      },
+      {
+        "name": "Palazzo Vecchio",
+        "photo": {
+          "url": "https://upload.wikimedia.org/wikipedia/commons/b/b3/Piazza_della_signoria%2C_palazzo_vecchio%2C_veduta_01.jpg",
+          "width": 4040,
+          "height": 4354,
+          "source": "wikipedia",
+          "articleTitle": "Palazzo Vecchio",
+          "method": "wikipedia_main"
+        }
+      },
+      {
+        "name": "Basilica of Santa Croce, Florence",
+        "photo": {
+          "url": "https://upload.wikimedia.org/wikipedia/commons/2/2c/Basilica_di_Santa_Croce_%2812437%29.jpg",
+          "width": 4401,
+          "height": 3348,
+          "source": "wikipedia",
+          "articleTitle": "Basilica of Santa Croce, Florence",
+          "method": "wikipedia_main"
+        }
+      },
+      {
+        "name": "Boboli Gardens",
+        "photo": {
+          "url": "https://upload.wikimedia.org/wikipedia/commons/7/7e/Jard%C3%ADn_de_B%C3%B3boli%2C_Florencia%2C_Italia%2C_2022-09-19%2C_DD_26.jpg",
+          "width": 7850,
+          "height": 5233,
+          "source": "wikipedia",
+          "articleTitle": "Boboli Gardens",
+          "method": "wikipedia_main"
+        }
+      },
+      {
+        "name": "Galleria dell'Accademia",
+        "photo": {
+          "url": "https://upload.wikimedia.org/wikipedia/commons/d/d5/David_at_the_Galleria_dell%27Accademia_%2861351%29.jpg",
+          "width": 2840,
+          "height": 2725,
+          "source": "wikipedia",
+          "articleTitle": "Galleria dell'Accademia",
+          "method": "wikipedia_main"
+        }
+      }
+    ]
+  },
+  {
+    "city": "Venecia",
+    "country": "Italia",
+    "wiki": "Venice",
+    "hero": {
+      "url": "https://upload.wikimedia.org/wikipedia/commons/4/4f/Venezia_aerial_view.jpg",
+      "width": 5666,
+      "height": 3170,
+      "source": "wikipedia",
+      "articleTitle": "Venice",
+      "method": "wikipedia_main"
+    },
+    "pois": [
+      {
+        "name": "St Mark's Basilica",
+        "photo": {
+          "url": "https://upload.wikimedia.org/wikipedia/commons/6/61/Venezia_Basilica_di_San_Marco_Fassade_2.jpg",
+          "width": 4574,
+          "height": 3066,
+          "source": "wikipedia",
+          "articleTitle": "St Mark's Basilica",
+          "method": "wikipedia_main"
+        }
+      },
+      {
+        "name": "Rialto Bridge",
+        "photo": {
+          "url": "https://upload.wikimedia.org/wikipedia/commons/0/0b/Rialto_2025_4.jpg",
+          "width": 5100,
+          "height": 3400,
+          "source": "wikipedia",
+          "articleTitle": "Rialto Bridge",
+          "method": "wikipedia_main"
+        }
+      },
+      {
+        "name": "Doge's Palace",
+        "photo": {
+          "url": "https://upload.wikimedia.org/wikipedia/commons/0/00/%28Venice%29_Doge%27s_Palace_and_campanile_of_St._Mark%27s_Basilica_facing_the_sea.jpg",
+          "width": 12096,
+          "height": 8352,
+          "source": "wikipedia",
+          "articleTitle": "Doge's Palace",
+          "method": "wikipedia_main"
+        }
+      },
+      {
+        "name": "Bridge of Sighs",
+        "photo": {
+          "url": "https://upload.wikimedia.org/wikipedia/commons/c/ca/Antonio_Contin_-_Ponte_dei_sospiri_%28Venice%29.jpg",
+          "width": 5958,
+          "height": 3801,
+          "source": "wikipedia",
+          "articleTitle": "Bridge of Sighs",
+          "method": "wikipedia_main"
+        }
+      },
+      {
+        "name": "Piazza San Marco",
+        "photo": {
+          "url": "https://upload.wikimedia.org/wikipedia/commons/1/17/Piazza_San_Marco_%28Venice%29_at_night-msu-2021-6449-.jpg",
+          "width": 4984,
+          "height": 3584,
+          "source": "wikipedia",
+          "articleTitle": "Piazza San Marco",
+          "method": "wikipedia_main"
+        }
+      },
+      {
+        "name": "Murano",
+        "photo": {
+          "url": "https://upload.wikimedia.org/wikipedia/commons/thumb/b/bb/Murano_sunset.JPG/1920px-Murano_sunset.JPG",
+          "width": 3264,
+          "height": 2448,
+          "source": "wikipedia",
+          "articleTitle": "Murano",
+          "method": "wikipedia_main"
+        }
+      },
+      {
+        "name": "Burano",
+        "photo": {
+          "url": "https://upload.wikimedia.org/wikipedia/commons/f/f8/Burano_Venice_17.jpg",
+          "width": 5400,
+          "height": 3600,
+          "source": "wikipedia",
+          "articleTitle": "Burano",
+          "method": "wikipedia_main"
+        }
+      }
+    ]
+  },
+  {
+    "city": "Milán",
+    "country": "Italia",
+    "wiki": "Milan",
+    "hero": {
+      "url": "https://upload.wikimedia.org/wikipedia/commons/3/3f/Milan_-_Scala_-_Facade.jpg",
+      "width": 4140,
+      "height": 2916,
+      "source": "wikipedia",
+      "articleTitle": "Milan",
+      "method": "wikipedia_main"
+    },
+    "pois": [
+      {
+        "name": "Milan Cathedral",
+        "photo": {
+          "url": "https://upload.wikimedia.org/wikipedia/commons/7/70/Milan_Cathedral_from_Piazza_del_Duomo.jpg",
+          "width": 4164,
+          "height": 3129,
+          "source": "wikipedia",
+          "articleTitle": "Milan Cathedral",
+          "method": "wikipedia_main"
+        }
+      },
+      {
+        "name": "Galleria Vittorio Emanuele II",
+        "photo": {
+          "url": "https://upload.wikimedia.org/wikipedia/commons/b/b6/Galleria_Milano_%28179532365%29.jpeg",
+          "width": 2048,
+          "height": 1133,
+          "source": "wikipedia",
+          "articleTitle": "Galleria Vittorio Emanuele II",
+          "method": "wikipedia_main"
+        }
+      },
+      {
+        "name": "Sforza Castle",
+        "photo": {
+          "url": "https://upload.wikimedia.org/wikipedia/commons/7/7e/20110725_Castello_Sforzesco_Milan_5557.jpg",
+          "width": 2705,
+          "height": 4072,
+          "source": "wikipedia",
+          "articleTitle": "Sforza Castle",
+          "method": "wikipedia_main"
+        }
+      },
+      {
+        "name": "Navigli",
+        "photo": {
+          "url": "https://upload.wikimedia.org/wikipedia/commons/8/87/Naviglio_Grande%2C_Milano.jpg",
+          "width": 3968,
+          "height": 2794,
+          "source": "wikipedia",
+          "articleTitle": "Navigli",
+          "method": "wikipedia_main"
+        }
+      },
+      {
+        "name": "Pinacoteca di Brera",
+        "photo": {
+          "url": "https://upload.wikimedia.org/wikipedia/commons/a/ac/Milan_-_Pinacoth%C3%A8que_de_Brera_-_Cour_int%C3%A9rieure.jpg",
+          "width": 4592,
+          "height": 3056,
+          "source": "wikipedia",
+          "articleTitle": "Pinacoteca di Brera",
+          "method": "wikipedia_main"
+        }
+      },
+      {
+        "name": "Teatro alla Scala",
+        "photo": {
+          "url": "https://upload.wikimedia.org/wikipedia/commons/7/71/Exterior_Teatro_Alla_Scala_high_quality_01.jpg",
+          "width": 3262,
+          "height": 2089,
+          "source": "wikipedia",
+          "articleTitle": "Teatro alla Scala",
+          "method": "wikipedia_main"
+        }
+      }
+    ]
+  },
+  {
+    "city": "Múnich",
+    "country": "Alemania",
+    "wiki": "Munich",
+    "hero": {
+      "url": "https://upload.wikimedia.org/wikipedia/commons/d/d3/Stadtbild_M%C3%BCnchen.jpg",
+      "width": 4861,
+      "height": 3285,
+      "source": "wikipedia",
+      "articleTitle": "Munich",
+      "method": "wikipedia_main"
+    },
+    "pois": [
+      {
+        "name": "Marienplatz",
+        "photo": {
+          "url": "https://upload.wikimedia.org/wikipedia/commons/7/73/Rathaus_and_Marienplatz_from_Peterskirche_-_August_2006.jpg",
+          "width": 2089,
+          "height": 1800,
+          "source": "wikipedia",
+          "articleTitle": "Marienplatz",
+          "method": "wikipedia_main"
+        }
+      },
+      {
+        "name": "Nymphenburg Palace",
+        "photo": {
+          "url": "https://upload.wikimedia.org/wikipedia/commons/0/0b/Image-Schloss_Nymphenburg_Munich_CC_edit3.jpg",
+          "width": 4921,
+          "height": 1796,
+          "source": "wikipedia",
+          "articleTitle": "Nymphenburg Palace",
+          "method": "wikipedia_main"
+        }
+      },
+      {
+        "name": "Englischer Garten",
+        "photo": {
+          "url": "https://upload.wikimedia.org/wikipedia/commons/b/bc/Aerial_image_of_Englischer_Garten_in_Munich_%28view_from_the_southwest%29.jpg",
+          "width": 5400,
+          "height": 3600,
+          "source": "wikipedia",
+          "articleTitle": "Englischer Garten",
+          "method": "wikipedia_main"
+        }
+      },
+      {
+        "name": "Frauenkirche, Munich",
+        "photo": {
+          "url": "https://upload.wikimedia.org/wikipedia/commons/d/da/Frauenkirche_Munich_-_View_from_Peterskirche_Tower2.jpg",
+          "width": 3952,
+          "height": 2464,
+          "source": "wikipedia",
+          "articleTitle": "Frauenkirche, Munich",
+          "method": "wikipedia_main"
+        }
+      },
+      {
+        "name": "BMW Welt",
+        "photo": {
+          "url": "https://upload.wikimedia.org/wikipedia/commons/c/ce/BMW_Welt%2C_M%C3%BAnich%2C_Alemania16.jpg",
+          "width": 3739,
+          "height": 2207,
+          "source": "wikipedia",
+          "articleTitle": "BMW Welt",
+          "method": "wikipedia_main"
+        }
+      },
+      {
+        "name": "Viktualienmarkt",
+        "photo": {
+          "url": "https://upload.wikimedia.org/wikipedia/commons/9/93/Karte_Viktualienmarkt_M%C3%BCnchen.png",
+          "width": 1512,
+          "height": 1538,
+          "source": "wikipedia",
+          "articleTitle": "Viktualienmarkt",
+          "method": "wikipedia_main"
+        }
+      },
+      {
+        "name": "Residenz, Munich",
+        "photo": {
+          "url": "https://upload.wikimedia.org/wikipedia/commons/8/85/Grundriss_der_Residenz_M%C3%BCnchen_%28Bayerische_Schl%C3%B6sserverwaltung%29.jpg",
+          "width": 1156,
+          "height": 1532,
+          "source": "wikipedia",
+          "articleTitle": "Residenz, Munich",
+          "method": "wikipedia_main"
+        }
+      }
+    ]
+  },
+  {
+    "city": "Copenhague",
+    "country": "Dinamarca",
+    "wiki": "Copenhagen",
+    "hero": {
+      "url": "https://upload.wikimedia.org/wikipedia/commons/1/15/2018_-_Christiansborg_from_the_Marble_Bridge.jpg",
+      "width": 4545,
+      "height": 3000,
+      "source": "wikipedia",
+      "articleTitle": "Copenhagen",
+      "method": "wikipedia_main"
+    },
+    "pois": [
+      {
+        "name": "Tivoli Gardens",
+        "photo": {
+          "url": "https://upload.wikimedia.org/wikipedia/commons/2/21/Tivoli_Gardens_4.jpg",
+          "width": 4482,
+          "height": 2986,
+          "source": "wikipedia",
+          "articleTitle": "Tivoli Gardens",
+          "method": "wikipedia_main"
+        }
+      },
+      {
+        "name": "The Little Mermaid (statue)",
+        "photo": {
+          "url": "https://upload.wikimedia.org/wikipedia/en/7/7a/Copenhagen_-_the_little_mermaid_statue_-_2013.jpg",
+          "width": 1368,
+          "height": 2048,
+          "source": "wikipedia",
+          "articleTitle": "The Little Mermaid (statue)",
+          "method": "wikipedia_main"
+        }
+      },
+      {
+        "name": "Nyhavn",
+        "photo": {
+          "url": "https://upload.wikimedia.org/wikipedia/commons/8/8a/Nyhavn_Copenhagen_2.jpg",
+          "width": 5400,
+          "height": 3600,
+          "source": "wikipedia",
+          "articleTitle": "Nyhavn",
+          "method": "wikipedia_main"
+        }
+      },
+      {
+        "name": "Amalienborg",
+        "photo": {
+          "url": "https://upload.wikimedia.org/wikipedia/commons/f/f1/Amalienborg_Palace_-_aerial_view.jpg",
+          "width": 2896,
+          "height": 1944,
+          "source": "wikipedia",
+          "articleTitle": "Amalienborg",
+          "method": "wikipedia_main"
+        }
+      },
+      {
+        "name": "Christiansborg Palace",
+        "photo": {
+          "url": "https://upload.wikimedia.org/wikipedia/commons/7/7c/Christiansborg_Slot_Copenhagen_2014_01.jpg",
+          "width": 10186,
+          "height": 4454,
+          "source": "wikipedia",
+          "articleTitle": "Christiansborg Palace",
+          "method": "wikipedia_main"
+        }
+      },
+      {
+        "name": "Rosenborg Castle",
+        "photo": {
+          "url": "https://upload.wikimedia.org/wikipedia/commons/3/37/Rosenborg_cph.jpg",
+          "width": 661,
+          "height": 502,
+          "source": "wikipedia",
+          "articleTitle": "Rosenborg Castle",
+          "method": "wikipedia_main"
+        }
+      },
+      {
+        "name": "Strøget",
+        "photo": {
+          "url": "https://upload.wikimedia.org/wikipedia/commons/9/9d/Str%C3%B8get%2C_Copenhagen.jpg",
+          "width": 2988,
+          "height": 1987,
+          "source": "wikipedia",
+          "articleTitle": "Strøget",
+          "method": "wikipedia_main"
+        }
+      }
+    ]
+  },
+  {
+    "city": "Atenas",
+    "country": "Grecia",
+    "wiki": "Athens",
+    "hero": {
+      "url": "https://upload.wikimedia.org/wikipedia/commons/7/74/Monastiraki_Square_and_Acropolis_in_Athens_%2844149181684%29.jpg",
+      "width": 6240,
+      "height": 4160,
+      "source": "wikipedia",
+      "articleTitle": "Athens",
+      "method": "wikipedia_main"
+    },
+    "pois": [
+      {
+        "name": "Acropolis of Athens",
+        "photo": {
+          "url": "https://upload.wikimedia.org/wikipedia/commons/2/2c/1029_Acropolis_of_Athens_in_Greece_at_night_Photo_by_Giles_Laurent.jpg",
+          "width": 8640,
+          "height": 5760,
+          "source": "wikipedia",
+          "articleTitle": "Acropolis of Athens",
+          "method": "wikipedia_main"
+        }
+      },
+      {
+        "name": "Parthenon",
+        "photo": {
+          "url": "https://upload.wikimedia.org/wikipedia/commons/d/da/The_Parthenon_in_Athens.jpg",
+          "width": 1144,
+          "height": 804,
+          "source": "wikipedia",
+          "articleTitle": "Parthenon",
+          "method": "wikipedia_main"
+        }
+      },
+      {
+        "name": "Temple of Olympian Zeus, Athens",
+        "photo": {
+          "url": "https://upload.wikimedia.org/wikipedia/commons/9/93/L%27Olympieion_%28Ath%C3%A8nes%29_%2830776483926%29.jpg",
+          "width": 1800,
+          "height": 1200,
+          "source": "wikipedia",
+          "articleTitle": "Temple of Olympian Zeus, Athens",
+          "method": "wikipedia_main"
+        }
+      },
+      {
+        "name": "Ancient Agora of Athens",
+        "photo": {
+          "url": "https://upload.wikimedia.org/wikipedia/commons/9/98/%C3%81gora_de_Atenas_03.jpg",
+          "width": 4000,
+          "height": 3000,
+          "source": "wikipedia",
+          "articleTitle": "Ancient Agora of Athens",
+          "method": "wikipedia_main"
+        }
+      },
+      {
+        "name": "Plaka",
+        "photo": {
+          "url": "https://upload.wikimedia.org/wikipedia/commons/a/a4/Carrer_del_barri_de_Plaka%2C_Atenes.JPG",
+          "width": 3664,
+          "height": 2748,
+          "source": "wikipedia",
+          "articleTitle": "Plaka",
+          "method": "wikipedia_main"
+        }
+      },
+      {
+        "name": "Monastiraki",
+        "photo": {
+          "url": "https://upload.wikimedia.org/wikipedia/commons/0/03/Monastiraki_Square_on_June_6%2C_2020.jpg",
+          "width": 5925,
+          "height": 3930,
+          "source": "wikipedia",
+          "articleTitle": "Monastiraki",
+          "method": "wikipedia_main"
+        }
+      },
+      {
+        "name": "Panathenaic Stadium",
+        "photo": {
+          "url": "https://upload.wikimedia.org/wikipedia/commons/9/98/Panathenaic_Stadium_-_panoramio_%281%29.jpg",
+          "width": 1600,
+          "height": 899,
+          "source": "wikipedia",
+          "articleTitle": "Panathenaic Stadium",
+          "method": "wikipedia_main"
+        }
+      }
+    ]
+  },
+  {
+    "city": "Edimburgo",
+    "country": "Reino Unido",
+    "wiki": "Edinburgh",
+    "hero": {
+      "url": "https://upload.wikimedia.org/wikipedia/commons/1/1a/Skyline_of_Edinburgh.jpg",
+      "width": 5312,
+      "height": 2988,
+      "source": "wikipedia",
+      "articleTitle": "Edinburgh",
+      "method": "wikipedia_main"
+    },
+    "pois": [
+      {
+        "name": "Edinburgh Castle",
+        "photo": {
+          "url": "https://upload.wikimedia.org/wikipedia/commons/b/b1/Edinburgh_Castle_-_aerial_-_2025-04-19_03.jpg",
+          "width": 4032,
+          "height": 2268,
+          "source": "wikipedia",
+          "articleTitle": "Edinburgh Castle",
+          "method": "wikipedia_main"
+        }
+      },
+      {
+        "name": "Royal Mile",
+        "photo": {
+          "url": "https://upload.wikimedia.org/wikipedia/commons/8/8d/High_Street%2C_Edinburgh.JPG",
+          "width": 2560,
+          "height": 1920,
+          "source": "wikipedia",
+          "articleTitle": "Royal Mile",
+          "method": "wikipedia_main"
+        }
+      },
+      {
+        "name": "Arthur's Seat",
+        "photo": {
+          "url": "https://upload.wikimedia.org/wikipedia/commons/0/0f/Arthur%27s_Seat%2C_Edinburgh.JPG",
+          "width": 3962,
+          "height": 1441,
+          "source": "wikipedia",
+          "articleTitle": "Arthur's Seat",
+          "method": "wikipedia_main"
+        }
+      },
+      {
+        "name": "Holyrood Palace",
+        "photo": {
+          "url": "https://upload.wikimedia.org/wikipedia/commons/f/f8/Holyrood_Palace_-_aerial_-_2025-04-19_01_%28cropped%29.jpg",
+          "width": 3051,
+          "height": 1909,
+          "source": "wikipedia",
+          "articleTitle": "Holyrood Palace",
+          "method": "wikipedia_main"
+        }
+      },
+      {
+        "name": "Scott Monument",
+        "photo": {
+          "url": "https://upload.wikimedia.org/wikipedia/commons/b/b4/Edinburgh_Scott_Monument.jpg",
+          "width": 2248,
+          "height": 3148,
+          "source": "wikipedia",
+          "articleTitle": "Scott Monument",
+          "method": "wikipedia_main"
+        }
+      },
+      {
+        "name": "Calton Hill",
+        "photo": {
+          "url": "https://upload.wikimedia.org/wikipedia/commons/a/a5/Edinburgh_Calton_Hill.jpg",
+          "width": 3776,
+          "height": 2366,
+          "source": "wikipedia",
+          "articleTitle": "Calton Hill",
+          "method": "wikipedia_main"
+        }
+      },
+      {
+        "name": "National Museum of Scotland",
+        "photo": {
+          "url": "https://upload.wikimedia.org/wikipedia/commons/b/b2/Museum_of_Scotland.jpg",
+          "width": 2288,
+          "height": 1712,
+          "source": "wikipedia",
+          "articleTitle": "National Museum of Scotland",
+          "method": "wikipedia_main"
+        }
+      }
+    ]
+  },
+  {
+    "city": "Dubrovnik",
+    "country": "Croacia",
+    "wiki": "Dubrovnik",
+    "hero": {
+      "url": "https://upload.wikimedia.org/wikipedia/commons/6/67/The_walls_of_the_fortress_and_View_of_the_old_city._panorama.jpg",
+      "width": 3543,
+      "height": 2198,
+      "source": "wikipedia",
+      "articleTitle": "Dubrovnik",
+      "method": "wikipedia_main"
+    },
+    "pois": [
+      {
+        "name": "Walls of Dubrovnik",
+        "photo": {
+          "url": "https://upload.wikimedia.org/wikipedia/commons/1/1b/Dubrovnik_s_24.jpg",
+          "width": 5766,
+          "height": 3244,
+          "source": "wikipedia",
+          "articleTitle": "Walls of Dubrovnik",
+          "method": "wikipedia_main"
+        }
+      },
+      {
+        "name": "Dubrovnik Cathedral",
+        "photo": {
+          "url": "https://upload.wikimedia.org/wikipedia/commons/e/e4/Cattedrale_di_dubrovnik%2C_ext._01.JPG",
+          "width": 2304,
+          "height": 3456,
+          "source": "wikipedia",
+          "articleTitle": "Dubrovnik Cathedral",
+          "method": "wikipedia_main"
+        }
+      },
+      {
+        "name": "Rector's Palace, Dubrovnik",
+        "photo": {
+          "url": "https://upload.wikimedia.org/wikipedia/commons/0/0b/Museo_Cultural_Hist%C3%B3rico_de_Dubrovnik_-_Exterior_-_001.jpg",
+          "width": 3168,
+          "height": 2112,
+          "source": "wikipedia",
+          "articleTitle": "Rector's Palace, Dubrovnik",
+          "method": "wikipedia_main"
+        }
+      },
+      {
+        "name": "Stradun (street)",
+        "photo": {
+          "url": "https://upload.wikimedia.org/wikipedia/commons/8/8e/Shopping_street_Stradun_in_the_historical_center_of_Dubrovnik%2C_Croatia_%2848613019536%29.jpg",
+          "width": 5464,
+          "height": 3640,
+          "source": "wikipedia",
+          "articleTitle": "Stradun (street)",
+          "method": "wikipedia_main"
+        }
+      },
+      {
+        "name": "Lokrum",
+        "photo": {
+          "url": "https://upload.wikimedia.org/wikipedia/commons/6/64/Isla_de_Lokrum%2C_Croacia%2C_2014-04-14%2C_DD_01.JPG",
+          "width": 5521,
+          "height": 2012,
+          "source": "wikipedia",
+          "articleTitle": "Lokrum",
+          "method": "wikipedia_main"
+        }
+      },
+      {
+        "name": "Fort Lovrijenac",
+        "photo": {
+          "url": "https://upload.wikimedia.org/wikipedia/commons/e/ee/City_Walls_-_panoramio_-_Raki_Man.jpg",
+          "width": 1600,
+          "height": 1200,
+          "source": "wikipedia",
+          "articleTitle": "Fort Lovrijenac",
+          "method": "wikipedia_main"
+        }
+      }
+    ]
+  },
+  {
+    "city": "Budapest",
+    "country": "Hungría",
+    "wiki": "Budapest",
+    "hero": {
+      "url": "https://upload.wikimedia.org/wikipedia/commons/5/53/View_from_Gell%C3%A9rt_Hill_to_the_Danube%2C_Hungary_-_Budapest_%2828493220635%29.jpg",
+      "width": 2500,
+      "height": 1293,
+      "source": "wikipedia",
+      "articleTitle": "Budapest",
+      "method": "wikipedia_main"
+    },
+    "pois": [
+      {
+        "name": "Hungarian Parliament Building",
+        "photo": {
+          "url": "https://upload.wikimedia.org/wikipedia/commons/7/79/Budapest_Orsz%C3%A1gh%C3%A1z_%2831355012995%29.jpg",
+          "width": 3733,
+          "height": 2100,
+          "source": "wikipedia",
+          "articleTitle": "Hungarian Parliament Building",
+          "method": "wikipedia_main"
+        }
+      },
+      {
+        "name": "Buda Castle",
+        "photo": {
+          "url": "https://upload.wikimedia.org/wikipedia/commons/5/5c/Budav%C3%A1ri_Palota%2C_ABCDEF_%C3%A9p%C3%BClet.jpg",
+          "width": 3568,
+          "height": 2408,
+          "source": "wikipedia",
+          "articleTitle": "Buda Castle",
+          "method": "wikipedia_main"
+        }
+      },
+      {
+        "name": "Széchenyi thermal bath",
+        "photo": {
+          "url": "https://upload.wikimedia.org/wikipedia/commons/f/fa/Budapest_Sz%C3%A9chenyi_Baths_R02.jpg",
+          "width": 3216,
+          "height": 2136,
+          "source": "wikipedia",
+          "articleTitle": "Széchenyi thermal bath",
+          "method": "wikipedia_main"
+        }
+      },
+      {
+        "name": "Fisherman's Bastion",
+        "photo": {
+          "url": "https://upload.wikimedia.org/wikipedia/commons/6/6a/Hal%C3%A1szb%C3%A1stya_2017.jpg",
+          "width": 3456,
+          "height": 4608,
+          "source": "wikipedia",
+          "articleTitle": "Fisherman's Bastion",
+          "method": "wikipedia_main"
+        }
+      },
+      {
+        "name": "Chain Bridge (Budapest)",
+        "photo": {
+          "url": "https://upload.wikimedia.org/wikipedia/commons/f/fd/Sz%C3%A9chenyi_Chain_Bridge_in_Budapest_at_night.jpg",
+          "width": 3580,
+          "height": 2000,
+          "source": "wikipedia",
+          "articleTitle": "Chain Bridge (Budapest)",
+          "method": "wikipedia_main"
+        }
+      },
+      {
+        "name": "St. Stephen's Basilica",
+        "photo": {
+          "url": "https://upload.wikimedia.org/wikipedia/commons/e/ed/Budapest_Szent_Istvan_Bazilika_R01.jpg",
+          "width": 2240,
+          "height": 1752,
+          "source": "wikipedia",
+          "articleTitle": "St. Stephen's Basilica",
+          "method": "wikipedia_main"
+        }
+      },
+      {
+        "name": "Heroes' Square (Budapest)",
+        "photo": {
+          "url": "https://upload.wikimedia.org/wikipedia/commons/2/21/HUN-2015-Budapest-Heroes%E2%80%99_Square.jpg",
+          "width": 7776,
+          "height": 4374,
+          "source": "wikipedia",
+          "articleTitle": "Heroes' Square (Budapest)",
+          "method": "wikipedia_main"
+        }
+      }
+    ]
+  },
+  {
+    "city": "Cracovia",
+    "country": "Polonia",
+    "wiki": "Kraków",
+    "hero": {
+      "url": "https://upload.wikimedia.org/wikipedia/commons/a/a3/Krakow_Rynek_Glowny_panorama_2.jpg",
+      "width": 7505,
+      "height": 3690,
+      "source": "wikipedia",
+      "articleTitle": "Kraków",
+      "method": "wikipedia_main"
+    },
+    "pois": [
+      {
+        "name": "Wawel Castle",
+        "photo": {
+          "url": "https://upload.wikimedia.org/wikipedia/commons/8/87/Wawel_%284%29.jpg",
+          "width": 4032,
+          "height": 3024,
+          "source": "wikipedia",
+          "articleTitle": "Wawel Castle",
+          "method": "wikipedia_main"
+        }
+      },
+      {
+        "name": "Main Market Square, Kraków",
+        "photo": {
+          "url": "https://upload.wikimedia.org/wikipedia/commons/1/18/Sukiennice_and_Main_Market_Square_Krakow_Poland.JPG",
+          "width": 4095,
+          "height": 2790,
+          "source": "wikipedia",
+          "articleTitle": "Main Market Square, Kraków",
+          "method": "wikipedia_main"
+        }
+      },
+      {
+        "name": "St. Mary's Basilica, Kraków",
+        "photo": {
+          "url": "https://upload.wikimedia.org/wikipedia/commons/4/44/Church_of_Our_Lady_Assumed_into_Heaven%2C_5_Mariacki_square%2C_Old_Town%2C_Krak%C3%B3w%2C_Poland.jpg",
+          "width": 5666,
+          "height": 3949,
+          "source": "wikipedia",
+          "articleTitle": "St. Mary's Basilica, Kraków",
+          "method": "wikipedia_main"
+        }
+      },
+      {
+        "name": "Auschwitz concentration camp",
+        "photo": {
+          "url": "https://upload.wikimedia.org/wikipedia/commons/3/35/Auschwitz_I_%2822_May_2010%29_b.jpg",
+          "width": 3872,
+          "height": 2592,
+          "source": "wikipedia",
+          "articleTitle": "Auschwitz concentration camp",
+          "method": "wikipedia_main"
+        }
+      },
+      {
+        "name": "Kazimierz",
+        "photo": {
+          "url": "https://upload.wikimedia.org/wikipedia/commons/thumb/3/39/Krak%C3%B3w_dzielnica_I_Stare_Miasto.svg/960px-Krak%C3%B3w_dzielnica_I_Stare_Miasto.svg.png",
+          "width": 744,
+          "height": 524,
+          "source": "wikipedia",
+          "articleTitle": "Kazimierz",
+          "method": "wikipedia_main"
+        }
+      },
+      {
+        "name": "Wieliczka Salt Mine",
+        "photo": {
+          "url": "https://upload.wikimedia.org/wikipedia/commons/8/80/%CE%91%CE%BB%CE%B1%CF%84%CF%89%CF%81%CF%85%CF%87%CE%B5%CE%AF%CE%B1_%CE%92%CE%B9%CE%B5%CE%BB%CE%AF%CF%84%CF%83%CE%BA%CE%B1_5021.jpg",
+          "width": 4443,
+          "height": 2962,
+          "source": "wikipedia",
+          "articleTitle": "Wieliczka Salt Mine",
+          "method": "wikipedia_main"
+        }
+      }
+    ]
+  },
+  {
+    "city": "Bruselas",
+    "country": "Bélgica",
+    "wiki": "Brussels",
+    "hero": {
+      "url": "https://upload.wikimedia.org/wikipedia/commons/a/ae/Grand_Place_Bruselas_2.jpg",
+      "width": 3332,
+      "height": 2000,
+      "source": "wikipedia",
+      "articleTitle": "Brussels",
+      "method": "wikipedia_main"
+    },
+    "pois": [
+      {
+        "name": "Grand-Place",
+        "photo": {
+          "url": "https://upload.wikimedia.org/wikipedia/commons/2/26/Grand-Place%2C_Brussels_-_panorama%2C_June_2018.jpg",
+          "width": 10946,
+          "height": 6226,
+          "source": "wikipedia",
+          "articleTitle": "Grand-Place",
+          "method": "wikipedia_main"
+        }
+      },
+      {
+        "name": "Manneken Pis",
+        "photo": {
+          "url": "https://upload.wikimedia.org/wikipedia/commons/c/c4/Bruxelles_Manneken_Pis_cropped.jpg",
+          "width": 1821,
+          "height": 2742,
+          "source": "wikipedia",
+          "articleTitle": "Manneken Pis",
+          "method": "wikipedia_main"
+        }
+      },
+      {
+        "name": "Atomium",
+        "photo": {
+          "url": "https://upload.wikimedia.org/wikipedia/commons/c/cf/Brussels_-_Atomium_2022.jpg",
+          "width": 2584,
+          "height": 2984,
+          "source": "wikipedia",
+          "articleTitle": "Atomium",
+          "method": "wikipedia_main"
+        }
+      },
+      {
+        "name": "Royal Palace of Brussels",
+        "photo": {
+          "url": "https://upload.wikimedia.org/wikipedia/commons/d/d4/Brussel_Koninklijk_paleis.jpg",
+          "width": 5472,
+          "height": 2629,
+          "source": "wikipedia",
+          "articleTitle": "Royal Palace of Brussels",
+          "method": "wikipedia_main"
+        }
+      },
+      {
+        "name": "Mini-Europe",
+        "photo": {
+          "url": "https://upload.wikimedia.org/wikipedia/en/thumb/a/a7/Mini-Europe_logo.svg/500px-Mini-Europe_logo.svg.png",
+          "width": 382,
+          "height": 262,
+          "source": "wikipedia",
+          "articleTitle": "Mini-Europe",
+          "method": "wikipedia_main"
+        }
+      },
+      {
+        "name": "Cathedral of St. Michael and St. Gudula",
+        "photo": {
+          "url": "https://upload.wikimedia.org/wikipedia/commons/2/2a/Saints-Michel-et-Gudule_Luc_Viatour.jpg",
+          "width": 3096,
+          "height": 4800,
+          "source": "wikipedia",
+          "articleTitle": "Cathedral of St. Michael and St. Gudula",
+          "method": "wikipedia_main"
+        }
+      }
+    ]
+  },
+  {
+    "city": "Zúrich",
+    "country": "Suiza",
+    "wiki": "Zurich",
+    "hero": {
+      "url": "https://upload.wikimedia.org/wikipedia/commons/a/af/Altstadt_Z%C3%BCrich_2015.jpg",
+      "width": 11303,
+      "height": 6164,
+      "source": "wikipedia",
+      "articleTitle": "Zurich",
+      "method": "wikipedia_main"
+    },
+    "pois": [
+      {
+        "name": "Lake Zurich",
+        "photo": {
+          "url": "https://upload.wikimedia.org/wikipedia/commons/9/9e/Pfannenstiel_-_Z%C3%BCrichsee_-_Sihltal_-_Albis_Baldern_IMG_5316.jpg",
+          "width": 3260,
+          "height": 1140,
+          "source": "wikipedia",
+          "articleTitle": "Lake Zurich",
+          "method": "wikipedia_main"
+        }
+      },
+      {
+        "name": "Grossmünster",
+        "photo": {
+          "url": "https://upload.wikimedia.org/wikipedia/commons/1/11/Grossm%C3%BCnster_-_M%C3%BCnsterhof_2014-05-23_12-08-43.JPG",
+          "width": 3200,
+          "height": 4800,
+          "source": "wikipedia",
+          "articleTitle": "Grossmünster",
+          "method": "wikipedia_main"
+        }
+      },
+      {
+        "name": "Bahnhofstrasse",
+        "photo": {
+          "url": "https://upload.wikimedia.org/wikipedia/commons/e/e7/Bahnhofstrasse-2019.jpg",
+          "width": 4000,
+          "height": 2250,
+          "source": "wikipedia",
+          "articleTitle": "Bahnhofstrasse",
+          "method": "wikipedia_main"
+        }
+      },
+      {
+        "name": "Swiss National Museum",
+        "photo": {
+          "url": "https://upload.wikimedia.org/wikipedia/commons/d/d8/Landesmuseum_Z%C3%BCrich_%282007-08-29%29.jpg",
+          "width": 1600,
+          "height": 1200,
+          "source": "wikipedia",
+          "articleTitle": "Swiss National Museum",
+          "method": "wikipedia_main"
+        }
+      },
+      {
+        "name": "Lindenhof hill",
+        "photo": {
+          "url": "https://upload.wikimedia.org/wikipedia/commons/e/e9/K%C3%A4ferberg_-_Lindenhof_-_Schipfe_-_Limmat_-_Sicht_vom_Grossm%C3%BCnster_Karlsturm_IMG_6425.JPG",
+          "width": 3264,
+          "height": 2448,
+          "source": "wikipedia",
+          "articleTitle": "Lindenhof hill",
+          "method": "wikipedia_main"
+        }
+      }
+    ]
+  },
+  {
+    "city": "Santorini",
+    "country": "Grecia",
+    "wiki": "Santorini",
+    "hero": {
+      "url": "https://upload.wikimedia.org/wikipedia/commons/b/bf/2011_Dimos_Thiras.png",
+      "width": 2000,
+      "height": 1253,
+      "source": "wikipedia",
+      "articleTitle": "Santorini",
+      "method": "wikipedia_main"
+    },
+    "pois": [
+      {
+        "name": "Oia, Greece",
+        "photo": {
+          "url": "https://upload.wikimedia.org/wikipedia/commons/3/37/Oia_sunset_-_panoramio_%282%29.jpg",
+          "width": 5202,
+          "height": 3465,
+          "source": "wikipedia",
+          "articleTitle": "Oia, Greece",
+          "method": "wikipedia_main"
+        }
+      },
+      {
+        "name": "Fira",
+        "photo": {
+          "url": "https://upload.wikimedia.org/wikipedia/commons/e/e9/Santorini_Fira3_tango7174.jpg",
+          "width": 1350,
+          "height": 600,
+          "source": "wikipedia",
+          "articleTitle": "Fira",
+          "method": "wikipedia_main"
+        }
+      },
+      {
+        "name": "Akrotiri (prehistoric city)",
+        "photo": {
+          "url": "https://upload.wikimedia.org/wikipedia/commons/5/5a/Ancient_Akrotiri.jpeg",
+          "width": 4032,
+          "height": 3024,
+          "source": "wikipedia",
+          "articleTitle": "Akrotiri (prehistoric city)",
+          "method": "wikipedia_main"
+        }
+      },
+      {
+        "name": "Red Beach (Santorini)",
+        "photo": {
+          "url": "https://upload.wikimedia.org/wikipedia/commons/0/0e/Red_Beach%2C_Greece_Oct_29%2C_2018_07-12-47.jpeg",
+          "width": 4032,
+          "height": 3024,
+          "source": "wikipedia",
+          "articleTitle": "Red Beach (Santorini)",
+          "method": "wikipedia_main"
+        }
+      }
+    ]
+  },
+  {
+    "city": "Brujas",
+    "country": "Bélgica",
+    "wiki": "Bruges",
+    "hero": {
+      "url": "https://upload.wikimedia.org/wikipedia/commons/9/9a/Br%C3%BCgge_Blick_vom_Belfried_4.jpg",
+      "width": 4520,
+      "height": 2896,
+      "source": "wikipedia",
+      "articleTitle": "Bruges",
+      "method": "wikipedia_main"
+    },
+    "pois": [
+      {
+        "name": "Belfry of Bruges",
+        "photo": {
+          "url": "https://upload.wikimedia.org/wikipedia/commons/3/37/Brugge_Belfort_HDR.jpg",
+          "width": 1600,
+          "height": 2400,
+          "source": "wikipedia",
+          "articleTitle": "Belfry of Bruges",
+          "method": "wikipedia_main"
+        }
+      },
+      {
+        "name": "Basilica of the Holy Blood",
+        "photo": {
+          "url": "https://upload.wikimedia.org/wikipedia/commons/6/6e/Basilica_of_the_Holy_Blood_-_Saint-Baselius_Chapel%2C_Bruges%2C_Belgium..jpg",
+          "width": 4000,
+          "height": 3000,
+          "source": "wikipedia",
+          "articleTitle": "Basilica of the Holy Blood",
+          "method": "wikipedia_main"
+        }
+      },
+      {
+        "name": "Groeningemuseum",
+        "photo": {
+          "url": "https://upload.wikimedia.org/wikipedia/commons/3/33/Brugge_-_Dijver_12_-Voormalig_poortgebouw_van_de_proosdij_van_Onze-Lieve-Vrouw%2C_heden_ingang_van_het_Groeningemuseum_-_82339.jpg",
+          "width": 3436,
+          "height": 5154,
+          "source": "wikipedia",
+          "articleTitle": "Groeningemuseum",
+          "method": "wikipedia_main"
+        }
+      },
+      {
+        "name": "Church of Our Lady, Bruges",
+        "photo": {
+          "url": "https://upload.wikimedia.org/wikipedia/commons/7/78/Church_Of_Our_Lady_Bruges.jpg",
+          "width": 2847,
+          "height": 4286,
+          "source": "wikipedia",
+          "articleTitle": "Church of Our Lady, Bruges",
+          "method": "wikipedia_main"
+        }
+      }
+    ]
+  },
+  {
+    "city": "Río de Janeiro",
+    "country": "Brasil",
+    "wiki": "Rio de Janeiro",
+    "hero": {
+      "url": "https://upload.wikimedia.org/wikipedia/commons/9/98/Cidade_Maravilhosa.jpg",
+      "width": 3648,
+      "height": 1948,
+      "source": "wikipedia",
+      "articleTitle": "Rio de Janeiro",
+      "method": "wikipedia_main"
+    },
+    "pois": [
+      {
+        "name": "Sugarloaf Mountain",
+        "photo": {
+          "url": "https://upload.wikimedia.org/wikipedia/commons/8/8d/P%C3%A3o_de_A%C3%A7ucar_-_Sugarloaf_Mountain_-_Zuckerhut_-_2022.jpg",
+          "width": 5690,
+          "height": 3201,
+          "source": "wikipedia",
+          "articleTitle": "Sugarloaf Mountain",
+          "method": "wikipedia_main"
+        }
+      },
+      {
+        "name": "Ipanema",
+        "photo": {
+          "url": "https://upload.wikimedia.org/wikipedia/commons/3/30/Ipanema_rio.jpg",
+          "width": 7453,
+          "height": 4971,
+          "source": "wikipedia",
+          "articleTitle": "Ipanema",
+          "method": "wikipedia_main"
+        }
+      },
+      {
+        "name": "Maracanã Stadium",
+        "photo": {
+          "url": "https://upload.wikimedia.org/wikipedia/commons/a/a4/Maracana_2022.jpg",
+          "width": 6432,
+          "height": 4290,
+          "source": "wikipedia",
+          "articleTitle": "Maracanã Stadium",
+          "method": "wikipedia_main"
+        }
+      },
+      {
+        "name": "Tijuca National Park",
+        "photo": {
+          "url": "https://upload.wikimedia.org/wikipedia/commons/6/6e/Floresta_da_Tijuca_60.jpg",
+          "width": 3888,
+          "height": 2592,
+          "source": "wikipedia",
+          "articleTitle": "Tijuca National Park",
+          "method": "wikipedia_main"
+        }
+      }
+    ]
+  },
+  {
+    "city": "Cusco",
+    "country": "Perú",
+    "wiki": "Cusco",
+    "hero": {
+      "url": "https://upload.wikimedia.org/wikipedia/commons/d/d7/Vista_Calle_Suecia.jpg",
+      "width": 4501,
+      "height": 3001,
+      "source": "wikipedia",
+      "articleTitle": "Cusco",
+      "method": "wikipedia_main"
+    },
+    "pois": [
+      {
+        "name": "Sacsayhuamán",
+        "photo": {
+          "url": "https://upload.wikimedia.org/wikipedia/commons/6/60/Sacsayhuam%C3%A1n%2C_Cusco%2C_Per%C3%BA%2C_2015-07-31%2C_DD_27.JPG",
+          "width": 8688,
+          "height": 4770,
+          "source": "wikipedia",
+          "articleTitle": "Sacsayhuamán",
+          "method": "wikipedia_main"
+        }
+      },
+      {
+        "name": "Qorikancha",
+        "photo": {
+          "url": "https://upload.wikimedia.org/wikipedia/commons/d/dd/Coricancha%2C_Cusco%2C_Per%C3%BA%2C_2015-07-31%2C_DD_68.JPG",
+          "width": 7088,
+          "height": 4778,
+          "source": "wikipedia",
+          "articleTitle": "Qorikancha",
+          "method": "wikipedia_main"
+        }
+      },
+      {
+        "name": "Machu Picchu",
+        "photo": {
+          "url": "https://upload.wikimedia.org/wikipedia/commons/b/bb/Machu_Picchu%2C_2023_%28012%29.jpg",
+          "width": 6960,
+          "height": 4640,
+          "source": "wikipedia",
+          "articleTitle": "Machu Picchu",
+          "method": "wikipedia_main"
+        }
+      }
+    ]
+  },
+  {
+    "city": "Cartagena",
+    "country": "Colombia",
+    "wiki": "Cartagena, Colombia",
+    "hero": {
+      "url": "https://upload.wikimedia.org/wikipedia/commons/3/30/Museo_Naval_del_Caribe.JPG",
+      "width": 3264,
+      "height": 2448,
+      "source": "wikipedia",
+      "articleTitle": "Cartagena, Colombia",
+      "method": "wikipedia_main"
+    },
+    "pois": [
+      {
+        "name": "Castillo San Felipe de Barajas",
+        "photo": {
+          "url": "https://upload.wikimedia.org/wikipedia/commons/b/bc/62_-_Carthag%C3%A8ne_-_D%C3%A9cembre_2008.jpg",
+          "width": 4719,
+          "height": 2660,
+          "source": "wikipedia",
+          "articleTitle": "Castillo San Felipe de Barajas",
+          "method": "wikipedia_main"
+        }
+      },
+      {
+        "name": "Bocagrande",
+        "photo": {
+          "url": "https://upload.wikimedia.org/wikipedia/commons/c/cf/Cartagena_skyline%2C_Colombia.jpg",
+          "width": 1600,
+          "height": 1064,
+          "source": "wikipedia",
+          "articleTitle": "Bocagrande",
+          "method": "wikipedia_main"
+        }
+      },
+      {
+        "name": "Rosario Islands",
+        "photo": {
+          "url": "https://upload.wikimedia.org/wikipedia/commons/f/f9/Karibiska_havet_i_Colombia.jpg",
+          "width": 604,
+          "height": 400,
+          "source": "wikipedia",
+          "articleTitle": "Rosario Islands",
+          "method": "wikipedia_main"
+        }
+      }
+    ]
+  },
+  {
+    "city": "La Habana",
+    "country": "Cuba",
+    "wiki": "Havana",
+    "hero": {
+      "url": "https://upload.wikimedia.org/wikipedia/commons/1/12/DJI_0197_crp_wiki.jpg",
+      "width": 1920,
+      "height": 1080,
+      "source": "wikipedia",
+      "articleTitle": "Havana",
+      "method": "wikipedia_main"
+    },
+    "pois": [
+      {
+        "name": "Old Havana",
+        "photo": {
+          "url": "https://upload.wikimedia.org/wikipedia/commons/3/3b/Havana_Map_-_Habana_Vieja.png",
+          "width": 1298,
+          "height": 722,
+          "source": "wikipedia",
+          "articleTitle": "Old Havana",
+          "method": "wikipedia_main"
+        }
+      },
+      {
+        "name": "Malecón, Havana",
+        "photo": {
+          "url": "https://upload.wikimedia.org/wikipedia/commons/3/30/Havana_malecon_%28cropped%29.jpg",
+          "width": 1280,
+          "height": 546,
+          "source": "wikipedia",
+          "articleTitle": "Malecón, Havana",
+          "method": "wikipedia_main"
+        }
+      },
+      {
+        "name": "Plaza de la Revolución",
+        "photo": {
+          "url": "https://upload.wikimedia.org/wikipedia/commons/3/37/Monumento_a_Mart%C3%AD_en_el_Centro_C%C3%ADvico%2C_Habana._Concentraci%C3%B3n_Campesina._1959._-_panoramio.jpg",
+          "width": 1000,
+          "height": 798,
+          "source": "wikipedia",
+          "articleTitle": "Plaza de la Revolución",
+          "method": "wikipedia_main"
+        }
+      },
+      {
+        "name": "Morro Castle (Havana)",
+        "photo": {
+          "url": "https://upload.wikimedia.org/wikipedia/commons/thumb/0/05/Cuba_-_Morro_Castle%2C_near_view_LCCN2001706155.tif/lossy-page1-1280px-Cuba_-_Morro_Castle%2C_near_view_LCCN2001706155.tif.jpg",
+          "width": 1536,
+          "height": 1189,
+          "source": "wikipedia",
+          "articleTitle": "Morro Castle (Havana)",
+          "method": "wikipedia_main"
+        }
+      },
+      {
+        "name": "Cathedral of Havana",
+        "photo": {
+          "url": "https://upload.wikimedia.org/wikipedia/commons/0/04/Havana_Cathedral_crop.jpg",
+          "width": 1425,
+          "height": 1251,
+          "source": "wikipedia",
+          "articleTitle": "Cathedral of Havana",
+          "method": "wikipedia_main"
+        }
+      }
+    ]
+  },
+  {
+    "city": "San Francisco",
+    "country": "EE.UU.",
+    "wiki": "San Francisco",
+    "hero": {
+      "url": "https://upload.wikimedia.org/wikipedia/commons/f/f9/San_Francisco_Downtown_Aerial%2C_August_2025.jpg",
+      "width": 2560,
+      "height": 1440,
+      "source": "wikipedia",
+      "articleTitle": "San Francisco",
+      "method": "wikipedia_main"
+    },
+    "pois": [
+      {
+        "name": "Golden Gate Bridge",
+        "photo": {
+          "url": "https://upload.wikimedia.org/wikipedia/commons/b/bf/Golden_Gate_Bridge_as_seen_from_Battery_East.jpg",
+          "width": 5388,
+          "height": 3368,
+          "source": "wikipedia",
+          "articleTitle": "Golden Gate Bridge",
+          "method": "wikipedia_main"
+        }
+      },
+      {
+        "name": "Alcatraz Island",
+        "photo": {
+          "url": "https://upload.wikimedia.org/wikipedia/commons/1/17/Alcatraz_2021.jpg",
+          "width": 3719,
+          "height": 2367,
+          "source": "wikipedia",
+          "articleTitle": "Alcatraz Island",
+          "method": "wikipedia_main"
+        }
+      },
+      {
+        "name": "Fisherman's Wharf, San Francisco",
+        "photo": {
+          "url": "https://upload.wikimedia.org/wikipedia/commons/a/ae/Fishermans_Wharf_Sign%2C_SF%2C_CA%2C_jjron_25.03.2012.jpg",
+          "width": 1009,
+          "height": 1543,
+          "source": "wikipedia",
+          "articleTitle": "Fisherman's Wharf, San Francisco",
+          "method": "wikipedia_main"
+        }
+      },
+      {
+        "name": "Chinatown, San Francisco",
+        "photo": {
+          "url": "https://upload.wikimedia.org/wikipedia/commons/7/75/San_Francisco_China_Town_MC.jpg",
+          "width": 2250,
+          "height": 1500,
+          "source": "wikipedia",
+          "articleTitle": "Chinatown, San Francisco",
+          "method": "wikipedia_main"
+        }
+      },
+      {
+        "name": "Palace of Fine Arts",
+        "photo": {
+          "url": "https://upload.wikimedia.org/wikipedia/commons/1/16/Palace_of_Fine_Arts_%2816794p%29.jpg",
+          "width": 10074,
+          "height": 6252,
+          "source": "wikipedia",
+          "articleTitle": "Palace of Fine Arts",
+          "method": "wikipedia_main"
+        }
+      }
+    ]
+  },
+  {
+    "city": "Vancouver",
+    "country": "Canadá",
+    "wiki": "Vancouver",
+    "hero": {
+      "url": "https://upload.wikimedia.org/wikipedia/commons/5/57/Concord_Pacific_Master_Plan_Area.jpg",
+      "width": 4356,
+      "height": 2450,
+      "source": "wikipedia",
+      "articleTitle": "Vancouver",
+      "method": "wikipedia_main"
+    },
+    "pois": [
+      {
+        "name": "Stanley Park",
+        "photo": {
+          "url": "https://upload.wikimedia.org/wikipedia/commons/7/76/Stanley_Park_Labeled_Aerial_Map.png",
+          "width": 1047,
+          "height": 699,
+          "source": "wikipedia",
+          "articleTitle": "Stanley Park",
+          "method": "wikipedia_main"
+        }
+      },
+      {
+        "name": "Granville Island",
+        "photo": {
+          "url": "https://upload.wikimedia.org/wikipedia/commons/e/e1/Granville_Island_view_from_Granville_Bridge_in_2010.jpg",
+          "width": 3944,
+          "height": 2629,
+          "source": "wikipedia",
+          "articleTitle": "Granville Island",
+          "method": "wikipedia_main"
+        }
+      },
+      {
+        "name": "Capilano Suspension Bridge",
+        "photo": {
+          "url": "https://upload.wikimedia.org/wikipedia/commons/6/64/Capilano_Suspension_Bridge%2C_Vancouver%2C_Canada_%28July_2016%29_1.jpg",
+          "width": 4000,
+          "height": 2248,
+          "source": "wikipedia",
+          "articleTitle": "Capilano Suspension Bridge",
+          "method": "wikipedia_main"
+        }
+      },
+      {
+        "name": "Gastown",
+        "photo": {
+          "url": "https://upload.wikimedia.org/wikipedia/commons/f/f8/Vancouver_2018-20180422-2108_%2842138196834%29.jpg",
+          "width": 1920,
+          "height": 1045,
+          "source": "wikipedia",
+          "articleTitle": "Gastown",
+          "method": "wikipedia_main"
+        }
+      },
+      {
+        "name": "Science World at Telus World of Science",
+        "photo": {
+          "url": "https://upload.wikimedia.org/wikipedia/commons/e/e5/Science_World_at_TELUS_World_of_Science.jpg",
+          "width": 2592,
+          "height": 1728,
+          "source": "wikipedia",
+          "articleTitle": "Science World at Telus World of Science",
+          "method": "wikipedia_main"
+        }
+      }
+    ]
+  },
+  {
+    "city": "Osaka",
+    "country": "Japón",
+    "wiki": "Osaka",
+    "hero": {
+      "url": "https://upload.wikimedia.org/wikipedia/commons/e/e4/Osaka_Castle_02bs3200.jpg",
+      "width": 4167,
+      "height": 2728,
+      "source": "wikipedia",
+      "articleTitle": "Osaka",
+      "method": "wikipedia_main"
+    },
+    "pois": [
+      {
+        "name": "Osaka Castle",
+        "photo": {
+          "url": "https://upload.wikimedia.org/wikipedia/commons/e/e4/Osaka_Castle_02bs3200.jpg",
+          "width": 4167,
+          "height": 2728,
+          "source": "wikipedia",
+          "articleTitle": "Osaka Castle",
+          "method": "wikipedia_main"
+        }
+      },
+      {
+        "name": "Dōtonbori",
+        "photo": {
+          "url": "https://upload.wikimedia.org/wikipedia/commons/4/47/Dotonbori%2C_Osaka%2C_at_night%2C_November_2016.jpg",
+          "width": 3872,
+          "height": 4738,
+          "source": "wikipedia",
+          "articleTitle": "Dōtonbori",
+          "method": "wikipedia_main"
+        }
+      },
+      {
+        "name": "Shitennō-ji",
+        "photo": {
+          "url": "https://upload.wikimedia.org/wikipedia/commons/c/c6/Shitennoji_%26_Abeno_Harukas.jpg",
+          "width": 3872,
+          "height": 2592,
+          "source": "wikipedia",
+          "articleTitle": "Shitennō-ji",
+          "method": "wikipedia_main"
+        }
+      },
+      {
+        "name": "Tsūtenkaku",
+        "photo": {
+          "url": "https://upload.wikimedia.org/wikipedia/commons/8/8d/New_Tsutenkaku_in_201409_003.JPG",
+          "width": 2400,
+          "height": 2400,
+          "source": "wikipedia",
+          "articleTitle": "Tsūtenkaku",
+          "method": "wikipedia_main"
+        }
+      },
+      {
+        "name": "Osaka Aquarium Kaiyukan",
+        "photo": {
+          "url": "https://upload.wikimedia.org/wikipedia/commons/3/3e/Kaiyukan.JPG",
+          "width": 2048,
+          "height": 1536,
+          "source": "wikipedia",
+          "articleTitle": "Osaka Aquarium Kaiyukan",
+          "method": "wikipedia_main"
+        }
+      },
+      {
+        "name": "Shinsekai",
+        "photo": {
+          "url": "https://upload.wikimedia.org/wikipedia/commons/9/95/Shinsekai_and_Tsutenkaku_at_night_2019-04-12.jpg",
+          "width": 4000,
+          "height": 6000,
+          "source": "wikipedia",
+          "articleTitle": "Shinsekai",
+          "method": "wikipedia_main"
+        }
+      }
+    ]
+  },
+  {
+    "city": "Hanói",
+    "country": "Vietnam",
+    "wiki": "Hanoi",
+    "hero": {
+      "url": "https://upload.wikimedia.org/wikipedia/commons/8/8e/Hanoi_skyline_with_Ba_Vi_Mountain.jpg",
+      "width": 2048,
+      "height": 1093,
+      "source": "wikipedia",
+      "articleTitle": "Hanoi",
+      "method": "wikipedia_main"
+    },
+    "pois": [
+      {
+        "name": "Hoàn Kiếm Lake",
+        "photo": {
+          "url": "https://upload.wikimedia.org/wikipedia/commons/7/79/Thap_Rua.jpg",
+          "width": 1536,
+          "height": 1320,
+          "source": "wikipedia",
+          "articleTitle": "Hoàn Kiếm Lake",
+          "method": "wikipedia_main"
+        }
+      },
+      {
+        "name": "Temple of Literature, Hanoi",
+        "photo": {
+          "url": "https://upload.wikimedia.org/wikipedia/commons/3/39/Hanoi_Temple_of_Literature_%28cropped%29.jpg",
+          "width": 2592,
+          "height": 1209,
+          "source": "wikipedia",
+          "articleTitle": "Temple of Literature, Hanoi",
+          "method": "wikipedia_main"
+        }
+      },
+      {
+        "name": "Ho Chi Minh Mausoleum",
+        "photo": {
+          "url": "https://upload.wikimedia.org/wikipedia/commons/f/fd/L%C4%83ng_B%C3%A1c_-_NKS.jpg",
+          "width": 3917,
+          "height": 2611,
+          "source": "wikipedia",
+          "articleTitle": "Ho Chi Minh Mausoleum",
+          "method": "wikipedia_main"
+        }
+      },
+      {
+        "name": "Old Quarter, Hanoi",
+        "photo": {
+          "url": "https://upload.wikimedia.org/wikipedia/commons/thumb/d/da/Old_Quarter_Street_Scene_-_Hanoi_-_Vietnam_%2848256301206%29.jpg/1920px-Old_Quarter_Street_Scene_-_Hanoi_-_Vietnam_%2848256301206%29.jpg",
+          "width": 2736,
+          "height": 3648,
+          "source": "wikipedia",
+          "articleTitle": "Old Quarter, Hanoi",
+          "method": "wikipedia_main"
+        }
+      },
+      {
+        "name": "One Pillar Pagoda",
+        "photo": {
+          "url": "https://upload.wikimedia.org/wikipedia/commons/5/5c/Hanoi%2C_Vietnam_%2812041825854%29.jpg",
+          "width": 4608,
+          "height": 2592,
+          "source": "wikipedia",
+          "articleTitle": "One Pillar Pagoda",
+          "method": "wikipedia_main"
+        }
+      },
+      {
+        "name": "Long Biên Bridge",
+        "photo": {
+          "url": "https://upload.wikimedia.org/wikipedia/commons/9/92/Long_Bi%C3%AAn_Bridge_-_panoramio.jpg",
+          "width": 3455,
+          "height": 2192,
+          "source": "wikipedia",
+          "articleTitle": "Long Biên Bridge",
+          "method": "wikipedia_main"
+        }
+      }
+    ]
+  },
+  {
+    "city": "Bali",
+    "country": "Indonesia",
+    "wiki": "Bali",
+    "hero": {
+      "url": "https://upload.wikimedia.org/wikipedia/commons/thumb/4/47/Bali_in_Indonesia_%28special_marker%29.svg/1280px-Bali_in_Indonesia_%28special_marker%29.svg.png",
+      "width": 982,
+      "height": 450,
+      "source": "wikipedia",
+      "articleTitle": "Bali",
+      "method": "wikipedia_main"
+    },
+    "pois": [
+      {
+        "name": "Tanah Lot",
+        "photo": {
+          "url": "https://upload.wikimedia.org/wikipedia/commons/8/8d/TanahLot_2014.JPG",
+          "width": 5184,
+          "height": 3456,
+          "source": "wikipedia",
+          "articleTitle": "Tanah Lot",
+          "method": "wikipedia_main"
+        }
+      },
+      {
+        "name": "Uluwatu Temple",
+        "photo": {
+          "url": "https://upload.wikimedia.org/wikipedia/commons/5/57/Pura_Luhur_Uluwatu_2017-08-17_%2834%29.jpg",
+          "width": 4896,
+          "height": 3264,
+          "source": "wikipedia",
+          "articleTitle": "Uluwatu Temple",
+          "method": "wikipedia_main"
+        }
+      },
+      {
+        "name": "Ubud",
+        "photo": {
+          "url": "https://upload.wikimedia.org/wikipedia/commons/5/5d/Ubud_%2849818456887%29.jpg",
+          "width": 4145,
+          "height": 2763,
+          "source": "wikipedia",
+          "articleTitle": "Ubud",
+          "method": "wikipedia_main"
+        }
+      },
+      {
+        "name": "Tirta Empul",
+        "photo": {
+          "url": "https://upload.wikimedia.org/wikipedia/commons/f/f7/Bali_-_bathing_%28Melukat%29_at_Pura_Tirta_Empul_%282025%29_-_img_07.jpg",
+          "width": 4032,
+          "height": 3024,
+          "source": "wikipedia",
+          "articleTitle": "Tirta Empul",
+          "method": "wikipedia_main"
+        }
+      },
+      {
+        "name": "Besakih Temple",
+        "photo": {
+          "url": "https://upload.wikimedia.org/wikipedia/commons/4/4f/Besakih_Bali_Indonesia_Pura-Besakih-02.jpg",
+          "width": 5760,
+          "height": 3840,
+          "source": "wikipedia",
+          "articleTitle": "Besakih Temple",
+          "method": "wikipedia_main"
+        }
+      }
+    ]
+  },
+  {
+    "city": "Seúl",
+    "country": "Corea del Sur",
+    "wiki": "Seoul",
+    "hero": {
+      "url": "https://upload.wikimedia.org/wikipedia/commons/3/30/%EC%A4%91%ED%99%94%EC%A0%84%EC%9D%98_%EB%82%AE.jpg",
+      "width": 4434,
+      "height": 3341,
+      "source": "wikipedia",
+      "articleTitle": "Seoul",
+      "method": "wikipedia_main"
+    },
+    "pois": [
+      {
+        "name": "Gyeongbokgung",
+        "photo": {
+          "url": "https://upload.wikimedia.org/wikipedia/commons/6/63/%EA%B4%91%ED%99%94%EB%AC%B8_%EC%9B%94%EB%8C%80.jpg",
+          "width": 6512,
+          "height": 4341,
+          "source": "wikipedia",
+          "articleTitle": "Gyeongbokgung",
+          "method": "wikipedia_main"
+        }
+      },
+      {
+        "name": "N Seoul Tower",
+        "photo": {
+          "url": "https://upload.wikimedia.org/wikipedia/en/a/a6/NamsanTower_%28Cropped%29.jpeg",
+          "width": 883,
+          "height": 1466,
+          "source": "wikipedia",
+          "articleTitle": "N Seoul Tower",
+          "method": "wikipedia_main"
+        }
+      },
+      {
+        "name": "Bukchon Hanok Village",
+        "photo": {
+          "url": "https://upload.wikimedia.org/wikipedia/commons/2/2e/Bukchon_Hanok_Village_01.jpg",
+          "width": 4898,
+          "height": 3265,
+          "source": "wikipedia",
+          "articleTitle": "Bukchon Hanok Village",
+          "method": "wikipedia_main"
+        }
+      },
+      {
+        "name": "Myeongdong",
+        "photo": {
+          "url": "https://upload.wikimedia.org/wikipedia/commons/3/32/%EB%AA%85%EB%8F%998%EA%B8%B8_%EA%B1%B0%EB%A6%AC_%282020.03%29.jpg",
+          "width": 1600,
+          "height": 1067,
+          "source": "wikipedia",
+          "articleTitle": "Myeongdong",
+          "method": "wikipedia_main"
+        }
+      },
+      {
+        "name": "Changdeokgung",
+        "photo": {
+          "url": "https://upload.wikimedia.org/wikipedia/commons/d/d4/%EC%B0%BD%EB%8D%95%EA%B6%81_%EC%A0%84%EA%B2%BD_%282012%29.jpg",
+          "width": 4000,
+          "height": 2283,
+          "source": "wikipedia",
+          "articleTitle": "Changdeokgung",
+          "method": "wikipedia_main"
+        }
+      },
+      {
+        "name": "Dongdaemun Design Plaza",
+        "photo": {
+          "url": "https://upload.wikimedia.org/wikipedia/en/8/8f/Dongdaemun_Design_Plaza_at_night%2C_Seoul%2C_Korea.jpg",
+          "width": 3600,
+          "height": 2400,
+          "source": "wikipedia",
+          "articleTitle": "Dongdaemun Design Plaza",
+          "method": "wikipedia_main"
+        }
+      }
+    ]
+  },
+  {
+    "city": "Kioto",
+    "country": "Japón",
+    "wiki": "Kyoto",
+    "hero": {
+      "url": "https://upload.wikimedia.org/wikipedia/commons/3/3c/Kiyomizu.jpg",
+      "width": 1452,
+      "height": 969,
+      "source": "wikipedia",
+      "articleTitle": "Kyoto",
+      "method": "wikipedia_main"
+    },
+    "pois": [
+      {
+        "name": "Fushimi Inari-taisha",
+        "photo": {
+          "url": "https://upload.wikimedia.org/wikipedia/commons/0/0e/Torii_path_with_lantern_at_Fushimi_Inari_Taisha_Shrine%2C_Kyoto%2C_Japan.jpg",
+          "width": 5765,
+          "height": 3843,
+          "source": "wikipedia",
+          "articleTitle": "Fushimi Inari-taisha",
+          "method": "wikipedia_main"
+        }
+      },
+      {
+        "name": "Kinkaku-ji",
+        "photo": {
+          "url": "https://upload.wikimedia.org/wikipedia/commons/thumb/0/0f/Golden_Pavilion_Kinkaku-ji_water_mirror_2024.jpg/4000px-Golden_Pavilion_Kinkaku-ji_water_mirror_2024.jpg",
+          "width": 4000,
+          "height": 6000,
+          "source": "wikipedia",
+          "articleTitle": "Kinkaku-ji",
+          "method": "wikipedia_main"
+        }
+      },
+      {
+        "name": "Arashiyama",
+        "photo": {
+          "url": "https://upload.wikimedia.org/wikipedia/commons/d/de/Arashiyama_013.jpg",
+          "width": 800,
+          "height": 600,
+          "source": "wikipedia",
+          "articleTitle": "Arashiyama",
+          "method": "wikipedia_main"
+        }
+      },
+      {
+        "name": "Kiyomizu-dera",
+        "photo": {
+          "url": "https://upload.wikimedia.org/wikipedia/commons/3/3c/Kiyomizu.jpg",
+          "width": 1452,
+          "height": 969,
+          "source": "wikipedia",
+          "articleTitle": "Kiyomizu-dera",
+          "method": "wikipedia_main"
+        }
+      },
+      {
+        "name": "Nijō Castle",
+        "photo": {
+          "url": "https://upload.wikimedia.org/wikipedia/commons/d/dd/NinomaruPalace.jpg",
+          "width": 2592,
+          "height": 1952,
+          "source": "wikipedia",
+          "articleTitle": "Nijō Castle",
+          "method": "wikipedia_main"
+        }
+      },
+      {
+        "name": "Gion",
+        "photo": {
+          "url": "https://upload.wikimedia.org/wikipedia/commons/2/23/150124_Gion_Kyoto_Japan01s3.jpg",
+          "width": 6000,
+          "height": 4000,
+          "source": "wikipedia",
+          "articleTitle": "Gion",
+          "method": "wikipedia_main"
+        }
+      },
+      {
+        "name": "Philosopher's Walk",
+        "photo": {
+          "url": "https://upload.wikimedia.org/wikipedia/commons/9/92/Japan_Kyoto_philosophers_walk_DSC00297.jpg",
+          "width": 2592,
+          "height": 1728,
+          "source": "wikipedia",
+          "articleTitle": "Philosopher's Walk",
+          "method": "wikipedia_main"
+        }
+      }
+    ]
+  },
+  {
+    "city": "Ciudad del Cabo",
+    "country": "Sudáfrica",
+    "wiki": "Cape Town",
+    "hero": {
+      "url": "https://upload.wikimedia.org/wikipedia/commons/8/8d/Camps_bay_%2853460319478%29_%28cropped%29.jpg",
+      "width": 5400,
+      "height": 3120,
+      "source": "wikipedia",
+      "articleTitle": "Cape Town",
+      "method": "wikipedia_main"
+    },
+    "pois": [
+      {
+        "name": "Table Mountain",
+        "photo": {
+          "url": "https://upload.wikimedia.org/wikipedia/commons/d/dc/Table_Mountain_DanieVDM.jpg",
+          "width": 2048,
+          "height": 1340,
+          "source": "wikipedia",
+          "articleTitle": "Table Mountain",
+          "method": "wikipedia_main"
+        }
+      },
+      {
+        "name": "Cape of Good Hope",
+        "photo": {
+          "url": "https://upload.wikimedia.org/wikipedia/commons/e/e7/Playa_Dias%2C_Cape_Point%2C_Sud%C3%A1frica%2C_2018-07-23%2C_DD_103.jpg",
+          "width": 8688,
+          "height": 5792,
+          "source": "wikipedia",
+          "articleTitle": "Cape of Good Hope",
+          "method": "wikipedia_main"
+        }
+      },
+      {
+        "name": "V&A Waterfront",
+        "photo": {
+          "url": "https://upload.wikimedia.org/wikipedia/en/thumb/7/71/V%26A_Waterfront_logo.svg/330px-V%26A_Waterfront_logo.svg.png",
+          "width": 315,
+          "height": 317,
+          "source": "wikipedia",
+          "articleTitle": "V&A Waterfront",
+          "method": "wikipedia_main"
+        }
+      },
+      {
+        "name": "Robben Island",
+        "photo": {
+          "url": "https://upload.wikimedia.org/wikipedia/commons/2/24/Robben_Island_-_Cape_Town%2C_South_Africa_%283883849594%29.jpg",
+          "width": 3000,
+          "height": 2322,
+          "source": "wikipedia",
+          "articleTitle": "Robben Island",
+          "method": "wikipedia_main"
+        }
+      },
+      {
+        "name": "Kirstenbosch National Botanical Garden",
+        "photo": {
+          "url": "https://upload.wikimedia.org/wikipedia/commons/5/53/Kirstenbosch_National_Botanical_Garden_2024_7th_batch_09.jpg",
+          "width": 4000,
+          "height": 3000,
+          "source": "wikipedia",
+          "articleTitle": "Kirstenbosch National Botanical Garden",
+          "method": "wikipedia_main"
+        }
+      },
+      {
+        "name": "Bo-Kaap",
+        "photo": {
+          "url": "https://upload.wikimedia.org/wikipedia/commons/b/b2/Cape_Town_%28ZA%29%2C_Wale_Street_--_2024_--_3544.jpg",
+          "width": 6720,
+          "height": 3780,
+          "source": "wikipedia",
+          "articleTitle": "Bo-Kaap",
+          "method": "wikipedia_main"
+        }
+      }
+    ]
+  },
+  {
+    "city": "El Cairo",
+    "country": "Egipto",
+    "wiki": "Cairo",
+    "hero": {
+      "url": "https://upload.wikimedia.org/wikipedia/commons/7/72/Cairo_Opera_House%2C_Al_Hurriyah_Park_and_the_Nile_river_%2814797782354%29.jpg",
+      "width": 4288,
+      "height": 2848,
+      "source": "wikipedia",
+      "articleTitle": "Cairo",
+      "method": "wikipedia_main"
+    },
+    "pois": [
+      {
+        "name": "Giza pyramid complex",
+        "photo": {
+          "url": "https://upload.wikimedia.org/wikipedia/commons/9/96/Pyramids_of_the_Giza_Necropolis.jpg",
+          "width": 10104,
+          "height": 4210,
+          "source": "wikipedia",
+          "articleTitle": "Giza pyramid complex",
+          "method": "wikipedia_main"
+        }
+      },
+      {
+        "name": "Egyptian Museum",
+        "photo": {
+          "url": "https://upload.wikimedia.org/wikipedia/en/3/3b/Egyptian_Museum_logo.png",
+          "width": 419,
+          "height": 238,
+          "source": "wikipedia",
+          "articleTitle": "Egyptian Museum",
+          "method": "wikipedia_main"
+        }
+      },
+      {
+        "name": "Khan el-Khalili",
+        "photo": {
+          "url": "https://upload.wikimedia.org/wikipedia/commons/7/74/%D8%AE%D8%A7%D9%86_%D8%A7%D9%84%D8%AE%D9%84%D9%8A%D9%84%D9%8A_1.jpg",
+          "width": 3840,
+          "height": 2312,
+          "source": "wikipedia",
+          "articleTitle": "Khan el-Khalili",
+          "method": "wikipedia_main"
+        }
+      },
+      {
+        "name": "Cairo Citadel",
+        "photo": {
+          "url": "https://upload.wikimedia.org/wikipedia/commons/9/93/Flickr_-_HuTect_ShOts_-_Citadel_of_Salah_El.Din_and_Masjid_Muhammad_Ali_%D9%82%D9%84%D8%B9%D8%A9_%D8%B5%D9%84%D8%A7%D8%AD_%D8%A7%D9%84%D8%AF%D9%8A%D9%86_%D8%A7%D9%84%D8%A3%D9%8A%D9%88%D8%A8%D9%8A_%D9%88%D9%85%D8%B3%D8%AC%D8%AF_%D9%85%D8%AD%D9%85%D8%AF_%D8%B9%D9%84%D9%8A_-_Cairo_-_Egypt_-_17_04_2010_%284%29.jpg",
+          "width": 3896,
+          "height": 2380,
+          "source": "wikipedia",
+          "articleTitle": "Cairo Citadel",
+          "method": "wikipedia_main"
+        }
+      },
+      {
+        "name": "Al-Azhar Mosque",
+        "photo": {
+          "url": "https://upload.wikimedia.org/wikipedia/commons/thumb/4/47/Mosqu%C3%A9e_Al-Azhar.jpg/1920px-Mosqu%C3%A9e_Al-Azhar.jpg",
+          "width": 3000,
+          "height": 4000,
+          "source": "wikipedia",
+          "articleTitle": "Al-Azhar Mosque",
+          "method": "wikipedia_main"
+        }
+      },
+      {
+        "name": "Mosque of Muhammad Ali",
+        "photo": {
+          "url": "https://upload.wikimedia.org/wikipedia/commons/4/49/%D8%AC%D8%A7%D9%85%D8%B9_%D9%85%D8%AD%D9%85%D8%AF_%D8%B9%D9%84%D9%8A.JPG",
+          "width": 1600,
+          "height": 1200,
+          "source": "wikipedia",
+          "articleTitle": "Mosque of Muhammad Ali",
+          "method": "wikipedia_main"
+        }
+      }
+    ]
+  },
+  {
+    "city": "Petra",
+    "country": "Jordania",
+    "wiki": "Petra",
+    "hero": {
+      "url": "https://upload.wikimedia.org/wikipedia/commons/e/e8/Al_Deir_Petra.JPG",
+      "width": 6000,
+      "height": 4000,
+      "source": "wikipedia",
+      "articleTitle": "Petra",
+      "method": "wikipedia_main"
+    },
+    "pois": [
+      {
+        "name": "Al-Khazneh",
+        "photo": {
+          "url": "https://upload.wikimedia.org/wikipedia/commons/2/2f/Treasury_petra_crop.jpeg",
+          "width": 1655,
+          "height": 2002,
+          "source": "wikipedia",
+          "articleTitle": "Al-Khazneh",
+          "method": "wikipedia_main"
+        }
+      },
+      {
+        "name": "Ad Deir",
+        "photo": {
+          "url": "https://upload.wikimedia.org/wikipedia/commons/e/e8/Al_Deir_Petra.JPG",
+          "width": 6000,
+          "height": 4000,
+          "source": "wikipedia",
+          "articleTitle": "Ad Deir",
+          "method": "wikipedia_main"
+        }
+      }
+    ]
+  },
+  {
+    "city": "Sídney",
+    "country": "Australia",
+    "wiki": "Sydney",
+    "hero": {
+      "url": "https://upload.wikimedia.org/wikipedia/commons/5/53/Sydney_Opera_House_and_Harbour_Bridge_Dusk_%282%29_2019-06-21.jpg",
+      "width": 6173,
+      "height": 3087,
+      "source": "wikipedia",
+      "articleTitle": "Sydney",
+      "method": "wikipedia_main"
+    },
+    "pois": [
+      {
+        "name": "Sydney Opera House",
+        "photo": {
+          "url": "https://upload.wikimedia.org/wikipedia/commons/a/a0/Sydney_Australia._%2821339175489%29.jpg",
+          "width": 3201,
+          "height": 1965,
+          "source": "wikipedia",
+          "articleTitle": "Sydney Opera House",
+          "method": "wikipedia_main"
+        }
+      },
+      {
+        "name": "Sydney Harbour Bridge",
+        "photo": {
+          "url": "https://upload.wikimedia.org/wikipedia/commons/5/55/Sydney_Harbour_Bridge-16_October_2025.jpg",
+          "width": 3907,
+          "height": 2197,
+          "source": "wikipedia",
+          "articleTitle": "Sydney Harbour Bridge",
+          "method": "wikipedia_main"
+        }
+      },
+      {
+        "name": "Bondi Beach",
+        "photo": {
+          "url": "https://upload.wikimedia.org/wikipedia/commons/7/79/Bondi_from_above.jpg",
+          "width": 3838,
+          "height": 2156,
+          "source": "wikipedia",
+          "articleTitle": "Bondi Beach",
+          "method": "wikipedia_main"
+        }
+      },
+      {
+        "name": "The Rocks, Sydney",
+        "photo": {
+          "url": "https://upload.wikimedia.org/wikipedia/commons/f/f6/Sydney_%28AU%29%2C_The_Rocks_--_2019_--_2133.jpg",
+          "width": 6720,
+          "height": 3780,
+          "source": "wikipedia",
+          "articleTitle": "The Rocks, Sydney",
+          "method": "wikipedia_main"
+        }
+      },
+      {
+        "name": "Royal Botanic Garden, Sydney",
+        "photo": {
+          "url": "https://upload.wikimedia.org/wikipedia/commons/2/2a/Gates_at_Royal_Botanic_Gardens_viewed_from_Art_Gallery_Road.jpg",
+          "width": 3008,
+          "height": 2008,
+          "source": "wikipedia",
+          "articleTitle": "Royal Botanic Garden, Sydney",
+          "method": "wikipedia_main"
+        }
+      },
+      {
+        "name": "Taronga Zoo",
+        "photo": {
+          "url": "https://upload.wikimedia.org/wikipedia/en/5/51/Taronga_Zoo_logo.jpg",
+          "width": 316,
+          "height": 316,
+          "source": "wikipedia",
+          "articleTitle": "Taronga Zoo",
+          "method": "wikipedia_main"
+        }
+      }
+    ]
+  },
+  {
+    "city": "Queenstown",
+    "country": "Nueva Zelanda",
+    "wiki": "Queenstown, New Zealand",
+    "hero": {
+      "url": "https://upload.wikimedia.org/wikipedia/commons/c/c9/Queenstown_1_%288168013172%29.jpg",
+      "width": 2400,
+      "height": 1607,
+      "source": "wikipedia",
+      "articleTitle": "Queenstown, New Zealand",
+      "method": "wikipedia_main"
+    },
+    "pois": [
+      {
+        "name": "Lake Wakatipu",
+        "photo": {
+          "url": "https://upload.wikimedia.org/wikipedia/commons/d/d7/LakeWakatipuNov172024_02.jpg",
+          "width": 7874,
+          "height": 5241,
+          "source": "wikipedia",
+          "articleTitle": "Lake Wakatipu",
+          "method": "wikipedia_main"
+        }
+      },
+      {
+        "name": "Milford Sound",
+        "photo": {
+          "url": "https://upload.wikimedia.org/wikipedia/commons/b/b6/Milford_Sound_%28New_Zealand%29.JPG",
+          "width": 4878,
+          "height": 1766,
+          "source": "wikipedia",
+          "articleTitle": "Milford Sound",
+          "method": "wikipedia_main"
+        }
+      },
+      {
+        "name": "Skyline Queenstown",
+        "photo": {
+          "url": "https://upload.wikimedia.org/wikipedia/commons/2/22/View_from_Shotover-Rees_St%2C_Queenstown_-_panoramio_%282%29.jpg",
+          "width": 2048,
+          "height": 1150,
+          "source": "wikipedia",
+          "articleTitle": "Skyline Queenstown",
+          "method": "wikipedia_main"
+        }
+      },
+      {
+        "name": "Queenstown Gardens",
+        "photo": {
+          "url": "https://upload.wikimedia.org/wikipedia/commons/6/64/Queenstown.Gardens.jpg",
+          "width": 900,
+          "height": 1200,
+          "source": "wikipedia",
+          "articleTitle": "Queenstown Gardens",
+          "method": "wikipedia_main"
+        }
+      },
+      {
+        "name": "Remarkables",
+        "photo": {
+          "url": "https://upload.wikimedia.org/wikipedia/commons/8/86/The_Remarkables_%281126885451%29.jpg",
+          "width": 2816,
+          "height": 1584,
+          "source": "wikipedia",
+          "articleTitle": "Remarkables",
+          "method": "wikipedia_main"
+        }
+      }
+    ]
   }
 ]
