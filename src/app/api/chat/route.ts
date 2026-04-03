@@ -15,15 +15,36 @@ function isPersistedTripId(tripId: string) {
   return /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(tripId)
 }
 
+// Max message length to prevent prompt injection with huge payloads
+const MAX_MESSAGE_LENGTH = 2000
+
 export async function POST(req: NextRequest) {
-  const rl = await rateLimit(req, "chat", 30, "1 m")
+  // Rate limit: 20 messages per minute per IP (burst protection)
+  const rl = await rateLimit(req, "chat", 20, "1 m")
   if (!rl.ok) return rl.response!
+
+  // Daily limit: 100 messages per day per IP (cost protection)
+  const dailyRl = await rateLimit(req, "chat_daily", 100, "1 d")
+  if (!dailyRl.ok) return dailyRl.response!
 
   try {
     const body = await parseJsonBody(req, chatRequestSchema)
     const identity = await resolveRequestIdentity()
     const { message, tripId, tripContext } = body
     let { history } = body
+
+    // Reject oversized messages (abuse / prompt injection protection)
+    if (message.length > MAX_MESSAGE_LENGTH) {
+      return normalizeRouteError(
+        new Error("Message too long"),
+        "El mensaje es demasiado largo. Máximo 2000 caracteres."
+      )
+    }
+
+    // Limit history size sent by client (prevent token stuffing)
+    if (history.length > 20) {
+      history = history.slice(-20)
+    }
 
     let systemContext = tripContext?.trim() ?? ""
     if (tripId && identity.userId && isPersistedTripId(tripId)) {
