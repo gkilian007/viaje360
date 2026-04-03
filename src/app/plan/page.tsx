@@ -34,6 +34,9 @@ import { useWeather } from "@/lib/hooks/useWeather"
 import { ProactiveAdaptationBanner } from "@/components/features/ProactiveAdaptationBanner"
 import { AutoAdaptedBanner } from "@/components/features/AutoAdaptedBanner"
 import { ProactiveInsightCard } from "@/components/features/ProactiveInsightCard"
+import { BudgetTracker } from "@/components/features/BudgetTracker"
+import { PackingList } from "@/components/features/PackingList"
+import { LocalTipsCard } from "@/components/features/LocalTipsCard"
 import { useProactiveAdaptation } from "@/lib/hooks/useProactiveAdaptation"
 import { useProactiveInsights } from "@/lib/hooks/useProactiveInsights"
 import { MagicMomentCard } from "@/components/features/MagicMomentCard"
@@ -624,6 +627,15 @@ function PlanPageContent() {
               onDismiss={() => dismissInsight(proactiveInsight.id)}
             />
           )}
+
+          {/* Budget tracker */}
+          {currentTrip?.id && <BudgetTracker tripId={currentTrip.id} />}
+
+          {/* Smart packing list */}
+          {currentTrip?.id && <PackingList tripId={currentTrip.id} />}
+
+          {/* Local tips */}
+          {currentTrip?.destination && <LocalTipsCard destination={String(currentTrip.destination)} />}
 
           {/* Live activity banner */}
           <CurrentActivityBanner

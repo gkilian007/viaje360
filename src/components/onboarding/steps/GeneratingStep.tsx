@@ -84,7 +84,7 @@ export function GeneratingStep() {
       const res = await fetch("/api/itinerary/generate", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ ...data, language: navigator.language?.split("-")[0] || "es" }),
+        body: JSON.stringify({ ...data, language: navigator.language?.split("-")[0] || "es", timezone: Intl.DateTimeFormat().resolvedOptions().timeZone || "Europe/Madrid" }),
         signal: abortController.signal,
       })
 

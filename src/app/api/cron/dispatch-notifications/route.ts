@@ -42,7 +42,7 @@ export async function POST(req: NextRequest) {
 
     const { data: activeTrips } = await supabase
       .from("trips")
-      .select("id, user_id, destination, start_date, end_date")
+      .select("id, user_id, destination, start_date, end_date, onboarding_id")
       .lte("start_date", tomorrowStr)
       .gte("end_date", todayStr)
       .limit(100)

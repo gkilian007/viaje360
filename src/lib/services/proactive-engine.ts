@@ -7,6 +7,7 @@
 
 import { createServiceClient } from "@/lib/supabase/server"
 import { getForecast, type DayWeather } from "@/lib/services/weather.service"
+import { getBudgetSummary } from "@/lib/services/budget.service"
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -17,6 +18,7 @@ export type InsightTrigger =
   | "budget_pulse"
   | "weather_change"
   | "ticket_reminder"
+  | "local_tip"
 
 export type InsightSeverity = "urgent" | "helpful" | "nice_to_know"
 
@@ -247,6 +249,93 @@ export function generatePostDayCheckin(
   }
 }
 
+// ─── Budget pulse ────────────────────────────────────────────────────
+
+import type { BudgetSummary } from "@/lib/services/budget.service"
+import { getLocalTips } from "@/lib/services/local-tips.service"
+
+function generateBudgetPulse(
+  summary: BudgetSummary,
+  destination: string,
+): ProactiveInsight | null {
+  // Only show if meaningful data exists
+  if (summary.totalSpent === 0 && summary.daysElapsed <= 1) return null
+
+  const pct = Math.round((summary.totalSpent / summary.totalBudget) * 100)
+
+  let title: string
+  let body: string
+  let severity: InsightSeverity
+
+  if (summary.status === "over") {
+    title = `📉 Presupuesto: €${summary.totalSpent} de €${summary.totalBudget} (${pct}%)`
+    body = `${summary.tip}\n\n📊 Desglose: ${formatCategoryBreakdown(summary.byCategory)}`
+    severity = "urgent"
+  } else if (summary.status === "under") {
+    title = `💰 ¡Vas genial de presupuesto! (${pct}%)`
+    body = `${summary.tip}\n\nLlevas €${summary.dailyAverage}/día de media.`
+    severity = "nice_to_know"
+  } else {
+    title = `📊 Presupuesto en línea (${pct}%)`
+    body = `${summary.tip}`
+    severity = "nice_to_know"
+  }
+
+  return {
+    id: `budget-${new Date().toISOString().slice(0, 10)}`,
+    trigger: "budget_pulse",
+    severity,
+    dayNumber: summary.daysElapsed,
+    title,
+    body,
+    actions: [
+      { label: "Ver gastos", type: "open_screen", payload: "/plan?tab=budget" },
+    ],
+  }
+}
+
+function formatCategoryBreakdown(byCategory: Record<string, number>): string {
+  const emoji: Record<string, string> = {
+    food: "🍽️", transport: "🚕", tickets: "🎫️",
+    shopping: "🛍️", accommodation: "🏨", other: "📦",
+  }
+  return Object.entries(byCategory)
+    .filter(([, v]) => v > 0)
+    .sort(([, a], [, b]) => b - a)
+    .map(([k, v]) => `${emoji[k] ?? ""} €${Math.round(v)}`)
+    .join(" · ")
+}
+
+// ─── Ticket reminders ──────────────────────────────────────────────────
+
+function generateTicketReminders(
+  day: DaySnapshot,
+  destination: string,
+): ProactiveInsight[] {
+  const nonHotel = day.activities.filter(a => a.type !== "hotel")
+  const ticketActivities = nonHotel.filter(needsAdvanceTickets)
+
+  if (ticketActivities.length === 0) return []
+
+  return ticketActivities.map(activity => ({
+    id: `ticket-${day.date}-${activity.name.slice(0, 20).replace(/\s/g, '-')}`,
+    trigger: "ticket_reminder" as InsightTrigger,
+    severity: "urgent" as InsightSeverity,
+    dayNumber: day.dayNumber,
+    title: `🎫 Compra entrada: ${activity.name}`,
+    body: `Mañana a las ${activity.time} visitas ${activity.name} (€${activity.cost}). Compra la entrada ahora para evitar colas.`,
+    actions: activity.url
+      ? [
+          { label: "Comprar entrada", type: "open_url" as const, payload: activity.url },
+          { label: "Ya la tengo", type: "dismiss" as const },
+        ]
+      : [
+          { label: "Buscar entradas", type: "open_url" as const, payload: `https://www.google.com/search?q=${encodeURIComponent(activity.name + " " + destination + " tickets")}` },
+          { label: "Ya la tengo", type: "dismiss" as const },
+        ],
+  }))
+}
+
 // ─── Main evaluation ──────────────────────────────────────────────────────────
 
 interface EvaluateProactiveOptions {
@@ -333,6 +422,41 @@ export async function evaluateProactiveInsights(
         generatePostDayCheckin(todayDay, tomorrowExists, String(trip.destination))
       )
     }
+  }
+
+  // Budget pulse — check every evaluation if budget is set
+  if (Number(trip.budget) > 0) {
+    try {
+      const budgetSummary = await getBudgetSummary(opts.userId, opts.tripId)
+      if (budgetSummary) {
+        const budgetInsight = generateBudgetPulse(budgetSummary, String(trip.destination))
+        if (budgetInsight) insights.push(budgetInsight)
+      }
+    } catch {
+      // Budget is optional
+    }
+  }
+
+  // Ticket reminders for tomorrow
+  if (tomorrowDay) {
+    const ticketInsights = generateTicketReminders(tomorrowDay, String(trip.destination))
+    insights.push(...ticketInsights)
+  }
+
+  // Local tip of the moment
+  const timeOfDay = new Date().getHours() < 12 ? "morning" : new Date().getHours() < 18 ? "afternoon" : "evening"
+  const tips = getLocalTips(String(trip.destination), { timeOfDay })
+  if (tips.length > 0) {
+    const tip = tips[0]
+    insights.push({
+      id: `tip-${tip.id}`,
+      trigger: "local_tip" as InsightTrigger,
+      severity: "nice_to_know",
+      dayNumber: todayDay?.dayNumber ?? 1,
+      title: `${tip.emoji} ${tip.title}`,
+      body: tip.body,
+      actions: [{ label: "Ver más tips", type: "open_screen", payload: "/plan?tab=tips" }],
+    })
   }
 
   return insights

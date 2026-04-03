@@ -294,6 +294,19 @@ export function overpassPOIToNearbyPOI(poi: OverpassPOI): NearbyPOI {
 
 // ─── Score a POI ──────────────────────────────────────────────────────────────
 
+// Types that don't make sense at certain times of day
+const TIME_FILTERS: Record<string, { notBefore?: number; notAfter?: number }> = {
+  nocturna: { notBefore: 17 },
+  bar: { notBefore: 12 },
+  gastronomia: {}, // always OK
+  arte: { notBefore: 9, notAfter: 20 },
+  naturaleza: { notBefore: 7, notAfter: 21 },
+  museo: { notBefore: 9, notAfter: 18 },
+  historia: { notBefore: 8, notAfter: 20 },
+  shopping: { notBefore: 9, notAfter: 21 },
+  playa: { notBefore: 8, notAfter: 20 },
+}
+
 export function scorePOI(poi: NearbyPOI, ctx: MagicMomentContext): number {
   if (!poi.openNow) return 0
 
@@ -301,11 +314,24 @@ export function scorePOI(poi: NearbyPOI, ctx: MagicMomentContext): number {
   const timeNeeded = poi.durationMinutes + 5 // 5 min buffer to arrive
   if (ctx.minutesToNext < timeNeeded + 10) return 0
 
+  // Time-of-day filter: don't suggest bars at 9 AM or museums at 11 PM
+  const currentHour = new Date().getHours()
+  const timeFilter = TIME_FILTERS[poi.type.toLowerCase()]
+  if (timeFilter) {
+    if (timeFilter.notBefore && currentHour < timeFilter.notBefore) return 0
+    if (timeFilter.notAfter && currentHour > timeFilter.notAfter) return 0
+  }
+
   let score = 100
 
   // Interest match bonus
   const interests = ctx.userInterests.map(i => i.toLowerCase())
   if (interests.includes(poi.type.toLowerCase())) score += 40
+
+  // Time-of-day affinity bonus: suggest cafés in morning, bars in evening
+  if (currentHour < 11 && (poi.type === "gastronomia" || poi.name.toLowerCase().includes("café"))) score += 15
+  if (currentHour >= 18 && (poi.type === "nocturna" || poi.type === "gastronomia")) score += 15
+  if (currentHour >= 16 && currentHour <= 19 && poi.type === "fotografia") score += 20 // golden hour!
 
   // Distance bonus (closer = better, max 50 points for <100m)
   const distScore = Math.max(0, 50 - (poi.distanceMeters / 10))

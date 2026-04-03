@@ -94,6 +94,7 @@ export async function POST(req: NextRequest) {
             must_see: body.mustSee || null,
             must_avoid: body.mustAvoid || null,
             booked_tickets: body.alreadyBooked || null,
+            timezone: (body as Record<string, unknown>).timezone as string || "Europe/Madrid",
           })
           .select()
           .single()

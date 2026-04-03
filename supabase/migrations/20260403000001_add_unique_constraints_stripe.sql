@@ -4,9 +4,17 @@
 --          were failing with 42P10 because these UNIQUE constraints didn't exist.
 
 -- Required by: webhook.helpers.ts → buildCheckoutCompletedUpsert → upsert onConflict: 'user_id'
-ALTER TABLE public.user_subscriptions
-  ADD CONSTRAINT user_subscriptions_user_id_unique UNIQUE (user_id);
+DO $$ BEGIN
+  ALTER TABLE public.user_subscriptions
+    ADD CONSTRAINT user_subscriptions_user_id_unique UNIQUE (user_id);
+EXCEPTION WHEN duplicate_table THEN NULL;
+          WHEN duplicate_object THEN NULL;
+END $$;
 
 -- Required by: confirm-session/route.ts → destination_purchases upsert onConflict: 'user_id,destination'
-ALTER TABLE public.destination_purchases
-  ADD CONSTRAINT destination_purchases_user_id_destination_unique UNIQUE (user_id, destination);
+DO $$ BEGIN
+  ALTER TABLE public.destination_purchases
+    ADD CONSTRAINT destination_purchases_user_id_destination_unique UNIQUE (user_id, destination);
+EXCEPTION WHEN duplicate_table THEN NULL;
+          WHEN duplicate_object THEN NULL;
+END $$;

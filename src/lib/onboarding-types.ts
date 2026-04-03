@@ -121,6 +121,7 @@ export interface OnboardingData {
 
   // Auto-detected from browser
   language?: string
+  timezone?: string
 }
 
 export const defaultOnboardingData: OnboardingData = {
