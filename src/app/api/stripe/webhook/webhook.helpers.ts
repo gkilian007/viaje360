@@ -15,11 +15,12 @@ export function buildCheckoutCompletedUpsert(userId: string) {
 }
 
 /**
- * Build the update payload to mark a subscription as inactive.
+ * Build the update payload to mark a subscription as cancelled.
+ * NOTE: DB CHECK constraint allows only: 'active', 'cancelled', 'expired'
  */
 export function buildSubscriptionInactiveUpdate() {
   return {
-    status: "inactive" as const,
+    status: "cancelled" as const,
     updated_at: new Date().toISOString(),
   }
 }

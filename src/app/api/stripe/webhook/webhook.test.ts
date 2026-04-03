@@ -59,9 +59,9 @@ test("buildCheckoutCompletedUpsert returns correct upsert payload", () => {
   assert.ok(diffDays < 366, `expires_at should be ~1 year in future, got ${diffDays} days`)
 })
 
-test("buildSubscriptionInactiveUpdate returns inactive status", () => {
+test("buildSubscriptionInactiveUpdate returns cancelled status", () => {
   const update = buildSubscriptionInactiveUpdate()
-  assert.equal(update.status, "inactive")
+  assert.equal(update.status, "cancelled")
 })
 
 test("extractUserIdFromEvent from checkout.session.completed metadata", () => {
