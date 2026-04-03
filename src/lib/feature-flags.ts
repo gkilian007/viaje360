@@ -12,7 +12,7 @@ const FLAG_PREFIX = "FEATURE_"
 
 /** Known feature flags with their defaults (all off unless env says otherwise) */
 const DEFAULTS: Record<string, boolean> = {
-  GOOGLE_PLACES: false,
+  GOOGLE_PLACES: true,
   OPEN_METEO: true,
   PLACES_CACHE: false,
   WEATHER_CACHE: false,

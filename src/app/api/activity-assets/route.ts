@@ -88,7 +88,7 @@ async function fetchWikipediaImage(searchTerm: string): Promise<string | null> {
 }
 
 async function fetchGooglePlacesPhoto(searchTerm: string): Promise<string | null> {
-  const apiKey = process.env.NEXT_PUBLIC_GOOGLE_PLACES_API_KEY
+  const apiKey = process.env.GOOGLE_PLACES_API_KEY ?? process.env.NEXT_PUBLIC_GOOGLE_PLACES_API_KEY
   if (!apiKey) return null
 
   try {
