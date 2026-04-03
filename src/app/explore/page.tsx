@@ -7,6 +7,8 @@ import { useOnboardingStore } from "@/store/useOnboardingStore"
 import { BottomNav } from "@/components/layout/BottomNav"
 import { SideNav } from "@/components/layout/SideNav"
 import { motion } from "framer-motion"
+import Image from "next/image"
+import { getDestinationHeroThumb } from "@/lib/services/destination-photos"
 
 // ─── Curated content — no dependency on user state ───────────────────────────
 
@@ -23,7 +25,7 @@ const FEATURED_DESTINATIONS = [
   { name: "Ámsterdam", country: "Países Bajos", emoji: "🌷", color: "#4ECDC4", tag: "Canales y arte" },
   { name: "Dubái", country: "EAU", emoji: "🌆", color: "#C4A35A", tag: "Lujo y modernidad" },
   { name: "Ciudad de México", country: "México", emoji: "🌮", color: "#E84393", tag: "Cultura y sabor" },
-]
+].map(d => ({ ...d, photoUrl: getDestinationHeroThumb(d.name, 600) }))
 
 const TRAVEL_STYLES = [
   { emoji: "🎒", label: "Mochilero", desc: "Máximo con mínimo presupuesto", companion: "solo" },
@@ -203,10 +205,21 @@ export default function ExplorePage() {
                     style={{ background: "rgba(22,22,30,0.95)", border: "1px solid rgba(255,255,255,0.07)" }}
                   >
                     <div
-                      className="h-20 flex items-center justify-center"
+                      className="h-20 relative flex items-center justify-center overflow-hidden"
                       style={{ background: `${dest.color}18` }}
                     >
-                      <span className="text-[44px]">{dest.emoji}</span>
+                      {dest.photoUrl ? (
+                        <Image
+                          src={dest.photoUrl}
+                          alt={dest.name}
+                          fill
+                          className="object-cover"
+                          sizes="(max-width: 1024px) 144px, 200px"
+                          unoptimized
+                        />
+                      ) : (
+                        <span className="text-[44px]">{dest.emoji}</span>
+                      )}
                     </div>
                     <div className="p-3">
                       <p className="text-[13px] font-bold text-white">{dest.name}</p>

@@ -43,6 +43,8 @@ import { MagicMomentCard } from "@/components/features/MagicMomentCard"
 import { useMagicMoment } from "@/lib/hooks/useMagicMoment"
 import { NotificationBanner } from "@/components/features/NotificationBanner"
 import Link from "next/link"
+import Image from "next/image"
+import { getDestinationHeroThumb } from "@/lib/services/destination-photos"
 import type { TimelineActivity, Trip } from "@/lib/types"
 
 function DaySelector({
@@ -498,6 +500,32 @@ function PlanPageContent() {
         {/* Scrollable content */}
         <div className="flex-1 overflow-y-auto pt-[72px] pb-24">
 
+          {/* Destination hero banner */}
+          {currentTrip?.destination && (() => {
+            const heroUrl = getDestinationHeroThumb(String(currentTrip.destination), 800)
+            return heroUrl ? (
+              <div className="relative h-36 mx-5 mb-4 rounded-2xl overflow-hidden">
+                <Image
+                  src={heroUrl}
+                  alt={String(currentTrip.destination)}
+                  fill
+                  className="object-cover"
+                  sizes="(max-width: 768px) 100vw, 600px"
+                  unoptimized
+                />
+                <div className="absolute inset-0" style={{ background: "linear-gradient(to top, rgba(15,17,23,0.9) 0%, rgba(15,17,23,0.2) 60%, transparent 100%)" }} />
+                <div className="absolute bottom-3 left-4">
+                  <p className="text-[20px] font-black text-white drop-shadow-lg">{String(currentTrip.destination)}</p>
+                  {currentTrip.startDate && (
+                    <p className="text-[11px] text-[#c0c6d6] mt-0.5">
+                      {totalDays} días · {currentTrip.startDate.slice(5)} al {currentTrip.endDate?.slice(5)}
+                    </p>
+                  )}
+                </div>
+              </div>
+            ) : null
+          })()}
+
           {/* Horizontal stats */}
           {currentTrip && (
             <div className="px-5 pb-4">
@@ -766,8 +794,18 @@ function PlanPageContent() {
         <DesktopLayout
           leftPanel={
             <div className="flex flex-col h-full">
-              {/* Header */}
-              <div className="px-6 pt-6 pb-4 border-b border-white/5">
+              {/* Header with hero */}
+              <div className="border-b border-white/5">
+                {(() => {
+                  const dHero = currentTrip?.destination ? getDestinationHeroThumb(String(currentTrip.destination), 800) : null
+                  return dHero ? (
+                    <div className="relative h-32 overflow-hidden">
+                      <Image src={dHero} alt={String(currentTrip?.destination ?? "")} fill className="object-cover" sizes="480px" unoptimized />
+                      <div className="absolute inset-0" style={{ background: "linear-gradient(to top, rgba(15,17,23,0.95) 0%, rgba(15,17,23,0.3) 60%, transparent 100%)" }} />
+                    </div>
+                  ) : null
+                })()}
+                <div className="px-6 pt-4 pb-4">
                 <div className="flex items-center justify-between">
                   <div>
                     <p className="text-[11px] uppercase tracking-widest text-[#c0c6d6] font-medium mb-1 capitalize">
@@ -811,6 +849,7 @@ function PlanPageContent() {
                     <span className="text-[12px] text-[#c0c6d6]">{currentTrip?.startDate?.slice(5)} → {currentTrip?.endDate?.slice(5)}</span>
                   </div>
                   {todayWeather && <WeatherBadge weather={todayWeather} compact />}
+                </div>
                 </div>
               </div>
 

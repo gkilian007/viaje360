@@ -3,6 +3,7 @@ import { z } from "zod"
 import { rateLimit } from "@/lib/rate-limit"
 import { createServiceClient, isSupabaseConfigured } from "@/lib/supabase/server"
 import { normalizeRouteError, parseJsonBody, successResponse } from "@/lib/api/route-helpers"
+import { getActivityPhoto, getDestinationHeroThumb } from "@/lib/services/destination-photos"
 
 const requestSchema = z.object({
   name: z.string().min(1),
@@ -205,14 +206,33 @@ export async function POST(req: NextRequest) {
     let imageUrl: string | null = null
     let imageSource: string | null = null
 
+    // 1) Try local curated photo database (instant, no API call)
+    const localPhoto = getActivityPhoto(body.name, body.imageQuery ?? undefined)
+    if (localPhoto) {
+      imageUrl = localPhoto
+      imageSource = "wikimedia_curated"
+    }
+
+    // 2) Try destination hero as a generic fallback for the city itself
+    if (!imageUrl && body.name.toLowerCase() === normalizedDestination.toLowerCase()) {
+      const heroUrl = getDestinationHeroThumb(body.name, 800)
+      if (heroUrl) {
+        imageUrl = heroUrl
+        imageSource = "wikimedia_curated"
+      }
+    }
+
+    // 3) External APIs if local DB had no match
     // Build search term with destination context to avoid ambiguous results
     const baseTerm = body.imageQuery || body.name
     const searchWithContext = normalizedDestination && !baseTerm.toLowerCase().includes(normalizedDestination.toLowerCase())
       ? `${baseTerm} ${body.destination}`
       : baseTerm
 
-    imageUrl = await fetchWithTimeout(fetchGooglePlacesPhoto(searchWithContext), 5000)
-    if (imageUrl) imageSource = "google_places"
+    if (!imageUrl) {
+      imageUrl = await fetchWithTimeout(fetchGooglePlacesPhoto(searchWithContext), 5000)
+      if (imageUrl) imageSource = "google_places"
+    }
 
     if (!imageUrl) {
       imageUrl = await fetchWithTimeout(fetchWikipediaImage(searchWithContext), 5000)
