@@ -82,7 +82,7 @@ export async function GET(req: NextRequest) {
   } catch (error) {
     console.error("[cron/unified] Error:", error)
     const errMsg = error instanceof Error ? error.message : String(error)
-    return NextResponse.json({ error: "Internal error", message: errMsg, ...results }, { status: 500 })
+    return NextResponse.json({ error: "Internal error", message: errMsg }, { status: 500 })
   }
 }
 
