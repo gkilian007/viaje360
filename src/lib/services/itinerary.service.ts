@@ -112,7 +112,7 @@ function buildItineraryPrompt(
   return `Generate a ${numDays}-day travel itinerary for ${data.destination} (${data.startDate} to ${data.endDate}).
 
 Traveler: ${data.companion ?? "solo"}, ${data.groupSize} people. Budget: ${data.budget ?? "moderado"}. Pace: ${paceActivities} activities/day. Start at ${wakeHour}:00.
-${data.accommodationZone ? `Accommodation: ${data.accommodationZone}. ` : ""}Interests: ${data.interests.join(", ") || "general"}.${data.wantsSiesta ? " Leave 14:00-16:00 free (siesta)." : ""}${data.firstTime ? " First visit — include highlights." : " Returning — focus on hidden gems."}${data.mustSee ? ` Must see: ${data.mustSee}.` : ""}${data.mustAvoid ? ` Avoid: ${data.mustAvoid}.` : ""}${data.dietary.length > 0 ? ` Dietary: ${data.dietary.join(", ")}.` : ""}
+${data.accommodationZone ? `Accommodation: ${data.accommodationZone}. ` : ""}Interests: ${data.interests.join(", ") || "general"}.${data.wantsSiesta ? " Leave 14:00-16:00 free (siesta)." : ""}${data.firstTime ? " First visit — include highlights." : (personalization?.destinationMemory ? " Returning visitor with known history — focus on hidden gems and new experiences they haven't tried." : " Says they've visited before but we have NO data on what they saw — treat as first visit: include all major highlights plus a few hidden gems.")}${data.mustSee ? ` Must see: ${data.mustSee}.` : ""}${data.mustAvoid ? ` Avoid: ${data.mustAvoid}.` : ""}${data.dietary.length > 0 ? ` Dietary: ${data.dietary.join(", ")}.` : ""}
 ${mobilityBrief}
 ${personalizationBrief ? `\n${personalizationBrief}\n` : ""}
 EVERY activity MUST include ALL of these fields (no exceptions):

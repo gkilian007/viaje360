@@ -171,6 +171,21 @@ export function detectTripIssues(days: DaySnapshot[]): TripIssue[] {
   })
 }
 
+/**
+ * Returns issues that should be auto-adapted without user interaction.
+ * Current policy: precipitation probability >= 80% with outdoor activities.
+ */
+export function getAutoAdaptIssues(issues: TripIssue[]): TripIssue[] {
+  return issues.filter(issue =>
+    (issue.kind === "rain" || issue.kind === "storm") &&
+    issue.severity !== "info"
+  ).filter(issue => {
+    // Only auto-adapt if precipitation >= 80%
+    const match = issue.description.match(/(\d+)%/)
+    return match && parseInt(match[1]) >= 80
+  })
+}
+
 // ─── Helper: map from app DayItinerary types ──────────────────────────────────
 
 import type { DayItinerary, TimelineActivity } from "@/lib/types"

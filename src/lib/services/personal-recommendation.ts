@@ -192,7 +192,7 @@ export function buildPersonalRecommendationBrief(input: {
   }
 
   if (lines.length === 1) {
-    lines.push("- No prior history yet. Use onboarding preferences only.")
+    lines.push("- No prior history yet. Treat as first-time visitor: include all major highlights and must-see attractions, even if the user said they have visited before. Without specific data about what they already saw, assume they want a comprehensive first-visit experience.")
   }
 
   lines.push("Use this memory as a bias, not a hard constraint: keep the plan fresh but consistent with what the traveler has already liked and disliked.")

@@ -32,6 +32,7 @@ import { CurrentActivityBanner } from "@/components/features/CurrentActivityBann
 import { WeatherBadge } from "@/components/features/WeatherBadge"
 import { useWeather } from "@/lib/hooks/useWeather"
 import { ProactiveAdaptationBanner } from "@/components/features/ProactiveAdaptationBanner"
+import { AutoAdaptedBanner } from "@/components/features/AutoAdaptedBanner"
 import { useProactiveAdaptation } from "@/lib/hooks/useProactiveAdaptation"
 import { MagicMomentCard } from "@/components/features/MagicMomentCard"
 import { useMagicMoment } from "@/lib/hooks/useMagicMoment"
@@ -374,7 +375,7 @@ function PlanPageContent() {
   const todayWeather = today ? getForDate(today.date) : undefined
 
   // Proactive adaptation: scan all trip days for issues
-  const { topIssue, adapt: adaptIssue, dismiss: dismissIssue, isAdapting: isAdaptingIssue } =
+  const { topIssue, adapt: adaptIssue, dismiss: dismissIssue, isAdapting: isAdaptingIssue, autoAdaptedDays, clearAutoAdapted } =
     useProactiveAdaptation({
       itinerary,
       getWeatherForDate: getForDate,
@@ -585,6 +586,9 @@ function PlanPageContent() {
             )}
           </AnimatePresence>
 
+          {/* Auto-adapted notification — shown after automatic weather adaptation */}
+          <AutoAdaptedBanner days={autoAdaptedDays} onDismiss={clearAutoAdapted} />
+
           {/* Proactive adaptation banner — shows top trip issue (weather, heat, fatigue, ...) */}
           {topIssue && currentTrip?.id && (
             <ProactiveAdaptationBanner
@@ -743,6 +747,7 @@ function PlanPageContent() {
                   Itinerario — Día {selectedDay}
                   {todayWeather && <WeatherBadge weather={todayWeather} compact />}
                 </p>
+                <AutoAdaptedBanner days={autoAdaptedDays} onDismiss={clearAutoAdapted} />
                 {topIssue && currentTrip?.id && (
                   <ProactiveAdaptationBanner
                     issue={topIssue}
