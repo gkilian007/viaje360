@@ -1,0 +1,578 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Viaje360 — Plan View Mock</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet">
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: 'Inter', -apple-system, sans-serif;
+    background: #0a0a1a;
+    color: white;
+    max-width: 393px;
+    margin: 0 auto;
+    min-height: 100vh;
+    overflow-y: auto;
+  }
+
+  /* Status bar mock */
+  .status-bar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px 20px 4px;
+    font-size: 14px;
+    font-weight: 600;
+  }
+  .status-bar .time { }
+  .status-bar .icons { display: flex; gap: 4px; align-items: center; font-size: 12px; }
+
+  /* Header */
+  .header {
+    padding: 8px 20px 12px;
+  }
+  .header h1 {
+    font-size: 22px;
+    font-weight: 700;
+    margin-bottom: 2px;
+  }
+  .header .subtitle {
+    font-size: 12px;
+    color: #888;
+  }
+
+  /* Stats row */
+  .stats-row {
+    display: flex;
+    gap: 10px;
+    padding: 0 20px 12px;
+    overflow-x: auto;
+  }
+  .stat-card {
+    flex-shrink: 0;
+    padding: 10px 14px;
+    border-radius: 16px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    background: rgba(42,42,44,0.8);
+    border: 1px solid rgba(255,255,255,0.06);
+  }
+  .stat-card .icon { font-size: 18px; }
+  .stat-card .value { font-size: 13px; font-weight: 700; }
+  .stat-card .label { font-size: 10px; color: #c0c6d6; }
+
+  /* Day tabs */
+  .day-tabs {
+    display: flex;
+    gap: 6px;
+    padding: 0 20px 12px;
+    overflow-x: auto;
+  }
+  .day-tab {
+    flex-shrink: 0;
+    padding: 8px 14px;
+    border-radius: 14px;
+    font-size: 11px;
+    font-weight: 600;
+    background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(255,255,255,0.06);
+    color: #888;
+  }
+  .day-tab.active {
+    background: rgba(10,132,255,0.12);
+    border-color: rgba(10,132,255,0.3);
+    color: #0A84FF;
+  }
+
+  /* Insight cards */
+  .insight-card {
+    margin: 0 20px 10px;
+    border-radius: 16px;
+    padding: 14px 16px;
+    border: 1px solid rgba(255,255,255,0.06);
+  }
+  .insight-morning {
+    background: linear-gradient(135deg, rgba(255,159,10,0.12) 0%, rgba(255,214,10,0.06) 100%);
+    border-color: rgba(255,159,10,0.15);
+  }
+  .insight-weather {
+    background: linear-gradient(135deg, rgba(10,132,255,0.12) 0%, rgba(100,210,255,0.06) 100%);
+    border-color: rgba(10,132,255,0.15);
+  }
+  .insight-budget {
+    background: linear-gradient(135deg, rgba(48,209,88,0.12) 0%, rgba(48,209,88,0.04) 100%);
+    border-color: rgba(48,209,88,0.15);
+  }
+  .insight-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 8px;
+  }
+  .insight-emoji { font-size: 20px; }
+  .insight-title { font-size: 12px; font-weight: 600; }
+  .insight-badge {
+    font-size: 9px;
+    font-weight: 600;
+    padding: 2px 8px;
+    border-radius: 20px;
+  }
+  .badge-morning { background: rgba(255,159,10,0.15); color: #FF9F0A; }
+  .badge-weather { background: rgba(10,132,255,0.15); color: #0A84FF; }
+  .badge-budget { background: rgba(48,209,88,0.15); color: #30D158; }
+  .insight-body {
+    font-size: 11px;
+    color: #bbb;
+    line-height: 1.6;
+    margin-bottom: 10px;
+  }
+  .insight-actions {
+    display: flex;
+    gap: 6px;
+  }
+  .insight-btn {
+    font-size: 11px;
+    font-weight: 600;
+    padding: 7px 14px;
+    border-radius: 10px;
+    border: none;
+    cursor: pointer;
+  }
+  .btn-primary {
+    background: rgba(10,132,255,0.85);
+    color: white;
+  }
+  .btn-secondary {
+    background: rgba(255,255,255,0.06);
+    color: #aaa;
+    border: 1px solid rgba(255,255,255,0.08);
+  }
+  .btn-green {
+    background: rgba(48,209,88,0.15);
+    color: #30D158;
+    border: 1px solid rgba(48,209,88,0.2);
+  }
+
+  /* Budget ring card */
+  .budget-card {
+    margin: 0 20px 10px;
+    border-radius: 16px;
+    padding: 16px;
+    background: #1a1a2e;
+    border: 1px solid rgba(255,255,255,0.06);
+  }
+  .budget-top {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+  }
+  .budget-ring {
+    position: relative;
+    width: 64px;
+    height: 64px;
+    flex-shrink: 0;
+  }
+  .budget-ring svg { width: 100%; height: 100%; transform: rotate(-90deg); }
+  .budget-ring .pct {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 12px;
+    font-weight: 700;
+  }
+  .budget-cats {
+    display: flex;
+    gap: 6px;
+    margin-top: 12px;
+    overflow-x: auto;
+    padding-bottom: 4px;
+  }
+  .budget-cat {
+    flex-shrink: 0;
+    padding: 6px 10px;
+    border-radius: 12px;
+    font-size: 10px;
+    background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(255,255,255,0.06);
+    color: #ccc;
+  }
+
+  /* Activity timeline */
+  .timeline {
+    padding: 10px 20px 20px;
+  }
+  .activity-item {
+    display: flex;
+    gap: 12px;
+    margin-bottom: 2px;
+  }
+  .timeline-line {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 24px;
+    flex-shrink: 0;
+  }
+  .timeline-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: #0A84FF;
+    flex-shrink: 0;
+  }
+  .timeline-dot.done { background: #30D158; }
+  .timeline-dot.current { background: #FF9F0A; box-shadow: 0 0 8px rgba(255,159,10,0.5); }
+  .timeline-connector {
+    width: 2px;
+    flex: 1;
+    background: rgba(255,255,255,0.06);
+    min-height: 40px;
+  }
+  .activity-card {
+    flex: 1;
+    padding: 12px 14px;
+    border-radius: 14px;
+    background: rgba(255,255,255,0.03);
+    border: 1px solid rgba(255,255,255,0.06);
+    margin-bottom: 8px;
+  }
+  .activity-card.current {
+    background: rgba(255,159,10,0.06);
+    border-color: rgba(255,159,10,0.15);
+  }
+  .activity-card.done {
+    opacity: 0.5;
+  }
+  .activity-time {
+    font-size: 10px;
+    color: #666;
+    margin-bottom: 4px;
+  }
+  .activity-name {
+    font-size: 13px;
+    font-weight: 600;
+    margin-bottom: 2px;
+  }
+  .activity-meta {
+    font-size: 10px;
+    color: #888;
+  }
+
+  /* Local tip */
+  .tip-card {
+    margin: 0 20px 10px;
+    border-radius: 16px;
+    padding: 14px 16px;
+    background: #1a1a2e;
+    border: 1px solid rgba(255,255,255,0.06);
+  }
+  .tip-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .tip-emoji { font-size: 20px; }
+  .tip-content { flex: 1; }
+  .tip-title-row {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-bottom: 3px;
+  }
+  .tip-title { font-size: 12px; font-weight: 600; }
+  .tip-badge {
+    font-size: 8px;
+    font-weight: 700;
+    padding: 2px 6px;
+    border-radius: 8px;
+    background: rgba(255,214,10,0.1);
+    color: #FFD60A;
+  }
+  .tip-body { font-size: 11px; color: #aaa; line-height: 1.5; }
+  .tip-dots {
+    display: flex;
+    justify-content: center;
+    gap: 4px;
+    margin-top: 10px;
+  }
+  .tip-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.1);
+  }
+  .tip-dot.active { background: #FFD60A; }
+
+  /* Bottom nav */
+  .bottom-nav {
+    position: fixed;
+    bottom: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 393px;
+    padding: 8px 20px 28px;
+    display: flex;
+    justify-content: space-around;
+    background: rgba(10,10,26,0.95);
+    backdrop-filter: blur(20px);
+    border-top: 1px solid rgba(255,255,255,0.06);
+  }
+  .nav-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 2px;
+    font-size: 10px;
+    color: #555;
+  }
+  .nav-item.active { color: #0A84FF; }
+  .nav-item .material-symbols-outlined { font-size: 22px; }
+
+  /* Magic moment */
+  .magic-card {
+    margin: 0 20px 10px;
+    border-radius: 16px;
+    padding: 14px 16px;
+    background: linear-gradient(135deg, rgba(191,90,242,0.1) 0%, rgba(10,132,255,0.06) 100%);
+    border: 1px solid rgba(191,90,242,0.15);
+  }
+</style>
+</head>
+<body>
+
+<!-- Status Bar -->
+<div class="status-bar">
+  <span class="time">9:41</span>
+  <div class="icons">
+    <span>📶</span>
+    <span>🔋 87%</span>
+  </div>
+</div>
+
+<!-- Header -->
+<div class="header">
+  <h1>Roma 🇮🇹</h1>
+  <span class="subtitle">Día 3 de 5 · Jue 3 Abr · ☀️ 24°C</span>
+</div>
+
+<!-- Stats Row -->
+<div class="stats-row">
+  <div class="stat-card">
+    <span class="icon" style="color: #30D158;">💰</span>
+    <div>
+      <div class="value">€420</div>
+      <div class="label">Presupuesto</div>
+    </div>
+  </div>
+  <div class="stat-card">
+    <span class="icon" style="color: #0A84FF;">📅</span>
+    <div>
+      <div class="value">3 / 5</div>
+      <div class="label">Días</div>
+    </div>
+  </div>
+  <div class="stat-card">
+    <span class="icon" style="color: #FF9F0A;">🎯</span>
+    <div>
+      <div class="value">4</div>
+      <div class="label">Actividades</div>
+    </div>
+  </div>
+</div>
+
+<!-- Day Tabs -->
+<div class="day-tabs">
+  <div class="day-tab">Lun 1</div>
+  <div class="day-tab">Mar 2</div>
+  <div class="day-tab active">Mié 3</div>
+  <div class="day-tab">Jue 4</div>
+  <div class="day-tab">Vie 5</div>
+</div>
+
+<!-- ☀️ Morning Briefing -->
+<div class="insight-card insight-morning">
+  <div class="insight-header">
+    <span class="insight-emoji">☀️</span>
+    <span class="insight-title">Buenos días — Día 3 en Roma</span>
+    <span class="insight-badge badge-morning">BRIEFING</span>
+  </div>
+  <div class="insight-body">
+    Hoy: Coliseo → Foro Romano → lunch en Testaccio → Villa Borghese<br>
+    🌡️ 18°–26°C, soleado todo el día<br>
+    ⚠️ <strong>Coliseo a las 10:00</strong> — llega 15 min antes para el control de seguridad<br>
+    💡 Es miércoles: el Papa hace audiencia en el Vaticano (no afecta tu plan)
+  </div>
+  <div class="insight-actions">
+    <button class="insight-btn btn-primary">Ver itinerario</button>
+    <button class="insight-btn btn-secondary">Descartar</button>
+  </div>
+</div>
+
+<!-- 🌧️ Weather Change Alert -->
+<div class="insight-card insight-weather">
+  <div class="insight-header">
+    <span class="insight-emoji">🌧️</span>
+    <span class="insight-title">Cambio de tiempo mañana</span>
+    <span class="insight-badge badge-weather">CLIMA</span>
+  </div>
+  <div class="insight-body">
+    Mañana (jueves) lluvia a partir de las 14:00 — 80% probabilidad ☔<br>
+    Tu plan actual tiene Villa Borghese por la tarde al aire libre.<br>
+    <strong>Sugerencia:</strong> mover Galería Borghese (interior) a la tarde y el parque a la mañana.
+  </div>
+  <div class="insight-actions">
+    <button class="insight-btn btn-primary">Adaptar plan</button>
+    <button class="insight-btn btn-secondary">Lo dejo así</button>
+  </div>
+</div>
+
+<!-- 💰 Budget Pulse -->
+<div class="budget-card">
+  <div class="budget-top">
+    <!-- SVG Ring -->
+    <div class="budget-ring">
+      <svg viewBox="0 0 36 36">
+        <circle cx="18" cy="18" r="15.5" fill="none" stroke="rgba(255,255,255,0.06)" stroke-width="3" />
+        <circle cx="18" cy="18" r="15.5" fill="none" stroke="#30D158" stroke-width="3"
+          stroke-dasharray="58 100" stroke-linecap="round" />
+      </svg>
+      <span class="pct">58%</span>
+    </div>
+    <div style="flex:1">
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px">
+        <span style="font-size:13px;font-weight:600">💰 Presupuesto</span>
+        <span style="font-size:10px;font-weight:600;padding:2px 8px;border-radius:20px;background:rgba(48,209,88,0.1);color:#30D158">Bien de presupuesto 👍</span>
+      </div>
+      <div style="font-size:11px;color:#aaa">€245 de €420 · Quedan €175</div>
+      <div style="font-size:10px;color:#666;margin-top:2px">Llevas €82/día de media — bien para 2 días más</div>
+    </div>
+  </div>
+  <div class="budget-cats">
+    <div class="budget-cat">🍽️ Comida €98</div>
+    <div class="budget-cat">🎟️ Entradas €72</div>
+    <div class="budget-cat">🚕 Transporte €45</div>
+    <div class="budget-cat">🛍️ Compras €30</div>
+  </div>
+</div>
+
+<!-- 💡 Local Tip -->
+<div class="tip-card">
+  <div class="tip-header">
+    <span class="tip-emoji">☕</span>
+    <div class="tip-content">
+      <div class="tip-title-row">
+        <span class="tip-title">El café se toma en barra</span>
+        <span class="tip-badge">TIP LOCAL</span>
+      </div>
+      <div class="tip-body">Sentarte en la terraza cuesta 2-3x más. Los locales piden un espresso en la barra por €1. Di "un caffè, per favore".</div>
+    </div>
+  </div>
+  <div class="tip-dots">
+    <div class="tip-dot active"></div>
+    <div class="tip-dot"></div>
+    <div class="tip-dot"></div>
+    <div class="tip-dot"></div>
+    <div class="tip-dot"></div>
+  </div>
+</div>
+
+<!-- ✨ Magic Moment (between activities) -->
+<div class="magic-card">
+  <div class="insight-header">
+    <span class="insight-emoji">✨</span>
+    <span class="insight-title">Momento mágico</span>
+    <span class="insight-badge" style="background:rgba(191,90,242,0.15);color:#BF5AF2">NEARBY</span>
+  </div>
+  <div class="insight-body">
+    A 120m tienes <strong>Giardino degli Aranci</strong> 🍊 — Panorámica secreta de Roma y el Vaticano desde el Aventino. Tienes 35 min antes de tu siguiente actividad.
+  </div>
+  <div class="insight-actions">
+    <button class="insight-btn" style="background:rgba(191,90,242,0.15);color:#BF5AF2;border:1px solid rgba(191,90,242,0.2)">Ir al jardín</button>
+    <button class="insight-btn btn-secondary">Paso</button>
+  </div>
+</div>
+
+<!-- Activity Timeline -->
+<div class="timeline">
+  <!-- Done activity -->
+  <div class="activity-item">
+    <div class="timeline-line">
+      <div class="timeline-dot done"></div>
+      <div class="timeline-connector"></div>
+    </div>
+    <div class="activity-card done">
+      <div class="activity-time">09:00 – 09:30 ✅</div>
+      <div class="activity-name">Desayuno en Roscioli Caffè</div>
+      <div class="activity-meta">☕ Gastronomía · €8 · Trastevere</div>
+    </div>
+  </div>
+
+  <!-- Current activity -->
+  <div class="activity-item">
+    <div class="timeline-line">
+      <div class="timeline-dot current"></div>
+      <div class="timeline-connector"></div>
+    </div>
+    <div class="activity-card current">
+      <div class="activity-time">10:00 – 12:00 · ⏱️ 45 min restantes</div>
+      <div class="activity-name">Coliseo y Foro Romano</div>
+      <div class="activity-meta">🏛️ Historia · €16 · Centro Histórico</div>
+    </div>
+  </div>
+
+  <!-- Upcoming -->
+  <div class="activity-item">
+    <div class="timeline-line">
+      <div class="timeline-dot"></div>
+      <div class="timeline-connector"></div>
+    </div>
+    <div class="activity-card">
+      <div class="activity-time">12:30 – 13:30</div>
+      <div class="activity-name">Lunch en Testaccio</div>
+      <div class="activity-meta">🍝 Gastronomía · €15 · Testaccio</div>
+    </div>
+  </div>
+
+  <div class="activity-item">
+    <div class="timeline-line">
+      <div class="timeline-dot"></div>
+      <div class="timeline-connector" style="background:transparent"></div>
+    </div>
+    <div class="activity-card">
+      <div class="activity-time">15:00 – 17:00</div>
+      <div class="activity-name">Villa Borghese y galería</div>
+      <div class="activity-meta">🌳 Naturaleza + Arte · €13 · Borghese</div>
+    </div>
+  </div>
+</div>
+
+<!-- Bottom spacing for nav -->
+<div style="height: 80px"></div>
+
+<!-- Bottom Nav -->
+<div class="bottom-nav">
+  <div class="nav-item">
+    <span class="material-symbols-outlined">explore</span>
+    Explorar
+  </div>
+  <div class="nav-item active">
+    <span class="material-symbols-outlined">calendar_today</span>
+    Plan
+  </div>
+  <div class="nav-item">
+    <span class="material-symbols-outlined">chat</span>
+    Chat
+  </div>
+  <div class="nav-item">
+    <span class="material-symbols-outlined">person</span>
+    Perfil
+  </div>
+</div>
+
+</body>
+</html>

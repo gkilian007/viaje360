@@ -115,6 +115,89 @@ La narración debe sonar como si el viajero mismo la contara a un amigo, captura
       }
     }
 
+    // ─── Budget stats ───
+    let budgetStats: {
+      totalBudget: number
+      totalSpent: number
+      dailyAvg: number
+      topCategory: string
+      topCategoryAmount: number
+      savedPct: number
+    } | null = null
+
+    try {
+      const { data: expenses } = await supabase
+        .from("trip_expenses")
+        .select("amount, category")
+        .eq("trip_id", tripId)
+
+      const tripBudget = (trip as Record<string, unknown>).budget as number | null
+      if (expenses && expenses.length > 0 && tripBudget && tripBudget > 0) {
+        const totalSpent = expenses.reduce((s, e) => s + Number(e.amount), 0)
+        const byCategory: Record<string, number> = {}
+        for (const e of expenses) {
+          byCategory[e.category] = (byCategory[e.category] ?? 0) + Number(e.amount)
+        }
+        const topEntry = Object.entries(byCategory).sort(([,a],[,b]) => b - a)[0]
+        budgetStats = {
+          totalBudget: tripBudget,
+          totalSpent: Math.round(totalSpent),
+          dailyAvg: Math.round(totalSpent / Math.max(days.length, 1)),
+          topCategory: topEntry?.[0] ?? "other",
+          topCategoryAmount: Math.round(topEntry?.[1] ?? 0),
+          savedPct: Math.round(((tripBudget - totalSpent) / tripBudget) * 100),
+        }
+      }
+    } catch { /* budget is optional */ }
+
+    // ─── Highlights: magic moments accepted ───
+    let magicMoments: Array<{ name: string; emoji: string; reason: string }> = []
+    try {
+      const { data: insights } = await supabase
+        .from("proactive_insights")
+        .select("title, body, trigger")
+        .eq("trip_id", tripId)
+        .eq("acted_on", true)
+        .limit(10)
+
+      if (insights) {
+        magicMoments = insights.map(i => ({
+          name: i.title?.replace(/^[^\w]+/, "").trim() ?? "",
+          emoji: i.title?.match(/^(\p{Emoji})/u)?.[1] ?? "✨",
+          reason: i.body ?? "",
+        }))
+      }
+    } catch { /* optional */ }
+
+    // ─── Traveler profile ───
+    const allActivities = days.flatMap(d => d.activities)
+    const typeCount: Record<string, number> = {}
+    for (const a of allActivities) {
+      typeCount[a.type] = (typeCount[a.type] ?? 0) + 1
+    }
+    const sortedTypes = Object.entries(typeCount).sort(([,a],[,b]) => b - a)
+    const topType = sortedTypes[0]?.[0] ?? "cultural"
+
+    const TRAVELER_PROFILES: Record<string, { label: string; emoji: string; description: string }> = {
+      cultural: { label: "Explorador Cultural", emoji: "🏛️", description: "Priorizaste museos, historia y experiencias culturales" },
+      historia: { label: "Viajero del Tiempo", emoji: "🏺", description: "Te apasiona la historia y los sitios emblemáticos" },
+      gastronomia: { label: "Foodie Viajero", emoji: "🍽️", description: "Tu viaje giró alrededor de sabores locales" },
+      naturaleza: { label: "Amante de la Naturaleza", emoji: "🌿", description: "Buscaste espacios verdes y aire libre" },
+      arte: { label: "Alma Artística", emoji: "🎨", description: "Galerías, street art y belleza visual" },
+      fotografia: { label: "Cazador de Momentos", emoji: "📸", description: "Cada rincón era una oportunidad de foto" },
+      aventura: { label: "Espíritu Aventurero", emoji: "⛰️", description: "Adrenalina y experiencias únicas" },
+      playa: { label: "Alma de Playa", emoji: "🏖️", description: "Sol, mar y relax" },
+      nocturna: { label: "Noctámbulo", emoji: "🌙", description: "La ciudad cobra vida de noche para ti" },
+      shopping: { label: "Cazador de Tesoros", emoji: "🛍️", description: "Mercados, tiendas y souvenirs únicos" },
+    }
+
+    const travelerProfile = TRAVELER_PROFILES[topType] ?? TRAVELER_PROFILES.cultural
+
+    // ─── Computed stats ───
+    const totalActivities = allActivities.length
+    const kmEstimate = Math.round(totalActivities * 1.8)
+    const mostIntenseDay = days.reduce((max, d) => d.activities.length > max.activities.length ? d : max, days[0])
+
     return successResponse({
       trip: {
         id: trip.id,
@@ -129,6 +212,17 @@ La narración debe sonar como si el viajero mismo la contara a un amigo, captura
       days,
       aiNarrative,
       hasDiaryData: daysWithJournals.length > 0,
+      budgetStats,
+      magicMoments,
+      travelerProfile,
+      stats: {
+        totalDays: days.length,
+        totalActivities,
+        kmEstimate,
+        diaryEntries: daysWithJournals.length,
+        mostIntenseDay: mostIntenseDay ? { dayNumber: mostIntenseDay.dayNumber, count: mostIntenseDay.activities.length } : null,
+        topActivityTypes: sortedTypes.slice(0, 3).map(([type, count]) => ({ type, count, emoji: activityEmoji(type) })),
+      },
     })
   } catch (error) {
     return normalizeRouteError(error, "Failed to load recap")
