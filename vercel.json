@@ -18,24 +18,15 @@
     },
     "src/app/api/cron/process-notifications/route.ts": {
       "maxDuration": 30
+    },
+    "src/app/api/cron/unified/route.ts": {
+      "maxDuration": 60
     }
   },
   "crons": [
     {
-      "path": "/api/cron/dispatch-notifications?context=morning",
-      "schedule": "0 6 * * *"
-    },
-    {
-      "path": "/api/cron/dispatch-notifications?context=evening",
-      "schedule": "0 19 * * *"
-    },
-    {
-      "path": "/api/cron/dispatch-notifications?context=postday",
-      "schedule": "0 21 * * *"
-    },
-    {
-      "path": "/api/cron/process-notifications",
-      "schedule": "*/5 * * * *"
+      "path": "/api/cron/unified",
+      "schedule": "0 7 * * *"
     }
   ]
 }
