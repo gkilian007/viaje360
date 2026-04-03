@@ -1,11 +1,30 @@
 "use client"
 
-import { useRef, Suspense, lazy, useState } from "react"
+import { useRef, Suspense, lazy, useState, Component, type ReactNode } from "react"
 import Image from "next/image"
 import Link from "next/link"
 import { motion, useScroll, useTransform, useSpring } from "framer-motion"
 
 const Spline = lazy(() => import("@splinetool/react-spline"))
+
+// Error boundary specifically for the 3D globe — if WebGL/Spline crashes,
+// show a graceful gradient fallback instead of breaking the whole page
+class GlobeErrorBoundary extends Component<
+  { children: ReactNode; fallback: ReactNode },
+  { hasError: boolean }
+> {
+  constructor(props: { children: ReactNode; fallback: ReactNode }) {
+    super(props)
+    this.state = { hasError: false }
+  }
+  static getDerivedStateFromError() {
+    return { hasError: true }
+  }
+  render() {
+    if (this.state.hasError) return this.props.fallback
+    return this.props.children
+  }
+}
 
 const SPLINE_SCENE = "https://prod.spline.design/Hn4x9IDNy2OxVAiw/scene.splinecode"
 
@@ -156,23 +175,29 @@ export function HeroSection({ isAuthenticated = false }: HeroSectionProps) {
           animate={{ opacity: 1, scale: 1 }}
           transition={{ duration: 1.2, delay: 0.3, ease: "easeOut" }}
         >
-          <Suspense
+          <GlobeErrorBoundary
             fallback={
-              <div className="w-full h-full flex items-center justify-center">
-                <div className="w-24 h-24 rounded-full border-2 border-white/10 border-t-blue-500 animate-spin" />
-              </div>
+              <div className="w-full h-full rounded-full bg-gradient-to-br from-[#0A84FF]/20 via-[#5856D6]/10 to-transparent animate-pulse" />
             }
           >
-            <Spline
-              scene={SPLINE_SCENE}
-              onLoad={() => setSplineLoaded(true)}
-              style={{ width: "100%", height: "100%", background: "transparent" }}
-            />
-            {/* Override Spline canvas black background */}
-            <style jsx global>{`
-              .spline-watermark { display: none !important; }
-            `}</style>
-          </Suspense>
+            <Suspense
+              fallback={
+                <div className="w-full h-full flex items-center justify-center">
+                  <div className="w-24 h-24 rounded-full border-2 border-white/10 border-t-blue-500 animate-spin" />
+                </div>
+              }
+            >
+              <Spline
+                scene={SPLINE_SCENE}
+                onLoad={() => setSplineLoaded(true)}
+                style={{ width: "100%", height: "100%", background: "transparent" }}
+              />
+              {/* Override Spline canvas black background */}
+              <style jsx global>{`
+                .spline-watermark { display: none !important; }
+              `}</style>
+            </Suspense>
+          </GlobeErrorBoundary>
 
           {/* Glow effect behind globe */}
           <div
