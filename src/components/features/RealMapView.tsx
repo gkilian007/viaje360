@@ -94,14 +94,14 @@ const TYPE_COLOR: Record<string, string> = {
 }
 
 // Detect iOS for navigation URL
-function getDirectionsUrl(lat: number, lng: number): string {
+function getDirectionsUrl(fromLat: number, fromLng: number, toLat: number, toLng: number): string {
   const isIOS =
     typeof navigator !== "undefined" &&
     (navigator.userAgent.includes("iPhone") || navigator.userAgent.includes("iPad"))
   if (isIOS) {
-    return `maps://maps.apple.com/?daddr=${lat},${lng}`
+    return `maps://maps.apple.com/?saddr=${fromLat},${fromLng}&daddr=${toLat},${toLng}`
   }
-  return `https://www.google.com/maps/dir/?api=1&destination=${lat},${lng}`
+  return `https://www.google.com/maps/dir/?api=1&origin=${fromLat},${fromLng}&destination=${toLat},${toLng}&travelmode=walking`
 }
 
 // Create marker icon with emoji by type + number badge
@@ -526,7 +526,11 @@ export function RealMapView({
               ? "#0A84FF"
               : TYPE_COLOR[geo.activity.type] ?? "#5856D6"
 
-            const directionsUrl = getDirectionsUrl(geo.lat, geo.lng)
+            // Directions: from this activity to the next one
+            const nextGeo = offsetGeo[index + 1]
+            const directionsUrl = nextGeo
+              ? getDirectionsUrl(geo.lat, geo.lng, nextGeo.lat, nextGeo.lng)
+              : getDirectionsUrl(geo.lat, geo.lng, geo.lat, geo.lng) // last activity: self
 
             return (
               <Marker
@@ -625,7 +629,7 @@ export function RealMapView({
                         transition: "background 0.2s",
                       }}
                     >
-                      🧭 Cómo llegar
+                      🧭 {nextGeo ? `Ir a: ${nextGeo.activity.name.slice(0, 25)}${nextGeo.activity.name.length > 25 ? "…" : ""}` : "Cómo llegar"}
                     </a>
                   </div>
                 </Popup>
