@@ -457,6 +457,22 @@ export function RealMapView({
 
   const validGeo = geocoded.filter(g => isFinite(g.lat) && isFinite(g.lng))
 
+  // Offset markers at the same coordinates so both are visible
+  const offsetGeo = useMemo(() => {
+    const coordMap = new Map<string, number>()
+    return validGeo.map((geo) => {
+      const key = `${geo.lat.toFixed(5)},${geo.lng.toFixed(5)}`
+      const count = coordMap.get(key) ?? 0
+      coordMap.set(key, count + 1)
+      if (count === 0) return geo
+      // Offset ~30m per duplicate in a circle pattern
+      const angle = (count * 2 * Math.PI) / 6 // up to 6 positions
+      const offsetLat = 0.0003 * Math.cos(angle)
+      const offsetLng = 0.0003 * Math.sin(angle)
+      return { ...geo, lat: geo.lat + offsetLat, lng: geo.lng + offsetLng }
+    })
+  }, [validGeo])
+
   return (
     <div className="relative w-full h-full">
       <MapContainer
@@ -498,10 +514,10 @@ export function RealMapView({
           showCoverageOnHover={false}
           spiderfyOnMaxZoom
         >
-          {validGeo.map((geo, index) => {
+          {offsetGeo.map((geo, index) => {
             const isSelected = geo.activity.id === selectedActivityId
             const isFirst = index === 0
-            const isLast = index === validGeo.length - 1
+            const isLast = index === offsetGeo.length - 1
             const emoji = TYPE_EMOJI[geo.activity.type] ?? "📍"
             const typeLabel = TYPE_LABEL[geo.activity.type] ?? geo.activity.type
 

@@ -30,6 +30,8 @@ interface WalkingSegment {
 
 interface SortableTimelineItemProps {
   activity: TimelineActivity
+  /** 1-based index of activity in the day */
+  index: number
   isFirst: boolean
   isLast: boolean
   isCurrent: boolean
@@ -44,6 +46,7 @@ interface SortableTimelineItemProps {
 
 function SortableTimelineItem({
   activity,
+  index,
   isFirst,
   isLast,
   isCurrent,
@@ -97,6 +100,7 @@ function SortableTimelineItem({
         <div className="flex-1 min-w-0">
           <TimelineItem
             activity={activity}
+            index={index}
             isFirst={isFirst}
             isLast={isLast}
             isCurrent={isCurrent}
@@ -209,6 +213,7 @@ export function SortableTimeline({
             <SortableTimelineItem
               key={activity.id}
               activity={activity}
+              index={i + 1}
               isFirst={i === 0}
               isLast={i === activities.length - 1}
               isCurrent={isCurrent ? isCurrent(activity.id) : false}

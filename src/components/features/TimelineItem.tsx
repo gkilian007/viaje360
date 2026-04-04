@@ -8,6 +8,8 @@ import { InlineActivityEditor } from "./InlineActivityEditor"
 
 interface TimelineItemProps {
   activity: TimelineActivity
+  /** 1-based index for this activity in the day (matches map marker number) */
+  index?: number
   isFirst?: boolean
   isLast?: boolean
   isCurrent?: boolean
@@ -15,7 +17,7 @@ interface TimelineItemProps {
   onEdit?: (activityId: string, patch: { name: string; time: string; duration: number }) => Promise<void>
 }
 
-export function TimelineItem({ activity, isFirst = false, isLast = false, isCurrent = false, onClick, onEdit }: TimelineItemProps) {
+export function TimelineItem({ activity, index, isFirst = false, isLast = false, isCurrent = false, onClick, onEdit }: TimelineItemProps) {
   const emoji = ACTIVITY_EMOJIS[activity.type] ?? ACTIVITY_EMOJIS.default
   const [editing, setEditing] = useState(false)
   const [saved, setSaved] = useState(false)
@@ -84,10 +86,16 @@ export function TimelineItem({ activity, isFirst = false, isLast = false, isCurr
             >
               <div className="flex items-start justify-between gap-2">
                 <div className="min-w-0 flex-1">
-                  <p className={`text-[13px] font-semibold ${isCurrent ? "text-white" : "text-[#e4e2e4]"}`}>
-                    {activity.name}
+                  <p className={`text-[13px] font-semibold ${isCurrent ? "text-white" : "text-[#e4e2e4]"} flex items-center gap-1.5`}>
+                    {index != null && (
+                      <span
+                        className="inline-flex items-center justify-center shrink-0 w-5 h-5 rounded-full text-[10px] font-bold text-white"
+                        style={{ background: isCurrent ? "#0A84FF" : "rgba(255,255,255,0.12)", lineHeight: 1 }}
+                      >{index}</span>
+                    )}
+                    <span className="truncate">{activity.name}</span>
                     {saved && (
-                      <span className="ml-2 text-[10px] text-[#30D158] font-normal">✓ guardado</span>
+                      <span className="ml-2 text-[10px] text-[#30D158] font-normal shrink-0">✓ guardado</span>
                     )}
                   </p>
                   <p className="text-[11px] text-[#c0c6d6] mt-0.5 flex items-center gap-1">
