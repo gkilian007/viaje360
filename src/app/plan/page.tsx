@@ -936,6 +936,8 @@ function PlanPageContent() {
                 const activity = today?.activities.find((a) => a.id === activityId)
                 if (activity) handleActivityClick(activity)
               }}
+              transportPrefs={onboardingData.transport}
+              maxWalkMeters={mobilityProfile.maxComfortableWalkMeters}
             />
           }
           companionPanel={

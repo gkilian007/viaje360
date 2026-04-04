@@ -6,6 +6,8 @@ import { useAppStore } from "@/store/useAppStore"
 import { BottomNav } from "@/components/layout/BottomNav"
 import { SideNav } from "@/components/layout/SideNav"
 import { DynamicMapView } from "@/components/features/DynamicMapView"
+import { useOnboardingStore } from "@/store/useOnboardingStore"
+import { resolveMobilityProfile } from "@/lib/mobility"
 import { ActivityDetailModal } from "@/components/features/ActivityDetailModal"
 import type { TimelineActivity } from "@/lib/types"
 
@@ -113,6 +115,13 @@ export default function MapaPage() {
   const [selectedActivity, setSelectedActivity] = useState<TimelineActivity | null>(null)
   const [hydrated, setHydrated] = useState(false)
   const [showList, setShowList] = useState(false)
+  const onboardingData = useOnboardingStore((s) => s.data)
+  const mobilityProfile = resolveMobilityProfile({
+    companion: onboardingData.companion,
+    kidsPets: onboardingData.kidsPets,
+    mobility: onboardingData.mobility,
+    transport: onboardingData.transport,
+  })
 
   useEffect(() => {
     setHydrated(true)
@@ -208,6 +217,8 @@ export default function MapaPage() {
           destination={currentTrip.destination}
           selectedActivityId={selectedActivity?.id}
           onMarkerClick={handleMarkerClick}
+          transportPrefs={onboardingData.transport}
+          maxWalkMeters={mobilityProfile.maxComfortableWalkMeters}
         />
 
         {/* Header overlay */}

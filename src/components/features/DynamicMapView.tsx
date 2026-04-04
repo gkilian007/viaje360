@@ -25,6 +25,8 @@ interface DynamicMapViewProps {
   destination: string
   selectedActivityId?: string | null
   onMarkerClick?: (activityId: string) => void
+  transportPrefs?: string[]
+  maxWalkMeters?: number
 }
 
 export function DynamicMapView({
@@ -32,6 +34,8 @@ export function DynamicMapView({
   destination,
   selectedActivityId,
   onMarkerClick,
+  transportPrefs,
+  maxWalkMeters,
 }: DynamicMapViewProps) {
   const { geocoded, center, loading } = useGeocodedActivities(activities, destination)
 
@@ -54,6 +58,8 @@ export function DynamicMapView({
       loading={loading}
       selectedActivityId={selectedActivityId}
       onMarkerClick={onMarkerClick}
+      transportPrefs={transportPrefs}
+      maxWalkMeters={maxWalkMeters}
     />
   )
 }

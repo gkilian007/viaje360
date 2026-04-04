@@ -37,6 +37,10 @@ interface RealMapViewProps {
   loading: boolean
   selectedActivityId?: string | null
   onMarkerClick?: (activityId: string) => void
+  /** User transport preferences from onboarding (e.g. ["pie", "publico"]) */
+  transportPrefs?: string[]
+  /** Max comfortable walking distance in meters (from mobility profile) */
+  maxWalkMeters?: number
 }
 
 // Type → emoji mapping
@@ -244,8 +248,8 @@ function UserLocation() {
   )
 }
 
-// Real walking route segments using OSRM geometry
-function RealRouteSegments({ geocoded }: { geocoded: GeocodedActivity[] }) {
+// Route segments with transport-mode-aware styling
+function RealRouteSegments({ geocoded, transportPrefs = [], maxWalkMeters = 1500 }: { geocoded: GeocodedActivity[]; transportPrefs?: string[]; maxWalkMeters?: number }) {
   // Stabilize reference — only recompute when the set of activity IDs changes
   const geoKey = geocoded.map(g => g.activity.id).join(",")
   const activities = useMemo(
@@ -254,7 +258,7 @@ function RealRouteSegments({ geocoded }: { geocoded: GeocodedActivity[] }) {
     [geoKey]
   )
 
-  const segments = useRouteGeometry(activities, TYPE_COLOR)
+  const segments = useRouteGeometry(activities, TYPE_COLOR, { transportPrefs, maxWalkMeters })
 
   if (segments.length === 0) {
     // Fallback to straight lines while OSRM loads — visible solid line
@@ -276,15 +280,28 @@ function RealRouteSegments({ geocoded }: { geocoded: GeocodedActivity[] }) {
     )
   }
 
+  // Style segments differently based on transport mode:
+  // - foot: solid green line
+  // - transit: dashed blue line (walk approximation shown as transit indicator)
+  // - car: solid orange line
   return (
     <>
-      {segments.map((seg, i) => (
-        <Polyline
-          key={`route-${i}`}
-          positions={seg.coordinates}
-          pathOptions={{ color: seg.color, weight: 3.5, opacity: 0.8 }}
-        />
-      ))}
+      {segments.map((seg, i) => {
+        const isTransit = seg.mode === "transit"
+        const isCar = seg.mode === "car"
+        return (
+          <Polyline
+            key={`route-${i}`}
+            positions={seg.coordinates}
+            pathOptions={{
+              color: seg.color,
+              weight: isTransit ? 4 : 3.5,
+              opacity: 0.85,
+              dashArray: isTransit ? "10, 8" : isCar ? "12, 4" : undefined,
+            }}
+          />
+        )
+      })}
     </>
   )
 }
@@ -404,6 +421,8 @@ export function RealMapView({
   loading,
   selectedActivityId,
   onMarkerClick,
+  transportPrefs,
+  maxWalkMeters,
 }: RealMapViewProps) {
   const defaultCenter = center ?? { lat: 0, lng: 0 } // will be overridden by FitBounds
 
@@ -445,7 +464,7 @@ export function RealMapView({
         <FlyToSelected geocoded={geocoded} selectedActivityId={selectedActivityId} />
 
         {/* Route segments with gradient colors */}
-        <RealRouteSegments geocoded={geocoded} />
+        <RealRouteSegments geocoded={geocoded} transportPrefs={transportPrefs} maxWalkMeters={maxWalkMeters} />
 
         {/* User location */}
         <UserLocation />
@@ -586,6 +605,36 @@ export function RealMapView({
           <span className="text-[11px] text-[#c0c6d6]">
             Geocodificando... ({geocoded.length} de ?)
           </span>
+        </div>
+      )}
+
+      {/* Route mode legend */}
+      {(transportPrefs?.includes("publico") || transportPrefs?.includes("mix") || transportPrefs?.includes("coche")) && (
+        <div
+          className="absolute right-4 bottom-4 px-3 py-2 rounded-xl flex flex-col gap-1.5 z-[1000]"
+          style={{
+            background: "rgba(19,19,21,0.85)",
+            border: "1px solid rgba(255,255,255,0.06)",
+            backdropFilter: "blur(12px)",
+          }}
+        >
+          <span className="text-[9px] uppercase tracking-wider text-[#888] font-medium">Rutas</span>
+          <div className="flex items-center gap-1.5">
+            <div className="w-5 h-[3px] rounded-full" style={{ background: "#30D158" }} />
+            <span className="text-[10px] text-[#c0c6d6]">A pie</span>
+          </div>
+          {(transportPrefs?.includes("publico") || transportPrefs?.includes("mix")) && (
+            <div className="flex items-center gap-1.5">
+              <div className="w-5 h-[3px] rounded-full" style={{ background: "#32ADE6", backgroundImage: "repeating-linear-gradient(90deg, #32ADE6 0 5px, transparent 5px 9px)" }} />
+              <span className="text-[10px] text-[#c0c6d6]">Transporte público</span>
+            </div>
+          )}
+          {(transportPrefs?.includes("coche") || transportPrefs?.includes("taxi")) && (
+            <div className="flex items-center gap-1.5">
+              <div className="w-5 h-[3px] rounded-full" style={{ background: "#FF9F0A", backgroundImage: "repeating-linear-gradient(90deg, #FF9F0A 0 6px, transparent 6px 9px)" }} />
+              <span className="text-[10px] text-[#c0c6d6]">Coche/taxi</span>
+            </div>
+          )}
         </div>
       )}
 
