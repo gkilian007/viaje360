@@ -56,8 +56,8 @@ export function InterestsStep() {
                 }
               `}
             >
-              <span className="text-2xl">{item.emoji}</span>
-              <span className={`text-[10px] font-medium text-center leading-tight ${isSelected ? "text-[#0A84FF]" : "text-[#c0c6d6]"}`}>
+              <span className="text-3xl">{item.emoji}</span>
+              <span className={`text-[12px] font-medium text-center leading-tight ${isSelected ? "text-[#0A84FF]" : "text-[#c0c6d6]"}`}>
                 {item.label}
               </span>
             </motion.button>
