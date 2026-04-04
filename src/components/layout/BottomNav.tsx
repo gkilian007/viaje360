@@ -12,11 +12,11 @@ export function BottomNav() {
       <div
         className="flex items-center justify-around px-2 py-2 rounded-2xl"
         style={{
-          background: "rgba(19, 19, 21, 0.92)",
+          background: "var(--surface-container)",
           backdropFilter: "blur(24px)",
           WebkitBackdropFilter: "blur(24px)",
-          border: "1px solid rgba(255,255,255,0.07)",
-          boxShadow: "0 -4px 40px rgba(0,0,0,0.5)",
+          border: "1px solid var(--border-color)",
+          boxShadow: "0 -4px 40px rgba(0,0,0,0.3)",
         }}
       >
         {NAV_TABS.map((tab) => {
@@ -36,21 +36,21 @@ export function BottomNav() {
               >
                 <span
                   className={`material-symbols-outlined text-[20px] transition-all duration-200 ${
-                    isActive ? "text-[#0A84FF]" : "text-[#c0c6d6]"
+                    isActive ? "text-[#0A84FF]" : ""
                   }`}
-                  style={
-                    isActive
-                      ? { fontVariationSettings: "'FILL' 1, 'wght' 400, 'GRAD' 0, 'opsz' 24" }
-                      : {}
-                  }
+                  style={{
+                    color: isActive ? undefined : "var(--on-surface-variant)",
+                    ...(isActive ? { fontVariationSettings: "'FILL' 1, 'wght' 400, 'GRAD' 0, 'opsz' 24" } : {}),
+                  }}
                 >
                   {tab.icon}
                 </span>
               </div>
               <span
                 className={`text-[9px] font-medium tracking-wide transition-all truncate ${
-                  isActive ? "text-[#0A84FF]" : "text-[#c0c6d6]"
+                  isActive ? "text-[#0A84FF]" : ""
                 }`}
+                style={{ color: isActive ? undefined : "var(--on-surface-variant)" }}
               >
                 {tab.label}
               </span>

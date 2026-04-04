@@ -4,6 +4,8 @@ import { useEffect, useState } from "react"
 import { useRouter } from "next/navigation"
 import { useAppStore } from "@/store/useAppStore"
 import { useOnboardingStore } from "@/store/useOnboardingStore"
+import { useTheme } from "@/lib/theme-context"
+import { useI18n } from "@/lib/i18n-context"
 import { createClient, isSupabaseBrowserConfigured } from "@/lib/supabase/client"
 import { BottomNav } from "@/components/layout/BottomNav"
 import { SideNav } from "@/components/layout/SideNav"
@@ -67,8 +69,8 @@ function ProfileHeader({
         <div
           className="rounded-2xl p-4 lg:p-6"
           style={{
-            background: "rgba(28,28,30,0.95)",
-            border: "1px solid rgba(255,255,255,0.08)",
+            background: "var(--surface-container)",
+            border: "1px solid var(--border-color)",
             backdropFilter: "blur(20px)",
           }}
         >
@@ -101,7 +103,7 @@ function ProfileHeader({
             <button
               onClick={onLogout}
               className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0 hover:bg-white/5 transition-colors"
-              style={{ border: "1px solid rgba(255,255,255,0.08)" }}
+              style={{ border: "1px solid var(--border-color)" }}
             >
               <span className="material-symbols-outlined text-[18px] text-[#888]">logout</span>
             </button>
@@ -136,7 +138,7 @@ function ProfileHeader({
             <button
               onClick={onLogout}
               className="mt-5 flex items-center gap-2 px-4 py-2.5 rounded-xl text-[13px] text-[#888] hover:text-red-400 hover:bg-red-500/10 transition-colors"
-              style={{ border: "1px solid rgba(255,255,255,0.06)" }}
+              style={{ border: "1px solid var(--border-color)" }}
             >
               <span className="material-symbols-outlined text-[18px]">logout</span>
               Cerrar sesión
@@ -158,8 +160,8 @@ function CreatePostCTA({ onNewTrip }: { onNewTrip: () => void }) {
       }}
       className="w-full rounded-2xl p-4 text-left cursor-pointer active:scale-[0.98] transition-transform"
       style={{
-        background: "rgba(28,28,30,0.95)",
-        border: "1px solid rgba(255,255,255,0.08)",
+        background: "var(--surface-container)",
+        border: "1px solid var(--border-color)",
       }}
     >
       <div className="flex items-center gap-3 pointer-events-none">
@@ -207,8 +209,8 @@ function TripCard({
       animate={{ opacity: 1, y: 0 }}
       className="rounded-2xl overflow-hidden"
       style={{
-        background: "rgba(28,28,30,0.95)",
-        border: "1px solid rgba(255,255,255,0.08)",
+        background: "var(--surface-container)",
+        border: "1px solid var(--border-color)",
       }}
     >
       {/* Trip header image area */}
@@ -262,7 +264,7 @@ function TripCard({
         </p>
 
         {/* Action row */}
-        <div className="flex items-center gap-3 mt-4 pt-3" style={{ borderTop: "1px solid rgba(255,255,255,0.06)" }}>
+        <div className="flex items-center gap-3 mt-4 pt-3" style={{ borderTop: "1px solid var(--border-color)" }}>
           <button
             onClick={onShare}
             className="flex items-center gap-1.5 text-[12px] text-[#888] hover:text-white transition-colors"
@@ -322,8 +324,8 @@ function EmptyFeed({ onNewTrip }: { onNewTrip: () => void }) {
     <div
       className="rounded-2xl p-8 text-center"
       style={{
-        background: "rgba(28,28,30,0.95)",
-        border: "1px solid rgba(255,255,255,0.08)",
+        background: "var(--surface-container)",
+        border: "1px solid var(--border-color)",
       }}
     >
       <span className="text-[56px] block mb-3">🗺️</span>
@@ -351,8 +353,8 @@ function TrendingWidget({ onSelect }: { onSelect: (companion?: string, destinati
     <div
       className="rounded-2xl p-4"
       style={{
-        background: "rgba(28,28,30,0.95)",
-        border: "1px solid rgba(255,255,255,0.08)",
+        background: "var(--surface-container)",
+        border: "1px solid var(--border-color)",
       }}
     >
       <div className="flex items-center gap-2 mb-4">
@@ -390,8 +392,8 @@ function StylesWidget({ onNewTrip }: { onNewTrip: (companion?: string, destinati
     <div
       className="rounded-2xl p-4"
       style={{
-        background: "rgba(28,28,30,0.95)",
-        border: "1px solid rgba(255,255,255,0.08)",
+        background: "var(--surface-container)",
+        border: "1px solid var(--border-color)",
       }}
     >
       <div className="flex items-center gap-2 mb-4">
@@ -405,7 +407,7 @@ function StylesWidget({ onNewTrip }: { onNewTrip: (companion?: string, destinati
             whileTap={{ scale: 0.95 }}
             onClick={() => onNewTrip(style.companion)}
             className="flex flex-col items-center gap-1 p-3 rounded-xl hover:bg-white/5 transition-colors"
-            style={{ border: "1px solid rgba(255,255,255,0.06)" }}
+            style={{ border: "1px solid var(--border-color)" }}
           >
             <span className="text-[24px]">{style.emoji}</span>
             <span className="text-[12px] font-semibold text-white">{style.label}</span>
@@ -422,8 +424,8 @@ function TipsWidget() {
     <div
       className="rounded-2xl p-4"
       style={{
-        background: "rgba(28,28,30,0.95)",
-        border: "1px solid rgba(255,255,255,0.08)",
+        background: "var(--surface-container)",
+        border: "1px solid var(--border-color)",
       }}
     >
       <div className="flex items-center gap-2 mb-3">
@@ -438,7 +440,7 @@ function TipsWidget() {
         ].map((tip, i) => (
           <div key={i} className="flex items-start gap-2.5">
             <span className="text-[16px] shrink-0 mt-0.5">{tip.icon}</span>
-            <p className="text-[12px] text-[#c0c6d6] leading-relaxed">{tip.text}</p>
+            <p className="text-[12px] text-[color:var(--on-surface-variant)] leading-relaxed">{tip.text}</p>
           </div>
         ))}
       </div>
@@ -453,6 +455,8 @@ export default function HomePage() {
   const resetOnboarding = useOnboardingStore((s) => s.reset)
   const setOnboardingField = useOnboardingStore((s) => s.setField)
   const { setCurrentTrip, setGeneratedItinerary, replaceChatMessages } = useAppStore()
+  const { theme, toggleTheme } = useTheme()
+  const { locale, setLocale, t } = useI18n()
   const [authUser, setAuthUser] = useState<SupabaseUser | null>(null)
   const [loadingAuth, setLoadingAuth] = useState(true)
   const [allTrips, setAllTrips] = useState<TripSummary[]>([])
@@ -608,14 +612,14 @@ export default function HomePage() {
 
   if (loadingAuth) {
     return (
-      <div className="flex items-center justify-center h-screen" style={{ background: "#131315" }}>
+      <div className="flex items-center justify-center h-screen" style={{ background: "var(--surface)" }}>
         <div className="w-10 h-10 border-2 border-[#0A84FF] border-t-transparent rounded-full animate-spin" />
       </div>
     )
   }
 
   return (
-    <div className="flex min-h-screen" style={{ background: "#131315" }}>
+    <div className="flex min-h-screen" style={{ background: "var(--surface)" }}>
     <div className="hidden lg:block"><SideNav /></div>
     <div className="flex-1 min-h-screen pb-28 lg:pb-8">
       {/* Share toast */}
@@ -632,22 +636,22 @@ export default function HomePage() {
       <header
         className="hidden lg:flex items-center justify-between px-6 py-3 sticky top-0 z-50"
         style={{
-          background: "rgba(19,19,21,0.92)",
+          background: "var(--surface-container)",
           backdropFilter: "blur(20px)",
-          borderBottom: "1px solid rgba(255,255,255,0.06)",
+          borderBottom: "1px solid var(--border-color)",
         }}
       >
         <div className="flex items-center gap-3">
           <img src="/logo.svg" alt="Viaje360" className="w-8 h-8 rounded-xl"/>
           <span className="text-[18px] font-bold text-white">Viaje360</span>
         </div>
-        <div className="flex-1 max-w-xl mx-6 flex items-center gap-3 px-5 py-3 rounded-2xl cursor-pointer hover:border-white/15 transition-colors" style={{ background: "rgba(42,42,44,0.8)", border: "1px solid rgba(255,255,255,0.08)" }}>
+        <div className="flex-1 max-w-xl mx-6 flex items-center gap-3 px-5 py-3 rounded-2xl cursor-pointer hover:border-white/15 transition-colors" style={{ background: "var(--surface-container-high)", border: "1px solid var(--border-color)" }}>
           <span className="material-symbols-outlined text-[20px] text-[#888]">search</span>
           <span className="text-[14px] text-[#888]">Buscar destinos...</span>
         </div>
         <div className="flex items-center gap-3">
-          <button className="w-10 h-10 rounded-xl flex items-center justify-center hover:bg-white/5" style={{ border: "1px solid rgba(255,255,255,0.06)" }}>
-            <span className="material-symbols-outlined text-[20px] text-[#c0c6d6]">notifications</span>
+          <button className="w-10 h-10 rounded-xl flex items-center justify-center hover:bg-white/5" style={{ border: "1px solid var(--border-color)" }}>
+            <span className="material-symbols-outlined text-[20px] text-[color:var(--on-surface-variant)]">notifications</span>
           </button>
           <div className="relative">
             <button
@@ -667,15 +671,32 @@ export default function HomePage() {
                   <p className="text-[13px] font-semibold text-white truncate">{displayName}</p>
                   <p className="text-[11px] text-[#888] truncate">{email}</p>
                 </div>
-                <div style={{ borderTop: "1px solid rgba(255,255,255,0.06)" }} />
+                <div style={{ borderTop: "1px solid var(--border-color)" }} />
                 <button
                   type="button"
                   onClick={() => { setShowAvatarMenu(false); router.push("/status") }}
-                  className="w-full flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-[13px] text-[#c0c6d6] hover:bg-white/5 transition-colors text-left mt-1"
+                  className="w-full flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-[13px] text-[color:var(--on-surface-variant)] hover:bg-white/5 transition-colors text-left mt-1"
                 >
                   <span className="material-symbols-outlined text-[18px]">emoji_events</span>
                   Mi perfil y logros
                 </button>
+                <button
+                  type="button"
+                  onClick={toggleTheme}
+                  className="w-full flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-[13px] text-[color:var(--on-surface-variant)] hover:bg-white/5 transition-colors text-left"
+                >
+                  <span className="material-symbols-outlined text-[18px]">{theme === "dark" ? "light_mode" : "dark_mode"}</span>
+                  {theme === "dark" ? "Modo claro" : "Modo oscuro"}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setLocale(locale === "es" ? "en" : "es")}
+                  className="w-full flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-[13px] text-[color:var(--on-surface-variant)] hover:bg-white/5 transition-colors text-left"
+                >
+                  <span className="material-symbols-outlined text-[18px]">language</span>
+                  {locale === "es" ? "Switch to English" : "Cambiar a Español"}
+                </button>
+                <div style={{ borderTop: "1px solid var(--border-color)", margin: "4px 0" }} />
                 <button
                   type="button"
                   onClick={() => { setShowAvatarMenu(false); handleLogout() }}
@@ -696,8 +717,8 @@ export default function HomePage() {
           <img src="/logo.svg" alt="Viaje360" className="w-7 h-7 rounded-lg"/>
           <span className="text-[16px] font-bold text-white">Viaje360</span>
         </div>
-        <button className="w-9 h-9 rounded-xl flex items-center justify-center" style={{ background: "rgba(42,42,44,0.8)", border: "1px solid rgba(255,255,255,0.06)" }}>
-          <span className="material-symbols-outlined text-[18px] text-[#c0c6d6]">notifications</span>
+        <button className="w-9 h-9 rounded-xl flex items-center justify-center" style={{ background: "var(--surface-container-high)", border: "1px solid var(--border-color)" }}>
+          <span className="material-symbols-outlined text-[18px] text-[color:var(--on-surface-variant)]">notifications</span>
         </button>
       </header>
 
@@ -721,8 +742,8 @@ export default function HomePage() {
             <div
               className="rounded-2xl p-3"
               style={{
-                background: "rgba(28,28,30,0.95)",
-                border: "1px solid rgba(255,255,255,0.08)",
+                background: "var(--surface-container)",
+                border: "1px solid var(--border-color)",
               }}
             >
               {[
@@ -737,7 +758,7 @@ export default function HomePage() {
                   key={item.href}
                   href={item.href}
                   className={`flex items-center gap-3 px-3 py-2.5 rounded-xl transition-colors ${
-                    item.active ? "bg-[#0A84FF]/10 text-[#0A84FF]" : "text-[#c0c6d6] hover:bg-white/5"
+                    item.active ? "bg-[#0A84FF]/10 text-[#0A84FF]" : "text-[color:var(--on-surface-variant)] hover:bg-white/5"
                   }`}
                 >
                   <span className="material-symbols-outlined text-[20px]">{item.icon}</span>

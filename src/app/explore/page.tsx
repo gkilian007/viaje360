@@ -129,7 +129,7 @@ export default function ExplorePage() {
         style={{
           background: "rgba(15,17,23,0.92)",
           backdropFilter: "blur(20px)",
-          borderBottom: "1px solid rgba(255,255,255,0.06)",
+          borderBottom: "1px solid var(--border-color)",
         }}
       >
         <div className="flex items-center gap-3">
@@ -156,11 +156,11 @@ export default function ExplorePage() {
                   <p className="text-[11px] text-[#888] truncate">{email}</p>
                 </div>
               )}
-              <div style={{ borderTop: "1px solid rgba(255,255,255,0.06)" }} />
+              <div style={{ borderTop: "1px solid var(--border-color)" }} />
               <button
                 type="button"
                 onClick={() => { setShowAvatarMenu(false); router.push("/home") }}
-                className="w-full flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-[13px] text-[#c0c6d6] hover:bg-white/5 transition-colors text-left mt-1"
+                className="w-full flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-[13px] text-[color:var(--on-surface-variant)] hover:bg-white/5 transition-colors text-left mt-1"
               >
                 <span className="material-symbols-outlined text-[18px]">home</span>
                 Inicio
@@ -188,7 +188,7 @@ export default function ExplorePage() {
       {/* Search */}
       <div className="px-5 mb-5">
         <div className="flex items-center gap-3 px-4 py-3 rounded-2xl"
-          style={{ background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.08)" }}>
+          style={{ background: "rgba(255,255,255,0.05)", border: "1px solid var(--border-color)" }}>
           <span className="material-symbols-outlined text-[20px] text-[#666]">search</span>
           <input
             type="text"
@@ -220,7 +220,7 @@ export default function ExplorePage() {
                     whileTap={{ scale: 0.98 }}
                     onClick={() => handleDestinationSelect(dest.name)}
                     className="w-full flex items-center gap-3 p-3 rounded-2xl text-left"
-                    style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.07)" }}
+                    style={{ background: "rgba(255,255,255,0.04)", border: "1px solid var(--border-color)" }}
                   >
                     <span className="text-[28px]">{dest.emoji}</span>
                     <div className="flex-1 min-w-0">
@@ -245,7 +245,7 @@ export default function ExplorePage() {
                     whileTap={{ scale: 0.98 }}
                     onClick={() => handleDestinationSelect(gem.name)}
                     className="w-full flex items-start gap-3 p-3 rounded-2xl text-left"
-                    style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.07)" }}
+                    style={{ background: "rgba(255,255,255,0.04)", border: "1px solid var(--border-color)" }}
                   >
                     <span className="text-[24px] shrink-0 mt-0.5">{gem.emoji}</span>
                     <div className="flex-1 min-w-0">
@@ -289,7 +289,7 @@ export default function ExplorePage() {
                     whileTap={{ scale: 0.95 }}
                     onClick={() => handleDestinationSelect(dest.name)}
                     className="shrink-0 w-36 lg:w-auto rounded-2xl overflow-hidden text-left"
-                    style={{ background: "rgba(22,22,30,0.95)", border: "1px solid rgba(255,255,255,0.07)" }}
+                    style={{ background: "rgba(22,22,30,0.95)", border: "1px solid var(--border-color)" }}
                   >
                     <div
                       className="h-20 relative flex items-center justify-center overflow-hidden"
@@ -327,7 +327,7 @@ export default function ExplorePage() {
                     whileTap={{ scale: 0.96 }}
                     onClick={() => handleStyleSelect(style.companion)}
                     className="flex flex-col items-center gap-1.5 p-4 rounded-2xl"
-                    style={{ background: "rgba(22,22,30,0.95)", border: "1px solid rgba(255,255,255,0.07)" }}
+                    style={{ background: "rgba(22,22,30,0.95)", border: "1px solid var(--border-color)" }}
                   >
                     <span className="text-[32px]">{style.emoji}</span>
                     <p className="text-[13px] font-bold text-white">{style.label}</p>
@@ -350,7 +350,7 @@ export default function ExplorePage() {
                     whileTap={{ scale: 0.98 }}
                     onClick={() => handleDestinationSelect(gem.name)}
                     className="w-full flex items-start gap-3 p-4 rounded-2xl text-left"
-                    style={{ background: "rgba(22,22,30,0.95)", border: "1px solid rgba(255,255,255,0.07)" }}
+                    style={{ background: "rgba(22,22,30,0.95)", border: "1px solid var(--border-color)" }}
                   >
                     <span className="text-[28px] shrink-0">{gem.emoji}</span>
                     <div className="flex-1 min-w-0">
@@ -374,7 +374,7 @@ export default function ExplorePage() {
                   <div
                     key={i}
                     className="flex items-start gap-3 p-3 rounded-xl"
-                    style={{ background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.05)" }}
+                    style={{ background: "rgba(255,255,255,0.03)", border: "1px solid var(--border-color)" }}
                   >
                     <span className="text-[18px] shrink-0">{tip.icon}</span>
                     <p className="text-[12px] text-[#aaa] leading-relaxed">{tip.tip}</p>

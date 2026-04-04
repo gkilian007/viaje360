@@ -23,6 +23,19 @@
   --on-surface-variant: #c0c6d6;
   --primary: #0A84FF;
   --gold: #ffdb3c;
+  --border-color: rgba(255, 255, 255, 0.08);
+}
+
+[data-theme="light"] {
+  --surface: #FFFFFF;
+  --surface-container: #F5F5F7;
+  --surface-container-high: #E8E8ED;
+  --surface-container-highest: #D1D1D6;
+  --on-surface: #1C1C1E;
+  --on-surface-variant: #48484A;
+  --primary: #0A84FF;
+  --gold: #ffdb3c;
+  --border-color: rgba(0, 0, 0, 0.08);
 }
 
 * {

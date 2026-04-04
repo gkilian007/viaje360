@@ -37,8 +37,8 @@ export function SideNav() {
     <div
       className="hidden lg:flex flex-col items-center py-6 w-[72px] shrink-0 h-full"
       style={{
-        background: "rgba(19, 19, 21, 0.95)",
-        borderRight: "1px solid rgba(255,255,255,0.05)",
+        background: "var(--surface-container)",
+        borderRight: "1px solid var(--border-color)",
       }}
     >
       {/* Logo */}
@@ -64,13 +64,12 @@ export function SideNav() {
             >
               <span
                 className={`material-symbols-outlined text-[22px] transition-all ${
-                  isActive ? "text-[#0A84FF]" : "text-[#c0c6d6] group-hover:text-white"
+                  isActive ? "text-[#0A84FF]" : "group-hover:text-white"
                 }`}
-                style={
-                  isActive
-                    ? { fontVariationSettings: "'FILL' 1, 'wght' 400, 'GRAD' 0, 'opsz' 24" }
-                    : {}
-                }
+                style={{
+                  color: isActive ? undefined : "var(--on-surface-variant)",
+                  ...(isActive ? { fontVariationSettings: "'FILL' 1, 'wght' 400, 'GRAD' 0, 'opsz' 24" } : {}),
+                }}
               >
                 {tab.icon}
               </span>
@@ -94,20 +93,21 @@ export function SideNav() {
           <div
             className="absolute left-[calc(100%+8px)] bottom-0 w-48 py-1 rounded-xl overflow-hidden z-50"
             style={{
-              background: "rgba(30, 30, 34, 0.98)",
+              background: "var(--surface-container-high)",
               backdropFilter: "blur(20px)",
-              border: "1px solid rgba(255,255,255,0.1)",
+              border: "1px solid var(--border-color)",
               boxShadow: "0 8px 32px rgba(0,0,0,0.5)",
             }}
           >
             <div className="px-3 py-2 border-b border-white/5">
-              <p className="text-[13px] font-medium text-white truncate">{user.name || "Viajero"}</p>
-              <p className="text-[11px] text-[#888] truncate">{user.email || ""}</p>
+              <p className="text-[13px] font-medium truncate" style={{ color: "var(--on-surface)" }}>{user.name || "Viajero"}</p>
+              <p className="text-[11px] truncate" style={{ color: "var(--on-surface-variant)" }}>{user.email || ""}</p>
             </div>
             <Link
               href="/home"
               onClick={() => setMenuOpen(false)}
-              className="flex items-center gap-2 px-3 py-2.5 text-[13px] text-[#c0c6d6] hover:bg-white/5 transition-colors"
+              className="flex items-center gap-2 px-3 py-2.5 text-[13px] hover:bg-white/5 transition-colors"
+              style={{ color: "var(--on-surface-variant)" }}
             >
               <span className="material-symbols-outlined text-[18px]">person</span>
               Mi perfil

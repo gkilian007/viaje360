@@ -4,6 +4,7 @@ import { useState, useEffect, useRef } from "react"
 import { useAnalytics } from "@/lib/analytics/useAnalytics"
 import { AnimatePresence, motion } from "framer-motion"
 import { useOnboardingStore } from "@/store/useOnboardingStore"
+import { useI18n } from "@/lib/i18n-context"
 import { ProgressBar } from "./ui/ProgressBar"
 import { NavigationButtons } from "./ui/NavigationButtons"
 // Core new steps
@@ -78,6 +79,7 @@ import { useRouter } from "next/navigation"
 
 export function OnboardingWizard() {
   const router = useRouter()
+  const { t } = useI18n()
   const {
     currentStepId,
     direction,
@@ -112,7 +114,7 @@ export function OnboardingWizard() {
   if (!hydrated) {
     return (
       <div className="min-h-screen map-bg flex items-center justify-center">
-        <div className="text-[#c0c6d6] text-sm">Cargando...</div>
+        <div className="text-[color:var(--on-surface-variant)] text-sm">{t("onboarding.loadingOnboarding")}</div>
       </div>
     )
   }
@@ -149,7 +151,7 @@ export function OnboardingWizard() {
 
   return (
     <div className="h-dvh map-bg flex flex-col overflow-hidden lg:items-center lg:justify-center">
-    <div className="flex flex-col h-full lg:h-auto lg:max-h-[90vh] lg:w-full lg:max-w-[540px] lg:rounded-3xl lg:border lg:border-white/10 lg:bg-[#131315]/95 lg:backdrop-blur-xl lg:shadow-2xl lg:overflow-hidden">
+    <div className="flex flex-col h-full lg:h-auto lg:max-h-[90vh] lg:w-full lg:max-w-[540px] lg:rounded-3xl lg:border lg:border-white/10 lg:bg-[var(--surface)]/95 lg:backdrop-blur-xl lg:shadow-2xl lg:overflow-hidden">
       {/* Honeypot: hidden from real users, catches bots that autofill */}
       <input
         type="text"
@@ -166,17 +168,17 @@ export function OnboardingWizard() {
         <div className="flex items-center justify-between mb-3">
           <div className="flex items-center gap-1.5">
             <img src="/logo.svg" alt="Viaje360" className="w-5 h-5 rounded-md"/>
-            <span className="text-xs text-[#c0c6d6]">Viaje360</span>
+            <span className="text-xs text-[color:var(--on-surface-variant)]">{t("common.appName")}</span>
           </div>
           <div className="flex items-center gap-3">
-            <span className="text-xs text-[#c0c6d6]">
+            <span className="text-xs text-[color:var(--on-surface-variant)]">
               {displayStep}
             </span>
             <button
               type="button"
               onClick={() => router.push("/home")}
               className="w-8 h-8 rounded-lg flex items-center justify-center hover:bg-white/10 transition-colors"
-              title="Salir al inicio"
+              title={t("onboarding.exitToHome")}
             >
               <span className="material-symbols-outlined text-[18px] text-[#888]">close</span>
             </button>
@@ -184,7 +186,7 @@ export function OnboardingWizard() {
         </div>
         <ProgressBar progress={progress} />
         {inAdvanced && (
-          <p className="text-[10px] text-[#c0c6d6]/50 text-center mt-1">Personalización avanzada</p>
+          <p className="text-[10px] text-[color:var(--on-surface-variant)]/50 text-center mt-1">{t("onboarding.advancedPersonalization")}</p>
         )}
       </div>
 
@@ -207,7 +209,7 @@ export function OnboardingWizard() {
       </div>
 
       {/* Navigation */}
-      <div className="px-5 pb-8 pt-4 flex-shrink-0" style={{ background: "linear-gradient(to top, #131315 70%, transparent)" }}>
+      <div className="px-5 pb-8 pt-4 flex-shrink-0" style={{ background: "linear-gradient(to top, var(--surface) 70%, transparent)" }}>
         <NavigationButtons
           onNext={handleNext}
           onBack={prevStep}
