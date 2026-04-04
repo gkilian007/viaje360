@@ -74,6 +74,8 @@ export interface OnboardingData {
 
   // Step 5: Accommodation
   accommodationZone: string
+  accommodationLat: number | null
+  accommodationLng: number | null
 
   // Step 6: Interests
   interests: Interest[]
@@ -136,6 +138,8 @@ export const defaultOnboardingData: OnboardingData = {
   mobility: null,
   hasMobilityNeeds: false,
   accommodationZone: "",
+  accommodationLat: null,
+  accommodationLng: null,
   interests: [],
   travelerStyle: null,
   famousLocal: 50,

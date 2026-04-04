@@ -8,6 +8,8 @@ interface GlassSliderProps {
   leftEmoji?: string
   rightEmoji?: string
   gradient?: string
+  /** If provided, shows a live value badge above the thumb */
+  liveValueFn?: (value: number) => string
 }
 
 export function GlassSlider({
@@ -18,9 +20,27 @@ export function GlassSlider({
   leftEmoji,
   rightEmoji,
   gradient = "from-[#0A84FF] to-[#ffdb3c]",
+  liveValueFn,
 }: GlassSliderProps) {
+  const liveLabel = liveValueFn ? liveValueFn(value) : null
+
   return (
     <div className="w-full">
+      {/* Live value badge */}
+      {liveLabel && (
+        <div className="relative h-7 mb-1">
+          <div
+            className="absolute -translate-x-1/2 px-2.5 py-1 rounded-full text-xs font-bold text-white shadow-lg transition-all duration-150"
+            style={{
+              left: `clamp(20px, ${value}%, calc(100% - 20px))`,
+              background: "linear-gradient(135deg, #0A84FF, #5856D6)",
+              boxShadow: "0 2px 8px rgba(10,132,255,0.4)",
+            }}
+          >
+            {liveLabel}
+          </div>
+        </div>
+      )}
       <div className="relative h-3 rounded-full bg-white/10 mb-4 overflow-visible">
         <div
           className={`absolute inset-y-0 left-0 rounded-full bg-gradient-to-r ${gradient}`}

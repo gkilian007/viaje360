@@ -20,6 +20,8 @@ const onboarding: OnboardingData = {
   mobility: "reduced",
   hasMobilityNeeds: true,
   accommodationZone: "Eixample",
+  accommodationLat: null,
+  accommodationLng: null,
   interests: ["historia", "gastronomia"],
   travelerStyle: "cultural",
   famousLocal: 50,

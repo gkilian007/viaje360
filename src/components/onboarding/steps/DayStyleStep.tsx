@@ -27,6 +27,15 @@ export function DayStyleStep() {
           leftEmoji="☀️"
           rightEmoji="🌙"
           gradient="from-[#ffdb3c] to-[#0A84FF]"
+          liveValueFn={(v) => {
+            // 0 = 7:00, 100 = 11:00 → 4 hour range = 240 min
+            const totalMinutes = Math.round((v / 100) * 240)
+            const hours = 7 + Math.floor(totalMinutes / 60)
+            const mins = totalMinutes % 60
+            const ampm = hours < 12 ? "AM" : "PM"
+            const displayHours = hours > 12 ? hours - 12 : hours
+            return mins === 0 ? `${displayHours}:00 ${ampm}` : `${displayHours}:${String(mins).padStart(2, "0")} ${ampm}`
+          }}
         />
       </div>
 

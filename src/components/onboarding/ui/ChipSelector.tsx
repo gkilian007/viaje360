@@ -26,7 +26,7 @@ export function ChipSelector({ chips, selected, onToggle, singleSelect }: ChipSe
             whileTap={{ scale: 0.95 }}
             onClick={() => onToggle(chip.id)}
             className={`
-              px-4 py-2.5 rounded-full border text-sm font-medium transition-all duration-200 flex items-center gap-2
+              px-5 py-3 rounded-full border text-base font-medium transition-all duration-200 flex items-center gap-2
               ${isSelected
                 ? "border-[#0A84FF] bg-[#0A84FF]/15 text-[#0A84FF] glow-blue"
                 : "border-white/8 bg-[rgba(31,31,33,0.9)] text-[#c0c6d6] hover:border-white/20"

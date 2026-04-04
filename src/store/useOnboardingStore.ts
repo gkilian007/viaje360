@@ -139,7 +139,7 @@ export const useOnboardingStore = create<OnboardingState>()(
           case "companions":
             return data.companion !== null
           case "kids-pets":
-            return data.kidsPets.length > 0
+            return true // optional step — user can continue without selecting
           case "mobility":
             return data.mobility !== null
           case "accommodation":

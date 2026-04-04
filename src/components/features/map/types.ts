@@ -69,18 +69,97 @@ export const CITY_CENTERS: Record<string, Coordinate> = {
   "barcelona": { lng: 2.1734, lat: 41.3851 },
   "madrid": { lng: -3.7038, lat: 40.4168 },
   "paris": { lng: 2.3522, lat: 48.8566 },
+  "parís": { lng: 2.3522, lat: 48.8566 },
   "roma": { lng: 12.4964, lat: 41.9028 },
+  "rome": { lng: 12.4964, lat: 41.9028 },
+  "london": { lng: -0.1276, lat: 51.5074 },
   "londres": { lng: -0.1276, lat: 51.5074 },
   "nueva york": { lng: -74.0060, lat: 40.7128 },
+  "new york": { lng: -74.0060, lat: 40.7128 },
+  "new york city": { lng: -74.0060, lat: 40.7128 },
+  "nyc": { lng: -74.0060, lat: 40.7128 },
   "tokio": { lng: 139.6917, lat: 35.6895 },
-  "default": { lng: 2.1734, lat: 41.3851 },
+  "tokyo": { lng: 139.6917, lat: 35.6895 },
+  "amsterdam": { lng: 4.9041, lat: 52.3676 },
+  "ámsterdam": { lng: 4.9041, lat: 52.3676 },
+  "berlin": { lng: 13.4050, lat: 52.5200 },
+  "berlín": { lng: 13.4050, lat: 52.5200 },
+  "lisboa": { lng: -9.1393, lat: 38.7223 },
+  "lisbon": { lng: -9.1393, lat: 38.7223 },
+  "praga": { lng: 14.4378, lat: 50.0755 },
+  "prague": { lng: 14.4378, lat: 50.0755 },
+  "viena": { lng: 16.3738, lat: 48.2082 },
+  "vienna": { lng: 16.3738, lat: 48.2082 },
+  "estambul": { lng: 28.9784, lat: 41.0082 },
+  "istanbul": { lng: 28.9784, lat: 41.0082 },
+  "dubai": { lng: 55.2708, lat: 25.2048 },
+  "dubái": { lng: 55.2708, lat: 25.2048 },
+  "bangkok": { lng: 100.5018, lat: 13.7563 },
+  "singapore": { lng: 103.8198, lat: 1.3521 },
+  "singapur": { lng: 103.8198, lat: 1.3521 },
+  "sydney": { lng: 151.2093, lat: -33.8688 },
+  "sídney": { lng: 151.2093, lat: -33.8688 },
+  "buenos aires": { lng: -58.3816, lat: -34.6037 },
+  "mexico city": { lng: -99.1332, lat: 19.4326 },
+  "ciudad de méxico": { lng: -99.1332, lat: 19.4326 },
+  "san francisco": { lng: -122.4194, lat: 37.7749 },
+  "los angeles": { lng: -118.2437, lat: 34.0522 },
+  "miami": { lng: -80.1918, lat: 25.7617 },
+  "chicago": { lng: -87.6298, lat: 41.8781 },
+  "florencia": { lng: 11.2558, lat: 43.7696 },
+  "florence": { lng: 11.2558, lat: 43.7696 },
+  "venecia": { lng: 12.3155, lat: 45.4408 },
+  "venice": { lng: 12.3155, lat: 45.4408 },
+  "milán": { lng: 9.1900, lat: 45.4654 },
+  "milan": { lng: 9.1900, lat: 45.4654 },
+  "múnich": { lng: 11.5820, lat: 48.1351 },
+  "munich": { lng: 11.5820, lat: 48.1351 },
+  "copenhague": { lng: 12.5683, lat: 55.6761 },
+  "copenhagen": { lng: 12.5683, lat: 55.6761 },
+  "edimburgo": { lng: -3.1883, lat: 55.9533 },
+  "edinburgh": { lng: -3.1883, lat: 55.9533 },
+  "budapest": { lng: 19.0402, lat: 47.4979 },
+  "bruselas": { lng: 4.3517, lat: 50.8503 },
+  "brussels": { lng: 4.3517, lat: 50.8503 },
+  "zurich": { lng: 8.5417, lat: 47.3769 },
+  "zúrich": { lng: 8.5417, lat: 47.3769 },
+  "seoul": { lng: 126.9780, lat: 37.5665 },
+  "seúl": { lng: 126.9780, lat: 37.5665 },
+  "osaka": { lng: 135.5023, lat: 34.6937 },
+  "hanoi": { lng: 105.8412, lat: 21.0245 },
+  "hanói": { lng: 105.8412, lat: 21.0245 },
+  "bali": { lng: 115.1889, lat: -8.4095 },
+  "marrakech": { lng: -7.9811, lat: 31.6295 },
+  "cairo": { lng: 31.2357, lat: 30.0444 },
+  "el cairo": { lng: 31.2357, lat: 30.0444 },
+  "cape town": { lng: 18.4241, lat: -33.9249 },
+  "ciudad del cabo": { lng: 18.4241, lat: -33.9249 },
+  "kyoto": { lng: 135.7681, lat: 35.0116 },
+  "kioto": { lng: 135.7681, lat: 35.0116 },
+  "default": { lng: 0, lat: 20 }, // neutral world center, not Barcelona
+}
+
+// Aliases for common destination name variations
+const CITY_ALIASES: Record<string, string> = {
+  "ny": "new york",
+  "nyc": "new york",
+  "cdmx": "ciudad de méxico",
+  "la": "los angeles",
+  "l.a.": "los angeles",
 }
 
 // Get city center from destination name
 export function getCityCenter(destination?: string): Coordinate {
   if (!destination) return CITY_CENTERS.default
-  const normalizedDest = destination.toLowerCase().trim()
-  return CITY_CENTERS[normalizedDest] || CITY_CENTERS.default
+  const normalizedDest = destination.toLowerCase().trim().replace(/[.,]/g, "")
+  const resolved = CITY_ALIASES[normalizedDest] ?? normalizedDest
+  // Exact match
+  if (CITY_CENTERS[resolved]) return CITY_CENTERS[resolved]
+  // Partial match (e.g. "New York, USA" → "new york")
+  const partialMatch = Object.keys(CITY_CENTERS).find(
+    (k) => k !== "default" && (resolved.startsWith(k) || resolved.includes(k))
+  )
+  return partialMatch ? CITY_CENTERS[partialMatch] : CITY_CENTERS.default
 }
 
 // Activity type to color mapping

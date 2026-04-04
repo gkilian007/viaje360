@@ -53,6 +53,8 @@ export const onboardingRequestSchema = z.object({
   mobility: mobilitySchema.nullable().optional().default(null),
   hasMobilityNeeds: z.boolean().optional().default(false),
   accommodationZone: z.string().optional().default(""),
+  accommodationLat: z.number().nullable().optional().default(null),
+  accommodationLng: z.number().nullable().optional().default(null),
   interests: z.array(interestSchema).optional().default([]),
   travelerStyle: travelerStyleSchema.nullable().optional().default(null),
   famousLocal: z.number().min(0).max(100).optional().default(50),
