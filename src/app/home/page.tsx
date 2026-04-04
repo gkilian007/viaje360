@@ -190,15 +190,14 @@ function TripCard({
   onContinue,
   onViewRecap,
   onShare,
-  onDelete,
+  onArchive,
 }: {
   trip: TripSummary
   onContinue: () => void
   onViewRecap: () => void
   onShare: () => void
-  onDelete: () => void
+  onArchive: () => void
 }) {
-  const [confirmDelete, setConfirmDelete] = useState(false)
   const imageUrl = trip.imageUrl ?? getDestinationImageUrl(trip.destination)
   const isCompleted = trip.status === "completed"
 
@@ -271,31 +270,13 @@ function TripCard({
             <span className="material-symbols-outlined text-[18px]">share</span>
             Compartir
           </button>
-          {confirmDelete ? (
-            <div className="flex items-center gap-2">
-              <button
-                onClick={() => { onDelete(); setConfirmDelete(false) }}
-                className="flex items-center gap-1 text-[12px] text-red-400 hover:text-red-300 font-semibold transition-colors"
-              >
-                <span className="material-symbols-outlined text-[16px]">check</span>
-                Confirmar
-              </button>
-              <button
-                onClick={() => setConfirmDelete(false)}
-                className="flex items-center gap-1 text-[12px] text-[#888] hover:text-white transition-colors"
-              >
-                Cancelar
-              </button>
-            </div>
-          ) : (
-            <button
-              onClick={() => setConfirmDelete(true)}
-              className="flex items-center gap-1.5 text-[12px] text-[#888] hover:text-red-400 transition-colors"
-            >
-              <span className="material-symbols-outlined text-[18px]">delete_outline</span>
-              Eliminar
-            </button>
-          )}
+          <button
+            onClick={onArchive}
+            className="flex items-center gap-1.5 text-[12px] text-[#888] hover:text-[#FF9F0A] transition-colors"
+          >
+            <span className="material-symbols-outlined text-[18px]">archive</span>
+            Archivar
+          </button>
           {!isCompleted && (
             <button
               onClick={onViewRecap}
@@ -499,7 +480,9 @@ export default function HomePage() {
         const res = await fetch("/api/trips", { cache: "no-store" })
         if (!res.ok) return
         const payload = await res.json()
-        const trips: TripSummary[] = payload?.data?.trips ?? []
+        const trips: TripSummary[] = (payload?.data?.trips ?? []).filter(
+          (t: TripSummary) => t.status !== "archived"
+        )
         setAllTrips(trips)
         // Fire background image caching for trips without a cached image URL
         for (const trip of trips) {
@@ -566,18 +549,18 @@ export default function HomePage() {
     router.push(`/recap/${tripId}`)
   }
 
-  async function handleDeleteTrip(tripId: string) {
+  async function handleArchiveTrip(tripId: string) {
     try {
-      const res = await fetch(`/api/trips/${tripId}/delete`, { method: "DELETE" })
+      const res = await fetch(`/api/trips/${tripId}/archive`, { method: "POST" })
       if (res.ok) {
         setAllTrips((prev) => prev.filter((t) => t.id !== tripId))
-        // If we deleted the active trip, clear the store
+        // If we archived the active trip, clear the store
         if (useAppStore.getState().currentTrip?.id === tripId) {
           setCurrentTrip(null)
           setGeneratedItinerary(null)
           replaceChatMessages([])
         }
-        setShareToast("Itinerario eliminado")
+        setShareToast("Itinerario archivado")
         setTimeout(() => setShareToast(""), 2500)
       }
     } catch {}
@@ -793,7 +776,7 @@ export default function HomePage() {
                   onContinue={() => handleActivateAndNavigate(trip)}
                   onViewRecap={() => handleViewRecap(trip.id)}
                   onShare={() => handleShare(trip)}
-                  onDelete={() => handleDeleteTrip(trip.id)}
+                  onArchive={() => handleArchiveTrip(trip.id)}
                 />
               ))
             ) : (

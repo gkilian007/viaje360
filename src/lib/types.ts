@@ -23,7 +23,7 @@ export interface Trip {
   endDate: string
   budget: number
   spent: number
-  status: "planning" | "active" | "completed"
+  status: "planning" | "active" | "completed" | "archived"
   language?: string
   imageUrl?: string
   description?: string
