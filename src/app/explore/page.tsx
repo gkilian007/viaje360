@@ -1,9 +1,11 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
 import { useAppStore } from "@/store/useAppStore"
 import { useOnboardingStore } from "@/store/useOnboardingStore"
+import { createClient, isSupabaseBrowserConfigured } from "@/lib/supabase/client"
+import type { User as SupabaseUser } from "@supabase/supabase-js"
 import { BottomNav } from "@/components/layout/BottomNav"
 import { SideNav } from "@/components/layout/SideNav"
 import { motion } from "framer-motion"
@@ -56,6 +58,36 @@ export default function ExplorePage() {
   const { monuments } = useAppStore()
   const { setField: setOnboardingField, reset: resetOnboarding } = useOnboardingStore()
   const [search, setSearch] = useState("")
+  const [authUser, setAuthUser] = useState<SupabaseUser | null>(null)
+  const [showAvatarMenu, setShowAvatarMenu] = useState(false)
+
+  useEffect(() => {
+    if (!isSupabaseBrowserConfigured()) return
+    const supabase = createClient()
+    supabase.auth.getUser().then(({ data }) => setAuthUser(data.user ?? null))
+  }, [])
+
+  async function handleLogout() {
+    if (isSupabaseBrowserConfigured()) {
+      const supabase = createClient()
+      await supabase.auth.signOut()
+    }
+    router.replace("/login")
+  }
+
+  const displayName =
+    authUser?.user_metadata?.full_name ??
+    authUser?.email?.split("@")[0] ??
+    "Viajero"
+
+  const initials = displayName
+    .split(" ")
+    .map((w: string) => w[0])
+    .join("")
+    .toUpperCase()
+    .slice(0, 2)
+
+  const email = authUser?.email ?? ""
 
   const filteredDestinations = FEATURED_DESTINATIONS.filter(
     d =>
@@ -91,8 +123,63 @@ export default function ExplorePage() {
     <div className="hidden lg:block"><SideNav /></div>
     <div className="flex flex-col flex-1 min-h-screen overflow-y-auto pb-28 lg:pb-8">
 
-      {/* Header */}
-      <div className="px-5 pb-5 page-header-safe-lg">
+      {/* Desktop top bar with avatar */}
+      <header
+        className="hidden lg:flex items-center justify-between px-6 py-3 sticky top-0 z-50"
+        style={{
+          background: "rgba(15,17,23,0.92)",
+          backdropFilter: "blur(20px)",
+          borderBottom: "1px solid rgba(255,255,255,0.06)",
+        }}
+      >
+        <div className="flex items-center gap-3">
+          <img src="/logo.svg" alt="Viaje360" className="w-8 h-8 rounded-xl" />
+          <span className="text-[18px] font-bold text-white">Explorar</span>
+        </div>
+        <div className="relative">
+          <button
+            type="button"
+            onClick={() => setShowAvatarMenu((v) => !v)}
+            className="w-9 h-9 rounded-full flex items-center justify-center text-[12px] font-bold text-white cursor-pointer"
+            style={{ background: "linear-gradient(135deg, #0A84FF, #5856D6)" }}
+          >
+            {initials || "?"}
+          </button>
+          {showAvatarMenu && (
+            <div
+              className="absolute right-0 top-12 w-56 rounded-2xl p-2 z-[60] shadow-2xl"
+              style={{ background: "rgba(36,36,38,0.98)", border: "1px solid rgba(255,255,255,0.1)", backdropFilter: "blur(20px)" }}
+            >
+              {email && (
+                <div className="px-3 py-2 mb-1">
+                  <p className="text-[13px] font-semibold text-white truncate">{displayName}</p>
+                  <p className="text-[11px] text-[#888] truncate">{email}</p>
+                </div>
+              )}
+              <div style={{ borderTop: "1px solid rgba(255,255,255,0.06)" }} />
+              <button
+                type="button"
+                onClick={() => { setShowAvatarMenu(false); router.push("/home") }}
+                className="w-full flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-[13px] text-[#c0c6d6] hover:bg-white/5 transition-colors text-left mt-1"
+              >
+                <span className="material-symbols-outlined text-[18px]">home</span>
+                Inicio
+              </button>
+              <button
+                type="button"
+                onClick={() => { setShowAvatarMenu(false); handleLogout() }}
+                className="w-full flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-[13px] text-red-400 hover:bg-red-500/10 transition-colors text-left"
+              >
+                <span className="material-symbols-outlined text-[18px]">logout</span>
+                Cerrar sesión
+              </button>
+            </div>
+          )}
+        </div>
+      </header>
+
+      {/* Mobile Header */}
+      <div className="px-5 pb-5 page-header-safe-lg lg:hidden">
         <p className="text-[11px] uppercase tracking-widest text-[#0A84FF] font-medium mb-1">Descubrir</p>
         <h1 className="text-[28px] font-black text-white">Explorar</h1>
         <p className="text-[13px] text-[#888] mt-1">Inspírate y planea tu próximo viaje</p>
