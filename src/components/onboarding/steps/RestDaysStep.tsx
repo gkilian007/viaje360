@@ -5,6 +5,7 @@ import { StepHeader } from "../ui/StepHeader"
 import type { RestDayFrequency } from "@/lib/onboarding-types"
 
 const freqOptions: { id: RestDayFrequency; label: string }[] = [
+  { id: "un-dia", label: "Solo un día libre" },
   { id: "cada-2", label: "Cada 2 días" },
   { id: "cada-3", label: "Cada 3 días" },
   { id: "ultimo", label: "El último día" },
