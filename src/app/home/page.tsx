@@ -65,27 +65,24 @@ function ProfileHeader({
       {/* Profile card */}
       <div className="px-4 lg:px-6 -mt-12">
         <div
-          className="rounded-2xl p-4 lg:p-5"
+          className="rounded-2xl p-4 lg:p-6"
           style={{
             background: "rgba(28,28,30,0.95)",
             border: "1px solid rgba(255,255,255,0.08)",
             backdropFilter: "blur(20px)",
           }}
         >
-          <div className="flex items-center gap-4">
-            {/* Avatar */}
+          {/* Mobile: horizontal layout */}
+          <div className="flex items-center gap-4 lg:hidden">
             <div
-              className="w-16 h-16 lg:w-20 lg:h-20 rounded-2xl flex items-center justify-center text-[22px] lg:text-[28px] font-bold text-white shrink-0 ring-4 ring-[#131315]"
+              className="w-16 h-16 rounded-2xl flex items-center justify-center text-[22px] font-bold text-white shrink-0 ring-4 ring-[#131315]"
               style={{ background: "linear-gradient(135deg, #0A84FF, #5856D6)" }}
             >
               {initials}
             </div>
-
             <div className="flex-1 min-w-0">
-              <h1 className="text-[18px] lg:text-[22px] font-bold text-white truncate">{displayName}</h1>
+              <h1 className="text-[18px] font-bold text-white truncate">{displayName}</h1>
               <p className="text-[12px] text-[#9ca3af] truncate">{email}</p>
-
-              {/* Stats row */}
               <div className="flex gap-4 mt-2">
                 <div className="text-center">
                   <p className="text-[16px] font-bold text-white">{tripCount}</p>
@@ -101,14 +98,48 @@ function ProfileHeader({
                 </div>
               </div>
             </div>
-
-            {/* Logout */}
             <button
               onClick={onLogout}
               className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0 hover:bg-white/5 transition-colors"
               style={{ border: "1px solid rgba(255,255,255,0.08)" }}
             >
               <span className="material-symbols-outlined text-[18px] text-[#888]">logout</span>
+            </button>
+          </div>
+
+          {/* Desktop: centered vertical layout */}
+          <div className="hidden lg:flex flex-col items-center text-center">
+            <div
+              className="w-24 h-24 rounded-2xl flex items-center justify-center text-[32px] font-bold text-white ring-4 ring-[#131315] mb-4"
+              style={{ background: "linear-gradient(135deg, #0A84FF, #5856D6)" }}
+            >
+              {initials}
+            </div>
+            <h1 className="text-[24px] font-bold text-white">{displayName}</h1>
+            <p className="text-[13px] text-[#9ca3af] mt-0.5">{email}</p>
+
+            {/* Stats */}
+            <div className="flex justify-center gap-8 mt-5 w-full">
+              {[
+                { value: tripCount, label: "Viajes" },
+                { value: totalDays, label: "Días" },
+                { value: tripCount > 0 ? 1 : 0, label: "Países" },
+              ].map((s) => (
+                <div key={s.label} className="flex-1">
+                  <p className="text-[22px] font-bold text-white">{s.value}</p>
+                  <p className="text-[11px] text-[#888] mt-0.5">{s.label}</p>
+                </div>
+              ))}
+            </div>
+
+            {/* Logout */}
+            <button
+              onClick={onLogout}
+              className="mt-5 flex items-center gap-2 px-4 py-2.5 rounded-xl text-[13px] text-[#888] hover:text-red-400 hover:bg-red-500/10 transition-colors"
+              style={{ border: "1px solid rgba(255,255,255,0.06)" }}
+            >
+              <span className="material-symbols-outlined text-[18px]">logout</span>
+              Cerrar sesión
             </button>
           </div>
         </div>
