@@ -51,7 +51,7 @@ export type SplurgeCategory =
   | "alojamiento"
   | "nightlife"
 export type BudgetLevel = "economico" | "moderado" | "premium"
-export type RestDayFrequency = "cada-2" | "cada-3" | "ultimo"
+export type RestDayFrequency = "un-dia" | "cada-2" | "cada-3" | "ultimo"
 
 export interface OnboardingData {
   // Step 1: Destination + dates
