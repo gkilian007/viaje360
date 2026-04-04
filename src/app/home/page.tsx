@@ -119,16 +119,19 @@ function ProfileHeader({
 
 function CreatePostCTA({ onNewTrip }: { onNewTrip: () => void }) {
   return (
-    <motion.button
-      whileTap={{ scale: 0.98 }}
-      onClick={onNewTrip}
-      className="w-full rounded-2xl p-4 text-left"
+    <button
+      type="button"
+      onClick={(e) => {
+        e.stopPropagation()
+        onNewTrip()
+      }}
+      className="w-full rounded-2xl p-4 text-left cursor-pointer active:scale-[0.98] transition-transform"
       style={{
         background: "rgba(28,28,30,0.95)",
         border: "1px solid rgba(255,255,255,0.08)",
       }}
     >
-      <div className="flex items-center gap-3">
+      <div className="flex items-center gap-3 pointer-events-none">
         <div
           className="w-10 h-10 rounded-full flex items-center justify-center shrink-0"
           style={{ background: "linear-gradient(135deg, #0A84FF, #5856D6)" }}
@@ -142,7 +145,7 @@ function CreatePostCTA({ onNewTrip }: { onNewTrip: () => void }) {
           Planificar
         </div>
       </div>
-    </motion.button>
+    </button>
   )
 }
 
