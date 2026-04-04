@@ -319,17 +319,17 @@ function EmptyFeed({ onNewTrip }: { onNewTrip: () => void }) {
       <p className="text-[13px] text-[#888] max-w-sm mx-auto mb-6">
         Crea tu primer itinerario personalizado con IA y empieza a explorar el mundo.
       </p>
-      <motion.button
-        whileTap={{ scale: 0.97 }}
-        onClick={onNewTrip}
-        className="px-6 py-3 rounded-2xl font-semibold text-white"
+      <button
+        type="button"
+        onClick={(e) => { e.stopPropagation(); onNewTrip() }}
+        className="px-6 py-3 rounded-2xl font-semibold text-white cursor-pointer active:scale-[0.97] transition-transform"
         style={{
           background: "linear-gradient(135deg, #0A84FF, #5856D6)",
           boxShadow: "0 4px 20px rgba(10,132,255,0.3)",
         }}
       >
         Crear mi primer viaje ✨
-      </motion.button>
+      </button>
     </div>
   )
 }
