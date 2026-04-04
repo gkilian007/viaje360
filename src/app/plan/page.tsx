@@ -294,6 +294,9 @@ function PlanPageContent() {
     }).catch(() => {})
   }, [currentTrip?.id, currentTrip?.destination, track])
 
+  // Track the active trip ID so we re-fetch when switching trips
+  const activeTripId = useAppStore((s) => s.currentTrip?.id)
+
   // Always rehydrate from server to get rich activity fields and ensure trip is loaded
   useEffect(() => {
     async function rehydrate() {
@@ -312,6 +315,8 @@ function PlanPageContent() {
           if (payload.data.chatMessages) {
             replaceChatMessages(payload.data.chatMessages)
           }
+          // Reset to day 1 when switching trips
+          setSelectedDay(1)
           track("plan_viewed", {
             destination: payload.data.trip.destination,
             tripId: payload.data.trip.id,
@@ -358,7 +363,7 @@ function PlanPageContent() {
     }
     if (hydrated) void rehydrate()
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [hydrated])
+  }, [hydrated, activeTripId])
 
   // Preload images for visible activities (background, rate-limited to 1/s)
   // Check if diary was just saved
