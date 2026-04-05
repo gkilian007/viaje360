@@ -1,6 +1,6 @@
 import { NextRequest } from "next/server"
 import { rateLimit } from "@/lib/rate-limit"
-import { generateChatResponse } from "@/lib/gemini"
+import { generateChatResponse } from "@/lib/groq"
 import { resolveRequestIdentity } from "@/lib/auth/server"
 import { chatRequestSchema } from "@/lib/api/contracts"
 import {

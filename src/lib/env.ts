@@ -68,6 +68,7 @@ export const REQUIRED_RUNTIME_ENVS = [
 ] as const
 
 export const OPTIONAL_RUNTIME_ENVS = [
+  "GROQ_API_KEY",
   "GOOGLE_PLACES_API_KEY",
   "VIAJE360_ALLOW_ANONYMOUS_FALLBACK",
 ] as const
