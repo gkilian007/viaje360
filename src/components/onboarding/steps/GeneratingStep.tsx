@@ -237,10 +237,10 @@ export function GeneratingStep() {
       </motion.div>
 
       {/* Title */}
-      <h1 className="text-2xl font-bold text-[#e4e2e4] mb-2 text-center">
+      <h1 className="text-2xl font-bold text-[color:var(--on-surface)] mb-2 text-center">
         Generando tu itinerario
       </h1>
-      <p className="text-sm text-[#c0c6d6] mb-10 text-center">
+      <p className="text-sm text-[color:var(--on-surface-variant)] mb-10 text-center">
         Nuestro AI está creando una experiencia única para ti
       </p>
 
@@ -262,7 +262,7 @@ export function GeneratingStep() {
 
       {/* Slow warning message */}
       {slowWarning && (
-        <p className="text-[12px] text-[#888] text-center mt-2 animate-pulse">
+        <p className="text-[12px] text-[color:var(--on-surface-variant)] text-center mt-2 animate-pulse">
           Esto está tardando un poco más... Gemini está trabajando en los detalles ✨
         </p>
       )}
@@ -295,7 +295,7 @@ export function GeneratingStep() {
             transition={{ duration: 0.8, ease: "easeOut" }}
           />
         </div>
-        <p className="text-[11px] text-[#9ca3af] text-right mt-1">{progress}%</p>
+        <p className="text-[11px] text-[color:var(--on-surface-variant)] text-right mt-1">{progress}%</p>
       </div>
 
       {/* Spinner for long waits */}
