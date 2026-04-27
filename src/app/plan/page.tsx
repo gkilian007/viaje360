@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect, useRef, Suspense, useCallback } from "react"
+import { useState, useEffect, useRef, Suspense, useCallback, useMemo } from "react"
 import { motion, AnimatePresence } from "framer-motion"
 import { useSearchParams } from "next/navigation"
 import { BottomNav } from "@/components/layout/BottomNav"
@@ -58,9 +58,10 @@ function DaySelector({
   onSelect: (day: number) => void
   tripStartDate?: string | null
 }) {
-  const todayDayNumber = tripStartDate
-    ? Math.floor((Date.now() - new Date(tripStartDate).getTime()) / 86400000) + 1
-    : null
+  const todayDayNumber = useMemo(() => {
+    if (!tripStartDate) return null
+    return Math.floor((new Date().getTime() - new Date(tripStartDate).getTime()) / 86400000) + 1
+  }, [tripStartDate])
 
   return (
     <div className="flex gap-2 overflow-x-auto no-scrollbar px-1 py-1">
@@ -686,7 +687,13 @@ function PlanPageContent() {
           {currentTrip?.id && <PackingList tripId={currentTrip.id} />}
 
           {/* Local tips */}
-          {currentTrip?.destination && <LocalTipsCard destination={String(currentTrip.destination)} />}
+          {currentTrip?.destination && (
+            <LocalTipsCard
+              destination={String(currentTrip.destination)}
+              lat={firstWithCoords?.lat}
+              lng={firstWithCoords?.lng}
+            />
+          )}
 
           {/* Live activity banner */}
           <CurrentActivityBanner
@@ -1008,7 +1015,11 @@ function PlanPageContent() {
                 {/* Local tips */}
                 {currentTrip?.destination && (
                   <div className="px-4 pt-4">
-                    <LocalTipsCard destination={String(currentTrip.destination)} />
+                    <LocalTipsCard
+                      destination={String(currentTrip.destination)}
+                      lat={firstWithCoords?.lat}
+                      lng={firstWithCoords?.lng}
+                    />
                   </div>
                 )}
 

@@ -52,6 +52,51 @@ export interface TransitRoute {
   transitLines: TransitStepDetails[]
 }
 
+interface GoogleTransitLine {
+  name?: string
+  nameShort?: string
+  color?: string
+  textColor?: string
+  vehicle?: { name?: { text?: string } }
+  agencies?: Array<{ name?: string }>
+}
+
+interface GoogleTransitDetails {
+  transitLine?: GoogleTransitLine
+  stopDetails?: {
+    departureStop?: { name?: string }
+    arrivalStop?: { name?: string }
+  }
+  stopCount?: number
+  headsign?: string
+}
+
+interface GoogleRouteStep {
+  travelMode?: "WALK" | "TRANSIT"
+  startLocation?: { latLng?: { latitude?: number; longitude?: number } }
+  endLocation?: { latLng?: { latitude?: number; longitude?: number } }
+  polyline?: { encodedPolyline?: string }
+  localizedValues?: {
+    distance?: { text?: string }
+    staticDuration?: { text?: string }
+  }
+  transitDetails?: GoogleTransitDetails
+}
+
+interface GoogleRouteLeg {
+  steps?: GoogleRouteStep[]
+  distanceMeters?: number
+  duration?: string
+  polyline?: { encodedPolyline?: string }
+}
+
+interface GoogleRouteResponse {
+  routes?: Array<{
+    polyline?: { encodedPolyline?: string }
+    legs?: GoogleRouteLeg[]
+  }>
+}
+
 // ── Cache key ──
 
 function cacheKey(lat1: number, lng1: number, lat2: number, lng2: number): string {
@@ -117,14 +162,14 @@ export async function getTransitRoute(
     })
 
     if (!response.ok) return null
-    const data = await response.json()
+    const data: GoogleRouteResponse = await response.json()
     const route = data.routes?.[0]
     if (!route?.legs?.[0]) return null
 
     const leg = route.legs[0]
 
     // Parse steps
-    const steps: TransitStep[] = (leg.steps || []).map((step: any) => {
+    const steps: TransitStep[] = (leg.steps || []).map((step) => {
       const base: TransitStep = {
         travelMode: step.travelMode as "WALK" | "TRANSIT",
         startLocation: {

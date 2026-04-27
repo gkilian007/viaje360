@@ -29,28 +29,6 @@ const ADVANCED_STEPS: StepId[] = [
   "mobility",
 ]
 
-// Legacy full steps (kept for reference / fallback)
-const ALL_STEPS: StepId[] = [
-  "destination",
-  "companions",
-  "kids-pets",
-  "mobility",
-  "accommodation",
-  "interests",
-  "traveler-style",
-  "famous-local",
-  "pace",
-  "rest-days",
-  "day-style",
-  "budget",
-  "splurge",
-  "dietary",
-  "transport",
-  "weather",
-  "first-time",
-  "must-see",
-]
-
 interface OnboardingState {
   data: OnboardingData
   currentStepId: StepId

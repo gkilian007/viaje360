@@ -21,6 +21,8 @@ export async function GET(req: NextRequest) {
   const { searchParams } = new URL(req.url)
   const code = searchParams.get("code")
   const origin = getOrigin(req)
+  const next = searchParams.get("next")
+  const safeNext = next && next.startsWith("/") ? next : "/home"
 
   if (code) {
     const cookieStore = await cookies()
@@ -44,5 +46,5 @@ export async function GET(req: NextRequest) {
     await supabase.auth.exchangeCodeForSession(code)
   }
 
-  return NextResponse.redirect(`${origin}/home`)
+  return NextResponse.redirect(`${origin}${safeNext}`)
 }

@@ -29,6 +29,13 @@ import {
   getUserLearningContext,
 } from "@/lib/services/recommendation.service"
 import { buildMobilityPlanningBrief } from "@/lib/mobility"
+import {
+  decideMadridSegmentMode,
+  formatMadridTransportContextForPrompt,
+  getMadridTransportKnowledge,
+  type MadridTransportKnowledgeItem,
+  type MadridTransportProfileContext,
+} from "@/lib/services/madrid-transport-knowledge"
 import type { ItineraryVersionSource } from "@/lib/services/itinerary-versioning"
 
 const GEMINI_API_URL =
@@ -80,10 +87,10 @@ const GEMINI_ITINERARY_RESPONSE_SCHEMA = {
   required: ["tripName", "days"]
 } as const
 
-function buildItineraryPrompt(
+async function buildItineraryPrompt(
   data: OnboardingData,
   personalization?: PersonalRecommendationContext | null
-): string {
+): Promise<string> {
   const startDate = new Date(data.startDate)
   const endDate = new Date(data.endDate)
   const numDays = Math.max(
@@ -108,13 +115,42 @@ function buildItineraryPrompt(
     mobility: data.mobility,
     transport: data.transport,
   })
+  const madridTransportBrief = data.destination.trim().toLowerCase() === "madrid"
+    ? await formatMadridTransportContextForPrompt({
+        queryTerms: [
+          data.accommodationZone ?? "",
+          ...(data.interests ?? []),
+          ...(data.mustSee ? [data.mustSee] : []),
+        ],
+        limit: 14,
+        profileContext: {
+          mobility: data.mobility,
+          kidsPets: data.kidsPets,
+          transport: data.transport,
+          luggageLevel: data.companion === "familia" || data.alreadyBooked.toLowerCase().includes("maleta") ? "medium" : "light",
+        },
+      })
+    : ""
 
   return `Generate a ${numDays}-day travel itinerary for ${data.destination} (${data.startDate} to ${data.endDate}).
 
 Traveler: ${data.companion ?? "solo"}, ${data.groupSize} people. Budget: ${data.budget ?? "moderado"}. Pace: ${paceActivities} activities/day. Start at ${wakeHour}:00.
 ${data.accommodationZone ? `Accommodation: ${data.accommodationZone}. ` : ""}Interests: ${data.interests.join(", ") || "general"}.${data.wantsSiesta ? " Leave 14:00-16:00 free (siesta)." : ""}${data.firstTime ? " First visit — include highlights." : (personalization?.destinationMemory ? " Returning visitor with known history — focus on hidden gems and new experiences they haven't tried." : " Says they've visited before but we have NO data on what they saw — treat as first visit: include all major highlights plus a few hidden gems.")}${data.mustSee ? ` Must see: ${data.mustSee}.` : ""}${data.mustAvoid ? ` Avoid: ${data.mustAvoid}.` : ""}${data.dietary.length > 0 ? ` Dietary: ${data.dietary.join(", ")}.` : ""}
 ${mobilityBrief}
-${personalizationBrief ? `\n${personalizationBrief}\n` : ""}
+${personalizationBrief ? `
+${personalizationBrief}
+` : ""}${madridTransportBrief ? `
+${madridTransportBrief}
+` : ""}${data.destination.trim().toLowerCase() === "madrid" ? `
+Madrid transfer decision rules:
+- Prefer stations/hubs marked as fit=recommended for the traveler profile.
+- Treat fit=caution as usable only when the place is important enough to justify extra transfer friction.
+- Avoid fit=avoid unless there is no realistic simpler alternative.
+- If a transfer has meaningful station friction, reduce activity density around it.
+- For wheelchair, reduced mobility, frequent-rest, stroller/baby, or luggage-heavy context, prefer simpler bus/taxi or shorter direct connections over complex metro interchanges.
+- Use the extra-minute penalties and door-to-door transfer logic as a realism layer: do not plan Madrid as if every traveler walks and transfers like a light, healthy adult.
+- If accessibility is unknown or partial, be conservative in recommendations and timing.
+` : ""}
 EVERY activity MUST include ALL of these fields (no exceptions):
 - name, type (restaurant|museum|monument|park|shopping|tour|hotel), location (the REAL street address or place name IN THE LOCAL LANGUAGE of the destination — e.g. "Piazza del Colosseo, 1" for Rome, "Place du Trocadéro" for Paris — NOT translated names), time (HH:MM), endTime (HH:MM), duration (minutes), cost (entry fee €, 0 if free)
 - description: 2 short sentences MAX explaining EXACTLY what to do there in practical terms (what to see, what to order, where to enter, what makes it worth it)
@@ -215,13 +251,196 @@ function buildSingleDayPrompt(
   dayNumber: number,
   totalDays: number,
   personalization?: PersonalRecommendationContext | null
-): string {
+): Promise<string> {
   const singleDayData = { ...data, startDate: date, endDate: date }
-  return `${buildItineraryPrompt(singleDayData, personalization)}
+  return buildItineraryPrompt(singleDayData, personalization).then((basePrompt) => `${basePrompt}
 
 IMPORTANT: This is ONLY for day ${dayNumber} of ${totalDays} of the full trip.
 Return exactly 1 day in the days array.
-That day must use date ${date} and dayNumber ${dayNumber}.`
+That day must use date ${date} and dayNumber ${dayNumber}.`)
+}
+
+function isMadridDestination(destination: string | null | undefined): boolean {
+  return String(destination ?? "").trim().toLowerCase() === "madrid"
+}
+
+function buildMadridProfileContext(input: {
+  mobility?: string | null
+  kidsPets?: string[] | null
+  transport?: string[] | null
+  luggageLevel?: "light" | "medium" | "heavy"
+}): MadridTransportProfileContext {
+  return {
+    mobility: input.mobility ?? null,
+    kidsPets: input.kidsPets ?? [],
+    transport: input.transport ?? [],
+    luggageLevel: input.luggageLevel ?? "light",
+  }
+}
+
+function inferLuggageLevel(input: {
+  companion?: string | null
+  bookedTickets?: string | null
+}): "light" | "medium" | "heavy" {
+  const haystack = `${input.companion ?? ""} ${input.bookedTickets ?? ""}`.toLowerCase()
+  if (/maleta grande|heavy luggage|much equipaje|equipaje grande/.test(haystack)) return "heavy"
+  if (/familia|family|maleta|equipaje|aeropuerto|airport/.test(haystack)) return "medium"
+  return "light"
+}
+
+function normalizeMadridTransportText(value: string): string {
+  return value
+    .normalize("NFKD")
+    .replace(/[̀-ͯ]/g, "")
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, " ")
+    .trim()
+}
+
+function scoreMadridTransportCandidate(
+  item: MadridTransportKnowledgeItem,
+  queryTerms: string[]
+): number {
+  const haystack = [
+    item.name,
+    item.category,
+    item.address ?? "",
+    ...item.tags,
+    ...Object.values(item.metadata ?? {}).flatMap((value) => Array.isArray(value) ? value.map(String) : [String(value)]),
+  ]
+    .map((value) => normalizeMadridTransportText(value))
+    .join(" | ")
+
+  return queryTerms.reduce((score, term) => {
+    const normalized = normalizeMadridTransportText(term)
+    if (!normalized) return score
+    return score + (haystack.includes(normalized) ? 1 : 0)
+  }, 0)
+}
+
+function pickBestMadridTransportNode(
+  items: MadridTransportKnowledgeItem[],
+  queryTerms: string[]
+): MadridTransportKnowledgeItem | null {
+  let best: MadridTransportKnowledgeItem | null = null
+  let bestScore = -1
+
+  for (const item of items) {
+    const score = scoreMadridTransportCandidate(item, queryTerms)
+    if (score > bestScore) {
+      best = item
+      bestScore = score
+    }
+  }
+
+  return best ?? items[0] ?? null
+}
+
+function haversineDistanceMeters(
+  fromLat: number,
+  fromLng: number,
+  toLat: number,
+  toLng: number
+): number {
+  const toRad = (degrees: number) => degrees * Math.PI / 180
+  const R = 6_371_000
+  const dLat = toRad(toLat - fromLat)
+  const dLng = toRad(toLng - fromLng)
+  const a =
+    Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+    Math.cos(toRad(fromLat)) * Math.cos(toRad(toLat)) *
+    Math.sin(dLng / 2) * Math.sin(dLng / 2)
+  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a))
+  return Math.round(R * c)
+}
+
+function inferTimeOfDay(value?: string | null): "morning" | "afternoon" | "evening" | "night" {
+  const hour = Number(String(value ?? "").split(":")[0] ?? NaN)
+  if (!Number.isFinite(hour)) return "afternoon"
+  if (hour < 7) return "night"
+  if (hour < 12) return "morning"
+  if (hour < 19) return "afternoon"
+  if (hour < 23) return "evening"
+  return "night"
+}
+
+function appendUniqueNote(base: string | undefined, extra: string): string {
+  const trimmedBase = base?.trim() ?? ""
+  if (!trimmedBase) return extra
+  if (trimmedBase.includes(extra)) return trimmedBase
+  return `${trimmedBase} · ${extra}`
+}
+
+async function annotateMadridSegments(
+  itinerary: GeneratedItinerary,
+  options: {
+    destination: string
+    profileContext: MadridTransportProfileContext
+  }
+): Promise<GeneratedItinerary> {
+  if (!isMadridDestination(options.destination)) return itinerary
+
+  const transportNodes = await getMadridTransportKnowledge({
+    limit: 200,
+    profileContext: options.profileContext,
+  })
+
+  if (transportNodes.length === 0) return itinerary
+
+  return {
+    ...itinerary,
+    days: itinerary.days.map((day) => {
+      const activities = day.activities.map((activity) => ({ ...activity }))
+
+      for (let i = 1; i < activities.length; i++) {
+        const previous = activities[i - 1]
+        const current = activities[i]
+
+        if (
+          typeof previous.lat !== "number" ||
+          typeof previous.lng !== "number" ||
+          typeof current.lat !== "number" ||
+          typeof current.lng !== "number"
+        ) {
+          continue
+        }
+
+        const distanceMeters = haversineDistanceMeters(previous.lat, previous.lng, current.lat, current.lng)
+        if (distanceMeters < 250) continue
+
+        const transportNode = pickBestMadridTransportNode(transportNodes, [
+          previous.name,
+          previous.location,
+          current.name,
+          current.location,
+        ])
+
+        if (!transportNode) continue
+
+        const decision = decideMadridSegmentMode(transportNode, {
+          distanceMeters,
+          timeOfDay: inferTimeOfDay(current.time),
+          profileContext: options.profileContext,
+        })
+
+        const note = `Acceso sugerido desde ${previous.name}: ${decision.preferredMode} (~${decision.transportMinutes} min transporte vs ${decision.walkMinutes} min andando). ${decision.rationale}`
+
+        current.notes = appendUniqueNote(current.notes, note)
+
+        if (decision.preferredMode !== "walk" || distanceMeters >= 1200 || decision.timeSavedMinutes >= 6) {
+          current.recommendationReason = appendUniqueNote(
+            current.recommendationReason,
+            `Tramo Madrid recomendado en ${decision.preferredMode} por fricción/tiempo realista del recorrido.`
+          )
+        }
+      }
+
+      return {
+        ...day,
+        activities,
+      }
+    }),
+  }
 }
 
 function buildAdaptationPrompt(
@@ -246,6 +465,10 @@ function buildAdaptationPrompt(
     transport: ((onboarding?.transport ?? []) as OnboardingData["transport"]),
   })
 
+  const madridTransportAdaptationBrief = String(trip.destination ?? "").trim().toLowerCase() === "madrid"
+    ? `\nMadrid transport adaptation note: prefer stations/hubs with confirmed or simpler accessibility when the traveler has mobility constraints, stroller context, or luggage. Penalize complex interchanges and long station access corridors if accessibility is partial or unknown. Walking and transfer times should be slower than the default adult profile when the traveler is in wheelchair, reduced mobility, frequent-rest, stroller, or luggage-heavy context. Prefer fit=recommended nodes, use fit=caution only when justified by trip value, and avoid fit=avoid unless there is no realistic simpler alternative.`
+    : ""
+
   return `You are Viaje360 AI. Adapt this itinerary because: "${reason}".
 
 Trip:
@@ -266,6 +489,7 @@ Traveler constraints:
 - Siesta: ${String(onboarding?.siesta ?? false)}
 - Booked tickets: ${String(onboarding?.booked_tickets ?? "none")}
 ${mobilityBrief}
+${madridTransportAdaptationBrief}
 ${personalizationBrief ? `
 ${personalizationBrief}
 ` : ""}
@@ -447,7 +671,7 @@ export async function generateItinerary(
   options?: { userId?: string | null; personalization?: PersonalRecommendationContext | null }
 ): Promise<GeneratedItinerary> {
   const personalization = options?.personalization
-  const prompt = buildItineraryPrompt(onboardingData, personalization)
+  const prompt = await buildItineraryPrompt(onboardingData, personalization)
   const raw = await callGeminiRaw(prompt)
 
   const result = await runReliableGenerationPipeline(
@@ -473,10 +697,23 @@ export async function generateItinerary(
 
   // Annotate with learning-based recommendation reasons
   const learningContext = await getUserLearningContext(options?.userId, onboardingData.destination)
-  return annotateItineraryWithLearningReasons(
+  const learningAnnotated = annotateItineraryWithLearningReasons(
     result.itinerary,
     learningContext
   )
+
+  return annotateMadridSegments(learningAnnotated, {
+    destination: onboardingData.destination,
+    profileContext: buildMadridProfileContext({
+      mobility: onboardingData.mobility,
+      kidsPets: onboardingData.kidsPets,
+      transport: onboardingData.transport,
+      luggageLevel: inferLuggageLevel({
+        companion: onboardingData.companion,
+        bookedTickets: onboardingData.alreadyBooked,
+      }),
+    }),
+  })
 }
 
 export async function getItinerary(tripId: string): Promise<{
@@ -667,9 +904,22 @@ export async function adaptItinerary(
       String(trip.destination ?? "Trip")
     )
 
+    const madridAnnotated = await annotateMadridSegments(result.itinerary, {
+      destination: String(trip.destination ?? ""),
+      profileContext: buildMadridProfileContext({
+        mobility: onboarding?.mobility ?? null,
+        kidsPets: (onboarding?.kids_pets ?? []) as string[],
+        transport: (onboarding?.transport ?? []) as string[],
+        luggageLevel: inferLuggageLevel({
+          companion: onboarding?.companion ?? null,
+          bookedTickets: onboarding?.booked_tickets ?? null,
+        }),
+      }),
+    })
+
     const nextVersion = await createItineraryVersion({
       tripId,
-      itinerary: result.itinerary,
+      itinerary: madridAnnotated,
       source,
       reason,
       createdBy: (trip.user_id as string | null) ?? null,
@@ -697,14 +947,14 @@ export async function adaptItinerary(
     }
 
     try {
-      await replaceTripItinerary(tripId, result.itinerary)
+      await replaceTripItinerary(tripId, madridAnnotated)
     } catch (replaceError) {
       await supabase.from("adaptation_events").delete().eq("id", adaptationEvent.id)
       await supabase.from("itinerary_versions").delete().eq("id", nextVersion.id)
       throw replaceError
     }
 
-    return result.itinerary
+    return madridAnnotated
   } catch (err) {
     console.error("adaptItinerary error:", err)
     return null

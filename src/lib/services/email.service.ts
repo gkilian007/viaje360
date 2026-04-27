@@ -272,3 +272,71 @@ export async function sendTrialExpiringEmail(
 `
   return sendEmail(to, subject, html)
 }
+
+export async function sendTripCollaborationInviteEmail(params: {
+  to: string
+  inviterName: string
+  destination: string
+  role: "viewer" | "editor"
+  inviteUrl: string
+}): Promise<boolean> {
+  const { to, inviterName, destination, role, inviteUrl } = params
+  const subject = `${inviterName} te ha invitado a colaborar en un viaje a ${destination} · Viaje360`
+  const roleLabel = role === "editor" ? "editor" : "visor"
+
+  const html = `
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>${subject}</title>
+</head>
+<body style="margin:0;padding:0;background:#0a0a0f;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;">
+  <table width="100%" cellpadding="0" cellspacing="0" style="background:#0a0a0f;padding:40px 20px;">
+    <tr>
+      <td align="center">
+        <table width="600" cellpadding="0" cellspacing="0" style="max-width:600px;background:#1a1a2e;border-radius:16px;overflow:hidden;border:1px solid rgba(255,255,255,0.08);">
+          <tr>
+            <td style="background:linear-gradient(135deg,#0A84FF,#5E5CE6);padding:40px 40px 32px;text-align:center;">
+              <h1 style="margin:0;color:#fff;font-size:28px;font-weight:700;">🧳 Viaje360</h1>
+              <p style="margin:8px 0 0;color:rgba(255,255,255,0.8);font-size:14px;">Invitación a colaborar en un viaje</p>
+            </td>
+          </tr>
+          <tr>
+            <td style="padding:40px;">
+              <h2 style="margin:0 0 16px;color:#fff;font-size:22px;">Tienes una invitación</h2>
+              <p style="margin:0 0 16px;color:#c0c6d6;font-size:16px;line-height:1.6;">
+                <strong style="color:#fff;">${inviterName}</strong> te ha invitado a colaborar en un viaje a <strong style="color:#fff;">${destination}</strong>.
+              </p>
+              <p style="margin:0 0 24px;color:#c0c6d6;font-size:16px;line-height:1.6;">
+                Tu acceso será de tipo <strong style="color:#fff;">${roleLabel}</strong>. Abre el viaje para verlo y seguir el plan compartido.
+              </p>
+              <div style="text-align:center;margin:32px 0;">
+                <a href="${inviteUrl}"
+                   style="display:inline-block;background:linear-gradient(135deg,#0A84FF,#5E5CE6);color:#fff;text-decoration:none;padding:14px 32px;border-radius:12px;font-size:16px;font-weight:600;">
+                  Abrir invitación →
+                </a>
+              </div>
+              <p style="margin:24px 0 0;color:#8b93a7;font-size:13px;line-height:1.6;">
+                Si todavía no tienes cuenta en Viaje360, puedes registrarte con este mismo email y luego abrir el enlace.
+              </p>
+            </td>
+          </tr>
+          <tr>
+            <td style="padding:24px 40px;border-top:1px solid rgba(255,255,255,0.06);text-align:center;">
+              <p style="margin:0;color:#666;font-size:12px;">
+                Viaje360 · <a href="https://viaje360.app" style="color:#0A84FF;text-decoration:none;">viaje360.app</a>
+              </p>
+            </td>
+          </tr>
+        </table>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>
+`
+
+  return sendEmail(to, subject, html)
+}

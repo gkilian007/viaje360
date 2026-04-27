@@ -1,4 +1,4 @@
-import { NextRequest } from "next/server"
+import type { NextRequest } from "next/server"
 import { normalizeRouteError, successResponse, errorResponse } from "@/lib/api/route-helpers"
 import { resolveRequestIdentity } from "@/lib/auth/server"
 import { createServiceClient } from "@/lib/supabase/server"
@@ -18,6 +18,8 @@ export interface TripSummary {
   spent: number
   createdAt: string
   imageUrl: string | null
+  isOwner: boolean
+  collaboratorRole?: "viewer" | "editor" | null
 }
 
 export async function GET(_req: NextRequest) {
@@ -30,8 +32,7 @@ export async function GET(_req: NextRequest) {
 
     const supabase = createServiceClient()
 
-    // Fetch all user trips
-    const { data: trips, error: tripsError } = await supabase
+    const { data: ownedTrips, error: tripsError } = await supabase
       .from("trips")
       .select("*")
       .eq("user_id", identity.userId)
@@ -42,7 +43,46 @@ export async function GET(_req: NextRequest) {
       return errorResponse("INTERNAL_ERROR", "Failed to fetch trips", 500)
     }
 
-    const tripList = (trips as DbTrip[]) ?? []
+    const { data: collaboratorRows, error: collaboratorError } = await supabase
+      .from("trip_collaborators")
+      .select("trip_id, role")
+      .eq("user_id", identity.userId)
+      .eq("accepted", true)
+
+    if (collaboratorError) {
+      console.error("GET /api/trips collaborator lookup error:", collaboratorError)
+      return errorResponse("INTERNAL_ERROR", "Failed to fetch trips", 500)
+    }
+
+    const collaboratorTripIds = Array.from(
+      new Set((collaboratorRows ?? []).map((row) => row.trip_id as string).filter(Boolean))
+    )
+
+    let collaboratorTrips: DbTrip[] = []
+    if (collaboratorTripIds.length > 0) {
+      const { data: sharedTrips, error: sharedTripsError } = await supabase
+        .from("trips")
+        .select("*")
+        .in("id", collaboratorTripIds)
+
+      if (sharedTripsError) {
+        console.error("GET /api/trips shared trips error:", sharedTripsError)
+        return errorResponse("INTERNAL_ERROR", "Failed to fetch trips", 500)
+      }
+
+      collaboratorTrips = (sharedTrips as DbTrip[]) ?? []
+    }
+
+    const ownedTripList = (ownedTrips as DbTrip[]) ?? []
+    const ownedTripIds = new Set(ownedTripList.map((trip) => trip.id))
+    const collaboratorRoleByTrip = new Map(
+      (collaboratorRows ?? []).map((row) => [row.trip_id as string, row.role as "viewer" | "editor"])
+    )
+
+    const tripList = [
+      ...ownedTripList,
+      ...collaboratorTrips.filter((trip) => !ownedTripIds.has(trip.id)),
+    ]
     const tripIds = tripList.map((t) => t.id)
 
     if (tripIds.length === 0) {
@@ -87,7 +127,15 @@ export async function GET(_req: NextRequest) {
       spent: Number(trip.spent ?? 0),
       createdAt: trip.created_at,
       imageUrl: trip.image_url ?? null,
+      isOwner: trip.user_id === identity.userId,
+      collaboratorRole: trip.user_id === identity.userId ? null : (collaboratorRoleByTrip.get(trip.id) ?? null),
     }))
+
+    result.sort((a, b) => {
+      const activeDelta = Number(b.status === "active") - Number(a.status === "active")
+      if (activeDelta !== 0) return activeDelta
+      return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+    })
 
     return successResponse({ trips: result })
   } catch (error) {

@@ -17,26 +17,38 @@ export async function POST(
     const { tripId } = await params
     const supabase = createServiceClient()
 
-    // Verify the trip belongs to the user
     const { data: trip, error: tripError } = await supabase
       .from("trips")
       .select("id, user_id")
       .eq("id", tripId)
-      .eq("user_id", identity.userId)
       .maybeSingle()
 
     if (tripError || !trip) {
       return errorResponse("NOT_FOUND", "Trip not found", 404)
     }
 
-    // Deactivate all other trips for this user
+    const isOwner = trip.user_id === identity.userId
+
+    if (!isOwner) {
+      const { data: collaborator } = await supabase
+        .from("trip_collaborators")
+        .select("id")
+        .eq("trip_id", tripId)
+        .eq("user_id", identity.userId)
+        .eq("accepted", true)
+        .maybeSingle()
+
+      if (!collaborator) {
+        return errorResponse("NOT_FOUND", "Trip not found", 404)
+      }
+    }
+
     await supabase
       .from("trips")
       .update({ status: "completed", updated_at: new Date().toISOString() })
       .eq("user_id", identity.userId)
       .neq("id", tripId)
 
-    // Activate the requested trip
     const { error: updateError } = await supabase
       .from("trips")
       .update({ status: "active", updated_at: new Date().toISOString() })
@@ -47,7 +59,7 @@ export async function POST(
       return errorResponse("INTERNAL_ERROR", "Failed to activate trip", 500)
     }
 
-    return successResponse({ tripId, status: "active" })
+    return successResponse({ tripId, status: "active", scope: isOwner ? "owner" : "collaborator" })
   } catch (error) {
     console.error("POST /api/trips/[id]/activate error:", error)
     return normalizeRouteError(error, "Failed to activate trip")
