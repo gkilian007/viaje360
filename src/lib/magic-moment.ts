@@ -36,6 +36,8 @@ export interface MagicMomentContext {
   /** 0 = start of day, 1 = end of day */
   dayProgress: number
   destination: string
+  /** Optional override for deterministic scoring/tests */
+  currentHour?: number
 }
 
 export interface MagicMomentSuggestion {
@@ -315,7 +317,7 @@ export function scorePOI(poi: NearbyPOI, ctx: MagicMomentContext): number {
   if (ctx.minutesToNext < timeNeeded + 10) return 0
 
   // Time-of-day filter: don't suggest bars at 9 AM or museums at 11 PM
-  const currentHour = new Date().getHours()
+  const currentHour = ctx.currentHour ?? new Date().getHours()
   const timeFilter = TIME_FILTERS[poi.type.toLowerCase()]
   if (timeFilter) {
     if (timeFilter.notBefore && currentHour < timeFilter.notBefore) return 0

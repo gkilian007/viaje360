@@ -202,6 +202,7 @@ function TripCard({
 }) {
   const imageUrl = trip.imageUrl ?? getDestinationImageUrl(trip.destination)
   const isCompleted = trip.status === "completed"
+  const isCollaborator = trip.isOwner === false
 
   return (
     <motion.div
@@ -232,21 +233,34 @@ function TripCard({
             background: "linear-gradient(to bottom, rgba(0,0,0,0.15) 0%, rgba(0,0,0,0.55) 100%)",
           }}
         />
-        {/* Status badge */}
-        <div
-          className="absolute top-3 right-3 px-3 py-1 rounded-full text-[11px] font-semibold"
-          style={{
-            background: trip.status === "active"
-              ? "rgba(48,209,88,0.85)"
-              : isCompleted
-              ? "rgba(80,80,90,0.85)"
-              : "rgba(0,0,0,0.55)",
-            color: trip.status === "active" ? "#fff" : isCompleted ? "#a8e6b8" : "#ccc",
-            backdropFilter: "blur(8px)",
-            border: `1px solid ${trip.status === "active" ? "rgba(48,209,88,0.5)" : isCompleted ? "rgba(120,200,140,0.3)" : "rgba(255,255,255,0.15)"}`,
-          }}
-        >
-          {trip.status === "active" ? "● En curso" : trip.status === "planning" ? "Planificando" : "✓ Completado"}
+        {/* Status badges */}
+        <div className="absolute top-3 right-3 flex flex-col items-end gap-2">
+          <div
+            className="px-3 py-1 rounded-full text-[11px] font-semibold"
+            style={{
+              background: trip.status === "active"
+                ? "rgba(48,209,88,0.85)"
+                : isCompleted
+                ? "rgba(80,80,90,0.85)"
+                : "rgba(0,0,0,0.55)",
+              color: trip.status === "active" ? "#fff" : isCompleted ? "#a8e6b8" : "#ccc",
+              backdropFilter: "blur(8px)",
+              border: `1px solid ${trip.status === "active" ? "rgba(48,209,88,0.5)" : isCompleted ? "rgba(120,200,140,0.3)" : "rgba(255,255,255,0.15)"}`,
+            }}
+          >
+            {trip.status === "active" ? "● En curso" : trip.status === "planning" ? "Planificando" : "✓ Completado"}
+          </div>
+          <div
+            className="px-3 py-1 rounded-full text-[10px] font-semibold"
+            style={{
+              background: isCollaborator ? "rgba(191,90,242,0.24)" : "rgba(255,255,255,0.14)",
+              color: isCollaborator ? "#f0d6ff" : "#fff",
+              backdropFilter: "blur(8px)",
+              border: isCollaborator ? "1px solid rgba(191,90,242,0.28)" : "1px solid rgba(255,255,255,0.15)",
+            }}
+          >
+            {isCollaborator ? `Compartido · ${trip.collaboratorRole === "editor" ? "editor" : "viewer"}` : "Propietario"}
+          </div>
         </div>
         {/* Destination label at bottom-left */}
         <div className="absolute bottom-3 left-3">
@@ -272,13 +286,15 @@ function TripCard({
             <span className="material-symbols-outlined text-[18px]">share</span>
             Compartir
           </button>
-          <button
-            onClick={onArchive}
-            className="flex items-center gap-1.5 text-[12px] text-[var(--on-surface-variant)] hover:text-[#FF9F0A] transition-colors"
-          >
-            <span className="material-symbols-outlined text-[18px]">archive</span>
-            Archivar
-          </button>
+          {trip.isOwner && (
+            <button
+              onClick={onArchive}
+              className="flex items-center gap-1.5 text-[12px] text-[var(--on-surface-variant)] hover:text-[#FF9F0A] transition-colors"
+            >
+              <span className="material-symbols-outlined text-[18px]">archive</span>
+              Archivar
+            </button>
+          )}
           {!isCompleted && (
             <button
               onClick={onViewRecap}
@@ -307,10 +323,10 @@ function TripCard({
               whileTap={{ scale: 0.97 }}
               onClick={onContinue}
               className="ml-auto flex items-center gap-1.5 px-4 py-2 rounded-xl text-[12px] font-semibold text-white"
-              style={{ background: "linear-gradient(135deg, #0A84FF, #5856D6)" }}
+              style={{ background: isCollaborator ? "linear-gradient(135deg, #BF5AF2, #7B61FF)" : "linear-gradient(135deg, #0A84FF, #5856D6)" }}
             >
               <span className="material-symbols-outlined text-[16px]">arrow_forward</span>
-              Ver itinerario
+              {isCollaborator ? "Abrir viaje" : "Ver itinerario"}
             </motion.button>
           )}
         </div>

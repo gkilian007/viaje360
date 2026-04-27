@@ -1,6 +1,7 @@
 "use client"
 
 import { useState } from "react"
+import { useSearchParams } from "next/navigation"
 import { createClient, isSupabaseBrowserConfigured } from "@/lib/supabase/client"
 import { motion } from "framer-motion"
 import posthog from "posthog-js"
@@ -8,6 +9,7 @@ import posthog from "posthog-js"
 type AuthMode = "login" | "register"
 
 export default function LoginPage() {
+  const searchParams = useSearchParams()
   const [mode, setMode] = useState<AuthMode>("login")
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
@@ -15,6 +17,11 @@ export default function LoginPage() {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [successMsg, setSuccessMsg] = useState<string | null>(null)
+
+  const nextPath = (() => {
+    const requested = searchParams.get("next")
+    return requested && requested.startsWith("/") ? requested : "/home"
+  })()
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
@@ -47,10 +54,10 @@ export default function LoginPage() {
         })
         if (signInError) throw signInError
         try { posthog.identify(email) } catch {}
-        window.location.href = "/home"
+        window.location.href = nextPath
       }
-    } catch (err: any) {
-      setError(err.message ?? "Error de autenticación")
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : "Error de autenticación")
     } finally {
       setLoading(false)
     }
@@ -65,7 +72,7 @@ export default function LoginPage() {
     const { error } = await supabase.auth.signInWithOAuth({
       provider: "google",
       options: {
-        redirectTo: `${window.location.origin}/auth/callback`,
+        redirectTo: `${window.location.origin}/auth/callback?next=${encodeURIComponent(nextPath)}`,
       },
     })
     if (error) setError(error.message)
@@ -80,7 +87,7 @@ export default function LoginPage() {
     const { error } = await supabase.auth.signInWithOAuth({
       provider: "apple",
       options: {
-        redirectTo: `${window.location.origin}/auth/callback`,
+        redirectTo: `${window.location.origin}/auth/callback?next=${encodeURIComponent(nextPath)}`,
       },
     })
     if (error) setError(error.message)

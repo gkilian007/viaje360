@@ -32,13 +32,16 @@ function TripCard({
   const router = useRouter()
   const isActive = trip.status === "active"
   const isCompleted = trip.status === "completed"
+  const isCollaborator = trip.isOwner === false
   const heroUrl = getDestinationHeroThumb(trip.destination, 600) ?? trip.imageUrl
 
   function handleClick() {
     if (isActive) {
       router.push("/plan")
-    } else {
+    } else if (isCompleted) {
       router.push(`/recap/${trip.id}`)
+    } else {
+      onActivate(trip.id)
     }
   }
 
@@ -76,8 +79,8 @@ function TripCard({
           style={{ background: "linear-gradient(to top, rgba(15,17,23,0.95) 0%, transparent 60%)" }}
         />
 
-        {/* Status badge */}
-        <div className="absolute top-2.5 left-2.5">
+        {/* Status badges */}
+        <div className="absolute top-2.5 left-2.5 flex flex-col gap-1.5">
           {isActive && (
             <span
               className="px-2.5 py-1 rounded-full text-[10px] font-bold backdrop-blur-md"
@@ -94,6 +97,16 @@ function TripCard({
               COMPLETADO
             </span>
           )}
+          <span
+            className="px-2.5 py-1 rounded-full text-[10px] font-bold backdrop-blur-md"
+            style={{
+              background: isCollaborator ? "rgba(191,90,242,0.22)" : "rgba(255,255,255,0.12)",
+              color: isCollaborator ? "#e2b7ff" : "#f3f4f6",
+              border: isCollaborator ? "1px solid rgba(191,90,242,0.28)" : "1px solid rgba(255,255,255,0.14)",
+            }}
+          >
+            {isCollaborator ? "COMPARTIDO CONTIGO" : "TU VIAJE"}
+          </span>
         </div>
 
         {/* Share button */}
@@ -114,9 +127,14 @@ function TripCard({
 
       {/* Info */}
       <div className="px-3 py-3">
-        <p className="text-[12px] text-[#c0c6d6] font-medium mb-2">
-          {trip.destination}{trip.country ? `, ${trip.country}` : ""}
-        </p>
+        <div className="mb-2">
+          <p className="text-[12px] text-[#c0c6d6] font-medium">
+            {trip.destination}{trip.country ? `, ${trip.country}` : ""}
+          </p>
+          <p className="text-[11px] text-[#9ca3af] mt-1">
+            {isCollaborator ? `Rol: ${trip.collaboratorRole === "editor" ? "editor" : "viewer"}` : "Propietario"}
+          </p>
+        </div>
 
         <div className="flex flex-wrap gap-x-3 gap-y-1 text-[11px] text-[#9ca3af] mb-3">
           <span>📅 {formatDateRange(trip.startDate, trip.endDate)}</span>
@@ -130,9 +148,9 @@ function TripCard({
             <button
               onClick={(e) => { e.stopPropagation(); router.push("/plan") }}
               className="w-full py-2 rounded-xl text-[12px] font-semibold text-white transition-all active:scale-95"
-              style={{ background: "rgba(10,132,255,0.2)", border: "1px solid rgba(10,132,255,0.3)" }}
+              style={{ background: isCollaborator ? "rgba(191,90,242,0.22)" : "rgba(10,132,255,0.2)", border: isCollaborator ? "1px solid rgba(191,90,242,0.3)" : "1px solid rgba(10,132,255,0.3)" }}
             >
-              Ver plan →
+              {isCollaborator ? "Ver viaje compartido →" : "Ver plan →"}
             </button>
           ) : isCompleted ? (
             <div className="flex gap-2 w-full">
@@ -147,9 +165,9 @@ function TripCard({
                 onClick={(e) => { e.stopPropagation(); onActivate(trip.id) }}
                 disabled={activating === trip.id}
                 className="flex-1 py-2 rounded-xl text-[12px] font-medium transition-all active:scale-95 disabled:opacity-60"
-                style={{ background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.09)", color: "#9ca3af" }}
+                style={{ background: isCollaborator ? "rgba(191,90,242,0.12)" : "rgba(255,255,255,0.06)", border: isCollaborator ? "1px solid rgba(191,90,242,0.2)" : "1px solid rgba(255,255,255,0.09)", color: isCollaborator ? "#e2b7ff" : "#9ca3af" }}
               >
-                {activating === trip.id ? "…" : "Reactivar"}
+                {activating === trip.id ? "…" : isCollaborator ? "Abrir" : "Reactivar"}
               </button>
             </div>
           ) : (
@@ -157,9 +175,9 @@ function TripCard({
               onClick={(e) => { e.stopPropagation(); onActivate(trip.id) }}
               disabled={activating === trip.id}
               className="w-full py-2 rounded-xl text-[12px] font-semibold text-white transition-all active:scale-95 disabled:opacity-60"
-              style={{ background: "linear-gradient(135deg, #0A84FF, #5856D6)" }}
+              style={{ background: isCollaborator ? "linear-gradient(135deg, #BF5AF2, #7B61FF)" : "linear-gradient(135deg, #0A84FF, #5856D6)" }}
             >
-              {activating === trip.id ? "Activando…" : "Continuar"}
+              {activating === trip.id ? "Activando…" : isCollaborator ? "Abrir viaje compartido" : "Continuar"}
             </button>
           )}
         </div>

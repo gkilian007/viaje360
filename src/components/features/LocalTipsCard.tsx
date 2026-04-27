@@ -8,6 +8,20 @@ interface LocalTipsCardProps {
   destination: string
   /** Show all tips or just contextual ones */
   mode?: "contextual" | "all"
+  lat?: number
+  lng?: number
+}
+
+interface NearbyPOI {
+  name: string
+  type: string
+  lat: number
+  lng: number
+  distanceMeters: number
+  mapsUrl: string
+  emoji: string
+  durationMinutes: number
+  openNow: boolean
 }
 
 function getTimeOfDay(): "morning" | "afternoon" | "evening" {
@@ -17,14 +31,54 @@ function getTimeOfDay(): "morning" | "afternoon" | "evening" {
   return "evening"
 }
 
-export function LocalTipsCard({ destination, mode = "contextual" }: LocalTipsCardProps) {
+export function LocalTipsCard({ destination, mode = "contextual", lat, lng }: LocalTipsCardProps) {
   const [expanded, setExpanded] = useState(false)
   const [activeTip, setActiveTip] = useState(0)
+  const [fallbackState, setFallbackState] = useState<{ key: string; tips: LocalTip[] }>({ key: "", tips: [] })
 
-  const tips = useMemo(() => {
+  const curatedTips = useMemo(() => {
     if (mode === "all") return getAllLocalTips(destination)
     return getLocalTips(destination, { timeOfDay: getTimeOfDay() })
   }, [destination, mode])
+
+  const nearbyKey = `${destination}:${lat ?? "none"}:${lng ?? "none"}:${mode}`
+
+  useEffect(() => {
+    if (curatedTips.length > 0 || lat == null || lng == null) return
+
+    let cancelled = false
+
+    ;(async () => {
+      try {
+        const res = await fetch(`/api/nearby?lat=${lat}&lng=${lng}&radius=900`)
+        if (!res.ok) return
+
+        const payload = await res.json()
+        const pois = Array.isArray(payload?.data?.pois) ? (payload.data.pois as NearbyPOI[]) : []
+        if (cancelled) return
+
+        const dynamicTips = pois.slice(0, 4).map((poi, idx) => ({
+          id: `nearby-${poi.name}-${idx}`,
+          emoji: poi.emoji || "📍",
+          title: `${poi.name} a ${Math.max(1, Math.round(poi.distanceMeters / 100)) * 100} m`,
+          body: buildNearbyTipBody(poi),
+          category: mapPoiTypeToCategory(poi.type),
+          timing: "anytime" as const,
+        }))
+
+        setFallbackState({ key: nearbyKey, tips: dynamicTips })
+      } catch {
+        if (!cancelled) setFallbackState({ key: nearbyKey, tips: [] })
+      }
+    })()
+
+    return () => {
+      cancelled = true
+    }
+  }, [curatedTips.length, lat, lng, nearbyKey])
+
+  const fallbackTips = fallbackState.key === nearbyKey ? fallbackState.tips : []
+  const tips = curatedTips.length > 0 ? curatedTips : fallbackTips
 
   // Auto-rotate tips every 8 seconds
   useEffect(() => {
@@ -37,7 +91,7 @@ export function LocalTipsCard({ destination, mode = "contextual" }: LocalTipsCar
 
   if (tips.length === 0) return null
 
-  const currentTip = tips[activeTip]
+  const currentTip = tips[activeTip % tips.length]
 
   return (
     <div className="px-5 mb-4">
@@ -119,6 +173,40 @@ export function LocalTipsCard({ destination, mode = "contextual" }: LocalTipsCar
       </motion.div>
     </div>
   )
+}
+
+function mapPoiTypeToCategory(type: string): LocalTip["category"] {
+  switch (type) {
+    case "gastronomia":
+      return "food"
+    case "historia":
+    case "arte":
+    case "cultural":
+      return "practical"
+    case "naturaleza":
+    case "fotografia":
+      return "practical"
+    default:
+      return "practical"
+  }
+}
+
+function buildNearbyTipBody(poi: NearbyPOI): string {
+  const walkMinutes = Math.max(1, Math.round(poi.durationMinutes / 2))
+
+  if (poi.type === "gastronomia") {
+    return `Tienes una parada gastronómica cerca. ${poi.name} está a unos ${walkMinutes} min andando y puede encajar perfecto como pausa espontánea.`
+  }
+
+  if (poi.type === "historia" || poi.type === "arte" || poi.type === "cultural") {
+    return `Hay un punto cultural muy cerca de tu ruta. ${poi.name} está a mano y puede darte un mini desvío con bastante valor sin romper el día.`
+  }
+
+  if (poi.type === "naturaleza" || poi.type === "fotografia") {
+    return `Si te apetece aire o una foto buena, ${poi.name} está muy cerca y es una parada fácil de meter entre actividades.`
+  }
+
+  return `${poi.name} está cerca de donde te mueves ahora y puede ser una buena parada improvisada si tienes un hueco.`
 }
 
 function TipRow({ tip }: { tip: LocalTip }) {

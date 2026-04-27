@@ -33,6 +33,7 @@ function makeCtx(overrides: Partial<MagicMomentContext> = {}): MagicMomentContex
     userInterests: ["gastronomia", "arte"],
     dayProgress: 0.4,
     destination: "barcelona",
+    currentHour: 14,
     ...overrides,
   }
 }

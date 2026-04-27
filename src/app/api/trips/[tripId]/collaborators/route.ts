@@ -4,6 +4,7 @@ import { rateLimit } from "@/lib/rate-limit"
 import { normalizeRouteError, parseJsonBody, successResponse, errorResponse } from "@/lib/api/route-helpers"
 import { resolveRequestIdentity } from "@/lib/auth/server"
 import { createServiceClient } from "@/lib/supabase/server"
+import { sendTripCollaborationInviteEmail } from "@/lib/services/email.service"
 
 const addSchema = z.object({
   email: z.string().email(),
@@ -67,7 +68,7 @@ export async function POST(
     // Verify ownership
     const { data: trip } = await supabase
       .from("trips")
-      .select("user_id, destination")
+      .select("user_id, destination, name")
       .eq("id", tripId)
       .single()
 
@@ -87,11 +88,13 @@ export async function POST(
       return errorResponse("VALIDATION_ERROR", "Ya invitado", 400)
     }
 
+    const inviteEmail = body.email.toLowerCase()
+
     const { data: collab, error } = await supabase
       .from("trip_collaborators")
       .insert({
         trip_id: tripId,
-        email: body.email.toLowerCase(),
+        email: inviteEmail,
         role: body.role,
         invited_by: identity.userId,
         accepted: false,
@@ -101,9 +104,18 @@ export async function POST(
 
     if (error) throw error
 
-    // TODO: Send invitation email via Resend
+    const inviterName = identity.isAuthenticated ? "Tu compañero de viaje" : "Alguien de tu equipo"
+    const destinationLabel = trip.destination || trip.name || "tu viaje"
+    const inviteUrl = `https://viaje360.app/invite/${collab.id}`
+    const emailSent = await sendTripCollaborationInviteEmail({
+      to: inviteEmail,
+      inviterName,
+      destination: destinationLabel,
+      role: body.role,
+      inviteUrl,
+    })
 
-    return successResponse({ collaborator: collab })
+    return successResponse({ collaborator: collab, emailSent })
   } catch (error) {
     return normalizeRouteError(error, "Failed to invite collaborator")
   }

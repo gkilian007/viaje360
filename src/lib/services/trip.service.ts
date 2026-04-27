@@ -296,17 +296,46 @@ export async function createTrip(
 export async function getActiveTrip(userId: string): Promise<DbTrip | null> {
   try {
     const supabase = createServiceClient()
-    const { data, error } = await supabase
+    const { data: ownedTrip, error } = await supabase
       .from("trips")
       .select("*")
       .eq("user_id", userId)
       .eq("status", "active")
+      .order("updated_at", { ascending: false })
       .order("created_at", { ascending: false })
       .limit(1)
-      .single()
+      .maybeSingle()
 
-    if (error) return null
-    return data as DbTrip
+    if (!error && ownedTrip) {
+      return ownedTrip as DbTrip
+    }
+
+    const { data: collaboratorRows, error: collaboratorError } = await supabase
+      .from("trip_collaborators")
+      .select("trip_id")
+      .eq("user_id", userId)
+      .eq("accepted", true)
+
+    if (collaboratorError) return null
+
+    const collaboratorTripIds = Array.from(
+      new Set((collaboratorRows ?? []).map((row) => row.trip_id as string).filter(Boolean))
+    )
+
+    if (collaboratorTripIds.length === 0) return null
+
+    const { data: sharedTrip, error: sharedTripError } = await supabase
+      .from("trips")
+      .select("*")
+      .in("id", collaboratorTripIds)
+      .eq("status", "active")
+      .order("updated_at", { ascending: false })
+      .order("created_at", { ascending: false })
+      .limit(1)
+      .maybeSingle()
+
+    if (sharedTripError) return null
+    return (sharedTrip as DbTrip | null) ?? null
   } catch {
     return null
   }
