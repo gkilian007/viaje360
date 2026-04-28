@@ -127,9 +127,17 @@ export default function MapaPage() {
     setHydrated(true)
   }, [])
 
+  // Reset selectedDay to 1 if it goes out of range after itinerary refresh
+  useEffect(() => {
+    if (!generatedItinerary) return
+    if (selectedDay > generatedItinerary.length) {
+      setSelectedDay(1)
+    }
+  }, [generatedItinerary, selectedDay])
+
   useEffect(() => {
     async function loadActiveTrip() {
-      if (currentTrip) return // ya tenemos datos
+      if (currentTrip && generatedItinerary?.length) return // ya tenemos datos
       try {
         const res = await fetch("/api/trips/active", { cache: "no-store" })
         if (!res.ok) return
@@ -151,10 +159,11 @@ export default function MapaPage() {
 
   const handleMarkerClick = useCallback(
     (activityId: string) => {
-      const activity = today?.activities.find((a) => a.id === activityId)
+      const itinerary = generatedItinerary ?? []
+      const dayData = itinerary[selectedDay - 1]
+      const activity = dayData?.activities.find((a) => a.id === activityId)
       if (activity) setSelectedActivity(activity)
     },
-    // eslint-disable-next-line react-hooks/exhaustive-deps
     [generatedItinerary, selectedDay]
   )
 

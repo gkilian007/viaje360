@@ -18,6 +18,9 @@ const cache = new Map<string, WalkingSegment>()
 export function useWalkingTimes(activities: TimelineActivity[]) {
   const [segments, setSegments] = useState<Map<string, WalkingSegment>>(new Map())
   const abortRef = useRef(false)
+  const activityKey = activities
+    .map((a) => `${a.id}:${typeof a.lat === "number" ? a.lat : "x"},${typeof a.lng === "number" ? a.lng : "x"}`)
+    .join("|")
 
   useEffect(() => {
     // Filter activities that have coordinates
@@ -81,7 +84,7 @@ export function useWalkingTimes(activities: TimelineActivity[]) {
 
     fetchAll()
     return () => { abortRef.current = true }
-  }, [activities])
+  }, [activityKey])
 
   const getSegment = useCallback(
     (fromId: string, toId: string): WalkingSegment | undefined => {

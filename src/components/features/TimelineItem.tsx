@@ -82,10 +82,17 @@ export function TimelineItem({ activity, index, isFirst = false, isLast = false,
               onCancel={() => setEditing(false)}
             />
           ) : (
-            <button
+            <div
               key="view"
-              type="button"
+              role="button"
+              tabIndex={0}
               onClick={() => onClick?.(activity)}
+              onKeyDown={(e) => {
+                if (e.key === "Enter" || e.key === " ") {
+                  e.preventDefault()
+                  onClick?.(activity)
+                }
+              }}
               className={`group w-full p-3 rounded-xl mb-3 text-left cursor-pointer transition-all hover:scale-[1.01] active:scale-[0.99] ${isCurrent ? "bg-[#0A84FF]/10 border border-[#0A84FF]/20" : "bg-[#1f1f21]/60 border border-white/[0.04] hover:bg-[#1f1f21]"}`}
             >
               <div className="flex items-start justify-between gap-2">
@@ -172,7 +179,7 @@ export function TimelineItem({ activity, index, isFirst = false, isLast = false,
                   Ver detalle
                 </span>
               </div>
-            </button>
+            </div>
           )}
         </AnimatePresence>
 

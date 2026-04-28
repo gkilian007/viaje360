@@ -60,8 +60,17 @@ export interface TransitEstimate {
   transitMapsUrl: string
 }
 
+interface TransitWalkContext {
+  walkingMinutes: number
+  distanceMeters: number
+  originLat?: number
+  originLng?: number
+  destLat?: number
+  destLng?: number
+}
+
 export function estimateTransitOption(
-  walking: { walkingMinutes: number; distanceMeters: number },
+  walking: TransitWalkContext,
   destination: string
 ): TransitEstimate {
   const fare = getTransitFare(destination)
@@ -79,7 +88,10 @@ export function estimateTransitOption(
 
   const totalMinutes = walkToStopMinutes + waitMinutes + rideMinutes
 
-  const transitMapsUrl = `https://www.google.com/maps/dir/?api=1&travelmode=transit`
+  const transitMapsUrl =
+    walking.originLat != null && walking.originLng != null && walking.destLat != null && walking.destLng != null
+      ? `https://www.google.com/maps/dir/?api=1&origin=${walking.originLat},${walking.originLng}&destination=${walking.destLat},${walking.destLng}&travelmode=transit`
+      : `https://www.google.com/maps/dir/?api=1&travelmode=transit`
 
   return {
     walkToStopMinutes,
@@ -122,6 +134,10 @@ export interface TransferContext {
   walkingMinutes: number
   destination: string
   mobilityProfileKey: MobilityProfile["key"]
+  originLat?: number
+  originLng?: number
+  destLat?: number
+  destLng?: number
   /** 0 = start of day, 1 = end of day */
   dayProgress: number
 }
@@ -172,15 +188,23 @@ function buildWalkingHint(from: string, to: string, destination: string): string
 
 export function buildTransferContext(ctx: TransferContext): TransferSummary {
   const transit = estimateTransitOption(
-    { walkingMinutes: ctx.walkingMinutes, distanceMeters: ctx.distanceMeters },
+    {
+      walkingMinutes: ctx.walkingMinutes,
+      distanceMeters: ctx.distanceMeters,
+      originLat: ctx.originLat,
+      originLng: ctx.originLng,
+      destLat: ctx.destLat,
+      destLng: ctx.destLng,
+    },
     ctx.destination
   )
 
-  const transitMapsUrl =
-    `https://www.google.com/maps/dir/?api=1&travelmode=transit`
+  const transitMapsUrl = transit.transitMapsUrl
 
   const walkMapsUrl =
-    `https://www.google.com/maps/dir/?api=1&travelmode=walking`
+    ctx.originLat != null && ctx.originLng != null && ctx.destLat != null && ctx.destLng != null
+      ? `https://www.google.com/maps/dir/?api=1&origin=${ctx.originLat},${ctx.originLng}&destination=${ctx.destLat},${ctx.destLng}&travelmode=walking`
+      : `https://www.google.com/maps/dir/?api=1&travelmode=walking`
 
   const walkingOption: TransferOption = {
     mode: "walk",

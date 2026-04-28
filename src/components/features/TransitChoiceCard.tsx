@@ -19,6 +19,10 @@ interface TransitChoiceCardProps {
   /** 0-1 representing progress through the day (activity index / total activities) */
   dayProgress: number
   walkingMapsUrl: string
+  originLat?: number
+  originLng?: number
+  destLat?: number
+  destLng?: number
 }
 
 function formatDistance(m: number) {
@@ -33,6 +37,10 @@ export function TransitChoiceCard({
   destination,
   dayProgress,
   walkingMapsUrl,
+  originLat,
+  originLng,
+  destLat,
+  destLng,
 }: TransitChoiceCardProps) {
   const onboarding = useOnboardingStore((s) => s.data)
   const [dismissed, setDismissed] = useState(false)
@@ -63,9 +71,13 @@ export function TransitChoiceCard({
       walkingMinutes,
       destination,
       mobilityProfileKey: profile.key,
+      originLat,
+      originLng,
+      destLat,
+      destLng,
       dayProgress,
     })
-  }, [shouldOffer, fromActivity, toActivity, distanceMeters, walkingMinutes, destination, profile.key, dayProgress])
+  }, [shouldOffer, fromActivity, toActivity, distanceMeters, walkingMinutes, destination, profile.key, originLat, originLng, destLat, destLng, dayProgress])
 
   if (!shouldOffer || !summary || dismissed) return null
 
@@ -97,6 +109,13 @@ export function TransitChoiceCard({
         initial={{ opacity: 0, y: 8 }}
         animate={{ opacity: 1, y: 0 }}
         exit={{ opacity: 0, y: -8 }}
+        data-debug-transit-card="true"
+        data-debug-recommend-transit={recommendTransit ? "true" : "false"}
+        data-debug-origin-lat={originLat != null ? String(originLat) : ""}
+        data-debug-origin-lng={originLng != null ? String(originLng) : ""}
+        data-debug-dest-lat={destLat != null ? String(destLat) : ""}
+        data-debug-dest-lng={destLng != null ? String(destLng) : ""}
+        data-debug-transit-url={transitOption.mapsUrl}
         className="mx-5 my-2 rounded-2xl overflow-hidden"
         style={{
           background: "rgba(22,22,26,0.95)",
@@ -178,7 +197,10 @@ export function TransitChoiceCard({
         {/* Footer links */}
         <div className="flex items-center gap-4 px-4 pb-3">
           <a
-            href={walkingMapsUrl}
+            href={recommendTransit ? transitOption.mapsUrl : walkingMapsUrl}
+            data-debug-recommend-transit={recommendTransit ? "true" : "false"}
+            data-debug-walking-url={walkingMapsUrl}
+            data-debug-transit-url={transitOption.mapsUrl}
             target="_blank"
             rel="noopener noreferrer"
             className="text-[11px] text-[#0A84FF] flex items-center gap-1"

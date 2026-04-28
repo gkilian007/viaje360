@@ -121,6 +121,10 @@ function SortableTimelineItem({
               destination={destination ?? ""}
               dayProgress={dayProgress ?? 0}
               walkingMapsUrl={segment.mapsUrl}
+              originLat={activity.lat}
+              originLng={activity.lng}
+              destLat={next.lat}
+              destLng={next.lng}
             />
           )}
           {segment && !offerTransit && (

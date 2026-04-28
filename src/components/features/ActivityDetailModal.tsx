@@ -314,6 +314,9 @@ export function ActivityDetailModal({ activity, tripId, currentDayNumber, onClos
 
           {/* Modal — bottom sheet on mobile, centered card on desktop */}
           <motion.div
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="activity-detail-title"
             initial={{ opacity: 0, y: "100%" }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: "100%" }}
@@ -353,7 +356,7 @@ export function ActivityDetailModal({ activity, tripId, currentDayNumber, onClos
               </div>
 
               {/* Name */}
-              <h2 className="text-[22px] font-bold text-white leading-tight mb-1">
+              <h2 id="activity-detail-title" className="text-[22px] font-bold text-white leading-tight mb-1">
                 {activity.name}
               </h2>
 

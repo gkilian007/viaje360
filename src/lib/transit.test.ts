@@ -51,6 +51,23 @@ test("estimateTransitOption fare reflects destination pricing", () => {
   assert.notEqual(t1.fareAmount, t2.fareAmount)
 })
 
+test("estimateTransitOption returns a transit maps URL with origin and destination coordinates", () => {
+  const transit = estimateTransitOption(
+    {
+      walkingMinutes: 24,
+      distanceMeters: 2000,
+      originLat: 41.3874,
+      originLng: 2.1686,
+      destLat: 41.4036,
+      destLng: 2.1744,
+    },
+    "barcelona"
+  )
+  assert.match(transit.transitMapsUrl, /travelmode=transit/)
+  assert.match(transit.transitMapsUrl, /origin=41\.3874,2\.1686/)
+  assert.match(transit.transitMapsUrl, /destination=41\.4036,2\.1744/)
+})
+
 // ─── shouldOfferTransitChoice ─────────────────────────────────────────────────
 
 test("shouldOfferTransitChoice returns true when segment exceeds mobility threshold", () => {
