@@ -39,11 +39,10 @@ async function fetchWithTimeout<T>(promise: Promise<T>, ms = 5000): Promise<T | 
   }
 }
 
-/**
- * Builds an Unsplash Source URL for a given query.
- * Uses the free source.unsplash.com redirect — no API key required.
- * Returns a URL string (it's always valid, even if the photo isn't ideal).
- */
+function shouldUseExternalImageFallback(): boolean {
+  return process.env.VIAJE360_ENABLE_UNSPLASH_FALLBACK === "true"
+}
+
 function buildUnsplashUrl(activityType: string, name: string, destination: string): string {
   let query: string
   const dest = destination.trim()
@@ -244,8 +243,10 @@ export async function POST(req: NextRequest) {
       if (imageUrl) imageSource = "wikipedia"
     }
 
-    // Unsplash fallback: use when no image found OR source is Wikipedia (often wrong/generic)
-    if (!imageUrl || imageSource === "wikipedia") {
+    // Optional external fallback. Disabled by default because source.unsplash.com
+    // is a redirecting third-party endpoint that often fails in browser/E2E runs.
+    // When disabled, the UI uses its deterministic local visual fallback instead.
+    if ((!imageUrl || imageSource === "wikipedia") && shouldUseExternalImageFallback()) {
       const unsplashUrl = buildUnsplashUrl(body.type, body.name, body.destination)
       imageUrl = unsplashUrl
       imageSource = "unsplash"

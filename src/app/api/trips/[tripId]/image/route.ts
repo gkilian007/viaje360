@@ -2,11 +2,11 @@ import { NextRequest } from "next/server"
 import { successResponse, errorResponse, normalizeRouteError } from "@/lib/api/route-helpers"
 import { resolveRequestIdentity } from "@/lib/auth/server"
 import { createServiceClient } from "@/lib/supabase/server"
+import { getDestinationHeroThumb } from "@/lib/services/destination-photos"
 
 /**
  * POST /api/trips/[tripId]/image
- * Generates and caches a deterministic image URL for a trip's destination.
- * Uses Unsplash source URL and stores it in trips.image_url for future requests.
+ * Resolves and caches a deterministic curated image URL for a trip's destination.
  */
 export async function POST(
   _req: NextRequest,
@@ -41,9 +41,10 @@ export async function POST(
       return successResponse({ imageUrl: trip.image_url })
     }
 
-    // Construct a deterministic Unsplash URL for the destination
-    const encoded = encodeURIComponent((trip.destination as string).toLowerCase())
-    const imageUrl = `https://source.unsplash.com/featured/800x400/?${encoded},travel,city`
+    const imageUrl = getDestinationHeroThumb(trip.destination as string, 800)
+    if (!imageUrl) {
+      return successResponse({ imageUrl: null })
+    }
 
     // Store in DB for future requests
     await supabase

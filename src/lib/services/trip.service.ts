@@ -7,6 +7,7 @@ import type {
   DbAdaptationEvent,
 } from "@/lib/supabase/database.types"
 import type { ChatMessage } from "@/lib/types"
+import { getDestinationHeroThumb } from "@/lib/services/destination-photos"
 import {
   buildAdaptationEventInsert,
   buildItineraryVersionInsert,
@@ -281,10 +282,11 @@ export async function createTrip(
       source: "generate",
     })
 
-    // Cache destination image asynchronously (non-blocking)
-    const encoded = encodeURIComponent(destination.toLowerCase())
-    const imageUrl = `https://source.unsplash.com/featured/800x400/?${encoded},travel,city`
-    supabase.from("trips").update({ image_url: imageUrl }).eq("id", trip.id as string).then(() => {})
+    // Cache curated destination image asynchronously (non-blocking)
+    const imageUrl = getDestinationHeroThumb(destination, 800)
+    if (imageUrl) {
+      supabase.from("trips").update({ image_url: imageUrl }).eq("id", trip.id as string).then(() => {})
+    }
 
     return trip as DbTrip
   } catch (err) {

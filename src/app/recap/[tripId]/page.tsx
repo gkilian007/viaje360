@@ -4,6 +4,7 @@ import { useEffect, useState, useRef, useCallback } from "react"
 import { useParams, useRouter } from "next/navigation"
 import { motion, useInView, AnimatePresence } from "framer-motion"
 import posthog from "posthog-js"
+import { getDestinationHeroThumb } from "@/lib/services/destination-photos"
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -200,15 +201,16 @@ export default function RecapPage() {
   }
 
   const { trip, days, aiNarrative, budgetStats, magicMoments, travelerProfile, stats } = data
-  const heroImage = trip.imageUrl
-    ?? `https://source.unsplash.com/featured/1400x900/?${encodeURIComponent(trip.destination)},travel`
+  const heroImage = trip.imageUrl ?? getDestinationHeroThumb(trip.destination, 1400)
 
   return (
     <div className="min-h-screen bg-[#0a0a0f]" style={{ fontFamily: "system-ui, sans-serif" }} ref={recapRef}>
 
       {/* ═══════════ HERO ═══════════ */}
       <div className="relative overflow-hidden" style={{ minHeight: "420px" }}>
-        <div className="absolute inset-0 bg-cover bg-center" style={{ backgroundImage: `url(${heroImage})` }} />
+        {heroImage && (
+          <div className="absolute inset-0 bg-cover bg-center" style={{ backgroundImage: `url(${heroImage})` }} />
+        )}
         <div className="absolute inset-0" style={{ background: "linear-gradient(180deg, rgba(0,0,0,0.3) 0%, rgba(10,10,15,0.8) 65%, #0a0a0f 100%)" }} />
         <div className="absolute inset-0" style={{ background: "linear-gradient(135deg, rgba(10,132,255,0.12) 0%, rgba(88,86,214,0.08) 100%)" }} />
 

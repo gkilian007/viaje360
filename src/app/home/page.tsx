@@ -12,6 +12,7 @@ import { SideNav } from "@/components/layout/SideNav"
 import { motion } from "framer-motion"
 import type { User as SupabaseUser } from "@supabase/supabase-js"
 import type { TripSummary } from "@/app/api/trips/route"
+import { getDestinationHeroThumb } from "@/lib/services/destination-photos"
 
 // ─── Trending destinations ───────────────────────────────────────────────────
 
@@ -182,9 +183,8 @@ function CreatePostCTA({ onNewTrip }: { onNewTrip: () => void }) {
   )
 }
 
-function getDestinationImageUrl(destination: string): string {
-  const encoded = encodeURIComponent(destination.toLowerCase())
-  return `https://source.unsplash.com/featured/800x400/?${encoded},travel`
+function getDestinationImageUrl(destination: string): string | null {
+  return getDestinationHeroThumb(destination, 800)
 }
 
 function TripCard({
@@ -217,15 +217,19 @@ function TripCard({
       {/* Trip header image area */}
       <div className="h-36 lg:h-44 relative overflow-hidden">
         {/* Destination photo */}
-        <img
-          src={imageUrl}
-          alt={trip.destination}
-          className="absolute inset-0 w-full h-full object-cover"
-          style={isCompleted ? { filter: "saturate(0.5) brightness(0.85)" } : undefined}
-          onError={(e) => {
-            (e.currentTarget as HTMLImageElement).style.display = "none"
-          }}
-        />
+        {imageUrl ? (
+          <img
+            src={imageUrl}
+            alt={trip.destination}
+            className="absolute inset-0 w-full h-full object-cover"
+            style={isCompleted ? { filter: "saturate(0.5) brightness(0.85)" } : undefined}
+            onError={(e) => {
+              (e.currentTarget as HTMLImageElement).style.display = "none"
+            }}
+          />
+        ) : (
+          <div className="absolute inset-0 bg-gradient-to-br from-[#0A84FF]/35 via-[#5856D6]/30 to-[#111827]" />
+        )}
         {/* Dark gradient overlay for text readability */}
         <div
           className="absolute inset-0"
