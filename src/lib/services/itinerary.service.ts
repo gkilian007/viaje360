@@ -8,6 +8,7 @@ import type {
 import type { OnboardingData } from "@/lib/onboarding-types"
 import type { DayItinerary, TimelineActivity, ActivityType, Trip } from "@/lib/types"
 import {
+  buildFallbackItinerary,
   buildRepairHint,
   mapDbDaysToGeneratedItinerary,
   runReliableGenerationPipeline,
@@ -672,23 +673,29 @@ export async function generateItinerary(
 ): Promise<GeneratedItinerary> {
   const personalization = options?.personalization
   const prompt = await buildItineraryPrompt(onboardingData, personalization)
-  const raw = await callGeminiRaw(prompt)
+  let result
 
-  const result = await runReliableGenerationPipeline(
-    raw,
-    onboardingData,
-    {
-      mode: "generate",
-      maxAttempts: 3,
-      onAttempt: async (_attempt, reason) => callGeminiWithRepair(prompt, reason),
-      log: (message, meta) => console.warn(`[itinerary/generate] ${message}`, meta ?? {}),
-    },
-    { startDate: onboardingData.startDate, endDate: onboardingData.endDate },
-    onboardingData.destination
-  )
-
-  if (result.usedFallback) {
-    throw new Error("No se pudo generar un plan detallado real. La IA devolvió un resultado inválido varias veces.")
+  try {
+    const raw = await callGeminiRaw(prompt)
+    result = await runReliableGenerationPipeline(
+      raw,
+      onboardingData,
+      {
+        mode: "generate",
+        maxAttempts: 3,
+        onAttempt: async (_attempt, reason) => callGeminiWithRepair(prompt, reason),
+        log: (message, meta) => console.warn(`[itinerary/generate] ${message}`, meta ?? {}),
+      },
+      { startDate: onboardingData.startDate, endDate: onboardingData.endDate },
+      onboardingData.destination
+    )
+  } catch (error) {
+    console.warn("[itinerary/generate] Falling back after provider failure", error)
+    result = buildFallbackItinerary(
+      onboardingData,
+      { startDate: onboardingData.startDate, endDate: onboardingData.endDate },
+      onboardingData.destination
+    )
   }
 
   if (!result.itinerary.days.length) {

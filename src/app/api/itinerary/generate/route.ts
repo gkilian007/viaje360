@@ -4,6 +4,7 @@ import { NextRequest } from "next/server"
 import { rateLimit } from "@/lib/rate-limit"
 import { onboardingRequestSchema } from "@/lib/api/contracts"
 import {
+  errorResponse,
   normalizeRouteError,
   parseJsonBody,
   successResponse,
@@ -21,9 +22,15 @@ import { requireAccess } from "@/lib/api/access-guard"
 export const maxDuration = 120
 
 export async function POST(req: NextRequest) {
-  // Rate limit: max 5 generations per IP per day
-  const rl = await rateLimit(req, "itinerary-generate", 5, "1 d")
-  if (!rl.ok) return rl.response!
+  // Rate limit: allow normal iterative use without blocking legitimate trip planning.
+  const rl = await rateLimit(req, "itinerary-generate", 20, "1 d")
+  if (!rl.ok) {
+    return errorResponse(
+      "TOO_MANY_REQUESTS",
+      "Has hecho demasiados intentos de generación en poco tiempo. Espera un rato y vuelve a intentarlo.",
+      429
+    )
+  }
 
   try {
     const body = await parseJsonBody(req, onboardingRequestSchema)
