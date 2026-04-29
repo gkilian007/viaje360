@@ -12,7 +12,7 @@
  * - Push notifications: handled here
  */
 
-const CACHE_VERSION = 'v2'
+const CACHE_VERSION = 'v3'
 const SHELL_CACHE = `viaje360-shell-${CACHE_VERSION}`
 const TILE_CACHE = `viaje360-tiles-${CACHE_VERSION}`
 const API_CACHE = `viaje360-api-${CACHE_VERSION}`
@@ -276,14 +276,21 @@ async function staleWhileRevalidate(request) {
   const cache = await caches.open(SHELL_CACHE)
   const cached = await cache.match(request)
 
-  const fetchPromise = fetch(request).then(response => {
-    if (response.ok) {
-      cache.put(request, response.clone())
-    }
-    return response
-  }).catch(() => cached)
+  const fetchPromise = fetch(request)
+    .then((response) => {
+      if (response.ok) {
+        cache.put(request, response.clone())
+      }
+      return response
+    })
+    .catch(() => null)
 
-  return cached || fetchPromise
+  if (cached) return cached
+
+  const networkResponse = await fetchPromise
+  if (networkResponse) return networkResponse
+
+  return new Response('Offline', { status: 503 })
 }
 
 async function navigateWithOfflineFallback(request) {

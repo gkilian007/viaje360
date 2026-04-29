@@ -9,7 +9,7 @@
   "ignoreCommand": "node scripts/vercel-ignore-build.mjs",
   "functions": {
     "src/app/api/itinerary/generate/route.ts": {
-      "maxDuration": 45
+      "maxDuration": 120
     },
     "src/app/api/itinerary/adapt/route.ts": {
       "maxDuration": 45
