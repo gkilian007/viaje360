@@ -6,6 +6,9 @@ import { useAppStore } from "@/store/useAppStore"
 import { BottomNav } from "@/components/layout/BottomNav"
 import { SideNav } from "@/components/layout/SideNav"
 import { DynamicMapView } from "@/components/features/DynamicMapView"
+import { ImmersiveHud } from "@/components/features/map/ImmersiveHud"
+import type { HudActivity, SegmentInfo } from "@/components/features/map/ImmersiveHud"
+import { useGeocodedActivities } from "@/lib/hooks/useGeocodedActivities"
 import { useOnboardingStore } from "@/store/useOnboardingStore"
 import { resolveMobilityProfile } from "@/lib/mobility"
 import { ActivityDetailModal } from "@/components/features/ActivityDetailModal"
@@ -115,6 +118,8 @@ export default function MapaPage() {
   const [selectedActivity, setSelectedActivity] = useState<TimelineActivity | null>(null)
   const [hydrated, setHydrated] = useState(false)
   const [showList, setShowList] = useState(false)
+  const [hudActiveIndex, setHudActiveIndex] = useState(0)
+
   const onboardingData = useOnboardingStore((s) => s.data)
   const mobilityProfile = resolveMobilityProfile({
     companion: onboardingData.companion,
@@ -163,6 +168,11 @@ export default function MapaPage() {
       const dayData = itinerary[selectedDay - 1]
       const activity = dayData?.activities.find((a) => a.id === activityId)
       if (activity) setSelectedActivity(activity)
+      // Also update HUD active index
+      if (dayData) {
+        const idx = dayData.activities.findIndex((a) => a.id === activityId)
+        if (idx >= 0) setHudActiveIndex(idx)
+      }
     },
     [generatedItinerary, selectedDay]
   )
@@ -178,6 +188,13 @@ export default function MapaPage() {
   const itinerary = generatedItinerary ?? []
   const totalDays = itinerary.length
   const today = itinerary[selectedDay - 1]
+
+  // Geocoded activities for the HUD (same data the map uses)
+  // eslint-disable-next-line react-hooks/rules-of-hooks
+  const { geocoded: geocodedToday } = useGeocodedActivities(
+    today?.activities ?? [],
+    currentTrip?.destination ?? ""
+  )
 
   if (!currentTrip || totalDays === 0) {
     return (
@@ -228,6 +245,33 @@ export default function MapaPage() {
           onMarkerClick={handleMarkerClick}
           transportPrefs={onboardingData.transport}
           maxWalkMeters={mobilityProfile.maxComfortableWalkMeters}
+        />
+
+        {/* Immersive Mobile HUD */}
+        <ImmersiveHud
+          activities={geocodedToday.map((g) => ({
+            id: g.activity.id,
+            name: g.activity.name,
+            type: g.activity.type,
+            time: g.activity.time,
+            duration: g.activity.duration,
+            location: g.activity.location ?? "",
+            lat: g.lat,
+            lng: g.lng,
+          }))}
+          activeIndex={hudActiveIndex}
+          segments={[]}
+          onActivitySelect={(idx) => {
+            setHudActiveIndex(idx)
+            const act = today?.activities[idx]
+            if (act) {
+              setSelectedActivity(act)
+            }
+          }}
+          onNavigate={(fromIdx, toIdx) => {
+            const act = today?.activities[toIdx]
+            if (act) setSelectedActivity(act)
+          }}
         />
 
         {/* Header overlay */}

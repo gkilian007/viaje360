@@ -9,6 +9,7 @@
     "lint": "eslint",
     "test": "find src -name '*.test.ts' -print0 | xargs -0 node --import tsx --test",
     "db:seed-madrid-transport": "node --experimental-strip-types scripts/seed-madrid-transport.mjs",
+    "db:seed-itinerary-library": "node scripts/seed-itinerary-library-to-db.mjs",
     "library:export": "node scripts/export-itinerary-library.mjs"
   },
   "dependencies": {

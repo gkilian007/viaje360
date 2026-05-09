@@ -592,7 +592,8 @@ function formatHudDistance(meters: number) {
   return `${Math.round(meters)} m`
 }
 
-function MobileGtaNavigationHud({ geocoded, selectedActivityId }: { geocoded: GeocodedActivity[]; selectedActivityId?: string | null }) {
+// MobileGtaNavigationHud removed — replaced by ImmersiveHud in mapa/page.tsx
+function _Removed_MobileGtaNavigationHud({ geocoded, selectedActivityId }: { geocoded: GeocodedActivity[]; selectedActivityId?: string | null }) {
   const valid = geocoded.filter(g => isFinite(g.lat) && isFinite(g.lng))
   if (valid.length < 2) return null
 
@@ -1065,7 +1066,7 @@ export function RealMapView({
         </MarkerClusterGroup>
       </MapContainer>
 
-      <MobileGtaNavigationHud geocoded={offsetGeo} selectedActivityId={selectedActivityId} />
+      {/* ImmersiveHud is rendered in mapa/page.tsx instead */}
 
       {/* Route highlight info card */}
       {routeHighlight && (
