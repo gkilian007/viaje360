@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect, useCallback } from "react"
+import { useState, useEffect, useCallback, useMemo } from "react"
 import { motion } from "framer-motion"
 import { useAppStore } from "@/store/useAppStore"
 import { BottomNav } from "@/components/layout/BottomNav"
@@ -212,14 +212,35 @@ export default function MapaPage() {
     }
   )
 
-  // Convert RouteSegment[] to SegmentInfo[] for the HUD
-  const hudSegments: SegmentInfo[] = routeSegments.map((seg) => ({
-    fromId: seg.fromId,
-    toId: seg.toId,
-    distanceMeters: seg.distanceMeters,
-    durationSeconds: seg.durationSeconds,
-    mode: seg.mode,
-  }))
+  // Aggregate route segments per activity->activity pair so the HUD gets one clean segment
+  const hudSegments: SegmentInfo[] = useMemo(() => {
+    const grouped = new Map<string, SegmentInfo>()
+
+    for (const seg of routeSegments) {
+      const key = `${seg.fromId}->${seg.toId}`
+      const existing = grouped.get(key)
+
+      if (!existing) {
+        grouped.set(key, {
+          fromId: seg.fromId,
+          toId: seg.toId,
+          distanceMeters: seg.distanceMeters ?? 0,
+          durationSeconds: seg.durationSeconds ?? 0,
+          mode: seg.mode,
+        })
+        continue
+      }
+
+      existing.distanceMeters = (existing.distanceMeters ?? 0) + (seg.distanceMeters ?? 0)
+      existing.durationSeconds = (existing.durationSeconds ?? 0) + (seg.durationSeconds ?? 0)
+
+      // Prefer the most informative mode for mixed routes
+      if (seg.mode === "transit") existing.mode = "transit"
+      else if (seg.mode === "car" && existing.mode !== "transit") existing.mode = "car"
+    }
+
+    return Array.from(grouped.values())
+  }, [routeSegments])
 
   // Auto-detect active activity based on current time
   useEffect(() => {
@@ -315,14 +336,18 @@ export default function MapaPage() {
           onNavigate={(fromIdx, toIdx) => {
             const from = geocodedToday[fromIdx]
             const to = geocodedToday[toIdx]
+            const pair = from && to ? hudSegments.find((s) => s.fromId === from.activity.id && s.toId === to.activity.id) : null
+            const travelMode = pair?.mode === "car" ? "driving" : pair?.mode === "transit" ? "transit" : "walking"
+
             if (from && to && isFinite(from.lat) && isFinite(to.lat)) {
-              // Open native maps with real coordinates
               const isIOS = typeof navigator !== "undefined" && (navigator.userAgent.includes("iPhone") || navigator.userAgent.includes("iPad"))
+              const appleFlag = pair?.mode === "car" ? "d" : pair?.mode === "transit" ? "r" : "w"
               const url = isIOS
-                ? `maps://maps.apple.com/?saddr=${from.lat},${from.lng}&daddr=${to.lat},${to.lng}&dirflg=w`
-                : `https://www.google.com/maps/dir/?api=1&origin=${from.lat},${from.lng}&destination=${to.lat},${to.lng}&travelmode=walking`
+                ? `maps://maps.apple.com/?saddr=${from.lat},${from.lng}&daddr=${to.lat},${to.lng}&dirflg=${appleFlag}`
+                : `https://www.google.com/maps/dir/?api=1&origin=${from.lat},${from.lng}&destination=${to.lat},${to.lng}&travelmode=${travelMode}`
               window.open(url, "_blank")
             }
+
             const act = today?.activities[toIdx]
             if (act) setSelectedActivity(act)
           }}
