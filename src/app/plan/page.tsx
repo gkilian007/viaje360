@@ -139,20 +139,68 @@ function MiniMapStrip({ activities, destination }: { activities: TimelineActivit
 
   const zoom = withCoords.length <= 3 ? 15 : withCoords.length <= 6 ? 14 : 13
 
-  const markers = withCoords.slice(0, 8)
-    .map(a => `${a.lat},${a.lng},ol-marker`)
-    .join('|')
-
-  const url = `https://staticmap.openstreetmap.de/staticmap.php?center=${centerLat},${centerLng}&zoom=${zoom}&size=800x160&maptype=mapnik&markers=${markers}`
+  // Static preview composed from the same CARTO raster tiles RealMapView uses,
+  // positioned with Web Mercator math (the previous static-map service,
+  // staticmap.openstreetmap.de, was shut down)
+  const worldSize = 256 * 2 ** zoom
+  const toWorld = (lat: number, lng: number) => {
+    const latRad = (lat * Math.PI) / 180
+    return {
+      x: ((lng + 180) / 360) * worldSize,
+      y: ((1 - Math.log(Math.tan(latRad) + 1 / Math.cos(latRad)) / Math.PI) / 2) * worldSize,
+    }
+  }
+  const center = toWorld(centerLat, centerLng)
+  const centerTileX = Math.floor(center.x / 256)
+  const centerTileY = Math.floor(center.y / 256)
+  const maxTile = 2 ** zoom
+  const tiles: { x: number; y: number }[] = []
+  for (let dx = -2; dx <= 2; dx++) {
+    for (let dy = -1; dy <= 1; dy++) {
+      const x = centerTileX + dx
+      const y = centerTileY + dy
+      if (x >= 0 && x < maxTile && y >= 0 && y < maxTile) tiles.push({ x, y })
+    }
+  }
+  const subdomains = ["a", "b", "c", "d"]
 
   return (
-    <Link href="/mapa" className="block mx-5 mb-3 rounded-2xl overflow-hidden relative" style={{ height: 140 }}>
-      <img
-        src={url}
-        alt={`Mapa de ${destination}`}
-        className="w-full h-full object-cover"
-        loading="lazy"
-      />
+    <Link
+      href="/mapa"
+      aria-label={`Mapa de ${destination} — ver mapa completo`}
+      className="block mx-5 mb-3 rounded-2xl overflow-hidden relative"
+      style={{ height: 140, background: "var(--surface-container)" }}
+    >
+      <div className="absolute inset-0" aria-hidden="true">
+        {tiles.map(t => (
+          <img
+            key={`${t.x}-${t.y}`}
+            src={`https://${subdomains[(t.x + t.y) % 4]}.basemaps.cartocdn.com/dark_all/${zoom}/${t.x}/${t.y}.png`}
+            alt=""
+            loading="lazy"
+            className="absolute max-w-none"
+            style={{
+              width: 256,
+              height: 256,
+              left: `calc(50% + ${t.x * 256 - center.x}px)`,
+              top: `calc(50% + ${t.y * 256 - center.y}px)`,
+            }}
+          />
+        ))}
+        {withCoords.slice(0, 8).map(a => {
+          const p = toWorld(a.lat!, a.lng!)
+          return (
+            <span
+              key={a.id}
+              className="absolute w-2.5 h-2.5 rounded-full bg-[#0A84FF] border border-white/80 -translate-x-1/2 -translate-y-1/2"
+              style={{
+                left: `calc(50% + ${p.x - center.x}px)`,
+                top: `calc(50% + ${p.y - center.y}px)`,
+              }}
+            />
+          )
+        })}
+      </div>
       <div className="absolute inset-0 bg-gradient-to-b from-transparent to-black/30"/>
       <div className="absolute bottom-2 right-3 flex items-center gap-1 px-2 py-1 rounded-full text-[11px] text-white font-medium"
         style={{ background: "rgba(0,0,0,0.5)", backdropFilter: "blur(8px)" }}>
