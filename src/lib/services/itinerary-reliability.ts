@@ -277,6 +277,13 @@ export function normalizeGenerationContext(
   }
 }
 
+function normalizeCoordinate(value: unknown, min: number, max: number): number | undefined {
+  if (value === null || value === undefined || value === "") return undefined
+  const parsed = typeof value === "number" ? value : Number(value)
+  if (!Number.isFinite(parsed) || parsed === 0 || parsed < min || parsed > max) return undefined
+  return parsed
+}
+
 function normalizeActivity(
   raw: Partial<GeneratedActivity>,
   fallbackStartMinutes: number,
@@ -295,6 +302,8 @@ function normalizeActivity(
   const endTime = normalizeTime(raw.endTime, timeToMinutes(time) + duration)
   const location = normalizeWhitespace(raw.location) || context.destination
   const cost = Math.max(0, Math.round(parseNumber(raw.cost, 0)))
+  const lat = normalizeCoordinate(raw.lat, -90, 90)
+  const lng = normalizeCoordinate(raw.lng, -180, 180)
   const activity: GeneratedActivity = {
     name,
     type,
@@ -317,6 +326,8 @@ function normalizeActivity(
     dietaryTags: Array.isArray(raw.dietaryTags)
       ? raw.dietaryTags.map((tag) => normalizeWhitespace(String(tag))).filter(Boolean)
       : [],
+    lat: lat !== undefined && lng !== undefined ? lat : undefined,
+    lng: lat !== undefined && lng !== undefined ? lng : undefined,
   }
 
   if (!generatedActivitySchema.safeParse(activity).success) {

@@ -154,3 +154,63 @@ test("buildFallbackItinerary returns a minimal coherent itinerary", () => {
   assert.ok(fallback.itinerary.days.every((day) => day.activities.length >= 3))
   assert.ok(fallback.warnings.some((warning) => warning.code === "json_extract_failed"))
 })
+
+test("validateAndRepairItinerary preserves activity lat/lng from the model", () => {
+  const raw = JSON.stringify({
+    tripName: "Madrid Coordenadas",
+    days: [
+      {
+        dayNumber: 1,
+        date: "2026-04-10",
+        theme: "Centro histórico",
+        isRestDay: false,
+        activities: [
+          {
+            name: "Museo del Prado",
+            type: "museum",
+            location: "Paseo del Prado",
+            time: "10:00",
+            endTime: "12:00",
+            duration: 120,
+            cost: 15,
+            lat: 40.4138,
+            lng: -3.6921,
+          },
+          {
+            name: "Plaza Mayor",
+            type: "monument",
+            location: "Centro",
+            time: "12:30",
+            endTime: "13:30",
+            duration: 60,
+            cost: 0,
+            lat: "40.4155",
+            lng: "-3.7074",
+          },
+          {
+            name: "Comida en La Latina",
+            type: "restaurant",
+            location: "La Latina",
+            time: "14:00",
+            endTime: "15:30",
+            duration: 90,
+            cost: 20,
+          },
+        ],
+      },
+    ],
+  })
+
+  const result = validateAndRepairItinerary(raw, { ...onboarding, destination: "Madrid", mobility: "full", hasMobilityNeeds: false })
+  const activities = result.itinerary.days[0].activities
+  const prado = activities.find((a) => a.name === "Museo del Prado")
+  const plaza = activities.find((a) => a.name === "Plaza Mayor")
+  const comida = activities.find((a) => a.name === "Comida en La Latina")
+
+  assert.equal(prado?.lat, 40.4138)
+  assert.equal(prado?.lng, -3.6921)
+  assert.equal(plaza?.lat, 40.4155)
+  assert.equal(plaza?.lng, -3.7074)
+  assert.equal(comida?.lat, undefined)
+  assert.equal(comida?.lng, undefined)
+})
