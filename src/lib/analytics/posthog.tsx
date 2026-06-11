@@ -3,6 +3,7 @@ import posthog from "posthog-js"
 import { PostHogProvider } from "posthog-js/react"
 import { useEffect, Suspense } from "react"
 import { usePathname, useSearchParams } from "next/navigation"
+import { createClient, isSupabaseBrowserConfigured } from "@/lib/supabase/client"
 
 function PostHogPageView() {
   const pathname = usePathname()
@@ -28,6 +29,22 @@ export function PHProvider({ children }: { children: React.ReactNode }) {
       person_profiles: "identified_only",
       capture_pageview: false,
     })
+
+    if (!isSupabaseBrowserConfigured()) return
+
+    // Identify with the Supabase user id so client events merge with
+    // server-side captures (which already use userId as distinctId).
+    // INITIAL_SESSION covers OAuth redirects; identify is a no-op when
+    // the distinct id is unchanged.
+    const supabase = createClient()
+    const { data: authSub } = supabase.auth.onAuthStateChange((event, session) => {
+      if ((event === "SIGNED_IN" || event === "INITIAL_SESSION") && session?.user) {
+        posthog.identify(session.user.id, { email: session.user.email })
+      } else if (event === "SIGNED_OUT") {
+        posthog.reset()
+      }
+    })
+    return () => authSub.subscription.unsubscribe()
   }, [])
 
   return (

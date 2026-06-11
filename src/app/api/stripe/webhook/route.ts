@@ -1,5 +1,6 @@
 import * as Sentry from "@sentry/nextjs"
 import { NextRequest, NextResponse } from "next/server"
+import { getServerPostHog } from "@/lib/analytics/server"
 import { getStripeClient } from "@/lib/services/stripe.service"
 import { createServiceClient } from "@/lib/supabase/server"
 import { sendWelcomeEmail, sendPaymentConfirmationEmail } from "@/lib/services/email.service"
@@ -60,7 +61,29 @@ export async function POST(req: NextRequest) {
         console.info(`[stripe/webhook] Activated subscription for user ${userId}`)
 
         // Send transactional emails — fire-and-forget, never block the webhook
-        const session = event.data.object as { customer_email?: string | null; customer_details?: { email?: string | null }; amount_total?: number | null; currency?: string | null }
+        const session = event.data.object as { customer_email?: string | null; customer_details?: { email?: string | null }; amount_total?: number | null; currency?: string | null; metadata?: Record<string, string> | null }
+
+        // PostHog: payment_completed is the source-of-truth conversion event
+        // (client-side events stop at the redirect to Stripe Checkout)
+        try {
+          const ph = getServerPostHog()
+          if (ph) {
+            ph.capture({
+              distinctId: userId,
+              event: "payment_completed",
+              properties: {
+                plan: session.metadata?.kind ?? "annual",
+                destination: session.metadata?.destination ?? null,
+                amount_cents: session.amount_total ?? null,
+                currency: session.currency ?? "eur",
+              },
+            })
+            await ph.shutdown()
+          }
+        } catch {
+          // analytics must never break webhook processing
+        }
+
         const customerEmail = session.customer_email ?? session.customer_details?.email ?? null
         if (customerEmail) {
           const amountCents = session.amount_total ?? 0

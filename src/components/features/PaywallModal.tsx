@@ -51,7 +51,9 @@ export function PaywallModal({ destination, onClose }: PaywallModalProps) {
         throw new Error("Stripe no devolvió una URL de checkout")
       }
 
-      track("paywall_converted", { destination, plan: kind })
+      // Conversion truth lives in the Stripe webhook (payment_completed);
+      // this only marks the hand-off to Stripe Checkout.
+      track("checkout_redirected", { destination, plan: kind })
       window.location.href = url
     } catch (err: any) {
       setLoading(false)

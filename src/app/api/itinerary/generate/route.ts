@@ -1,6 +1,6 @@
 import * as Sentry from "@sentry/nextjs"
-import { PostHog } from "posthog-node"
 import { NextRequest, after } from "next/server"
+import { getServerPostHog } from "@/lib/analytics/server"
 import { rateLimit } from "@/lib/rate-limit"
 import { onboardingRequestSchema } from "@/lib/api/contracts"
 import {
@@ -209,13 +209,8 @@ export async function POST(req: NextRequest) {
 
     // PostHog server-side tracking
     try {
-      const phKey = process.env.POSTHOG_KEY ?? process.env.NEXT_PUBLIC_POSTHOG_KEY
-      if (phKey && phKey !== "placeholder") {
-        const ph = new PostHog(phKey, {
-          host: process.env.NEXT_PUBLIC_POSTHOG_HOST ?? "https://eu.i.posthog.com",
-          flushAt: 1,
-          flushInterval: 0,
-        })
+      const ph = getServerPostHog()
+      if (ph) {
         const distinctId = identity.userId ?? `anon-${req.headers.get("x-forwarded-for") ?? "unknown"}`
         ph.capture({
           distinctId,

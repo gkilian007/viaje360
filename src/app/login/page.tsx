@@ -4,7 +4,7 @@ import { useState } from "react"
 import { useSearchParams } from "next/navigation"
 import { createClient, isSupabaseBrowserConfigured } from "@/lib/supabase/client"
 import { motion } from "framer-motion"
-import posthog from "posthog-js"
+import { useAnalytics } from "@/lib/analytics/useAnalytics"
 
 type AuthMode = "login" | "register"
 
@@ -17,6 +17,7 @@ export default function LoginPage() {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [successMsg, setSuccessMsg] = useState<string | null>(null)
+  const { track } = useAnalytics()
 
   const nextPath = (() => {
     const requested = searchParams.get("next")
@@ -46,6 +47,7 @@ export default function LoginPage() {
           },
         })
         if (signUpError) throw signUpError
+        track("signup_completed", { method: "password" })
         setSuccessMsg("¡Cuenta creada! Revisa tu email para confirmar.")
       } else {
         const { error: signInError } = await supabase.auth.signInWithPassword({
@@ -53,7 +55,6 @@ export default function LoginPage() {
           password,
         })
         if (signInError) throw signInError
-        try { posthog.identify(email) } catch {}
         window.location.href = nextPath
       }
     } catch (err: unknown) {
