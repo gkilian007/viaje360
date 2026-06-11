@@ -240,7 +240,53 @@ function extractJsonObject(raw: string): string {
 }
 
 export function buildRepairHint(reason: string): string {
-  return `The previous itinerary response was rejected: ${reason}. Return ONLY valid JSON matching the required schema. Ensure every day has valid YYYY-MM-DD date, activities use HH:MM times, duration is a positive integer in minutes, endTime is after time, and avoid overlaps. Respect booked tickets, siesta, budget, mobility, kids/pets, and basic feasibility.`
+  return `The previous itinerary response was rejected: ${reason}. Return ONLY valid JSON matching the required schema. Ensure every day has valid YYYY-MM-DD date, activities use HH:MM times, duration is a positive integer in minutes, endTime is after time, and avoid overlaps. Respect booked tickets, siesta, budget, mobility, kids/pets, and basic feasibility. Every tripName, theme, name, description and notes MUST be written in Spanish (proper nouns keep their original name). Generic placeholder activities such as "Free time", "Rest stop", "Break time", "Tiempo libre", "Descanso" or "Souvenir shopping" are forbidden: name real, specific venues. Only "Salida del alojamiento" and "Vuelta al alojamiento" are allowed as generic names.`
+}
+
+const ALLOWED_GENERIC_ACTIVITY_NAMES = new Set(["salida del alojamiento", "vuelta al alojamiento"])
+
+// Mirrors the QUALITY RULES forbidden list in buildItineraryPrompt, plus the
+// English template names Gemini tends to emit when it ignores LANGUAGE RULES.
+const GENERIC_ACTIVITY_NAME_PATTERNS: RegExp[] = [
+  /family[- ]friendly (break|lunch|stop)/i,
+  /\brest stop\b/i,
+  /^break(\s+time)?$/i,
+  /^free time$/i,
+  /^tiempo libre$/i,
+  /^descanso$/i,
+  /souvenir shopping/i,
+  /last[- ]minute shopping/i,
+  /travel back to/i,
+  /orientation walk/i,
+  /flexible (local lunch|lunch|highlight)/i,
+  /pet[- ]friendly sunset/i,
+  /^leisure time$/i,
+  /^relax(ation)? time$/i,
+]
+
+const GENERIC_TRIP_NAME_REGEX = /\b(adventure|essentials)\s*$/i
+const GENERIC_THEME_REGEX = /^day\s+\d+(\s+in\b.*)?$/i
+
+export function findGenericContentViolations(itinerary: GeneratedItinerary): string[] {
+  const violations: string[] = []
+
+  if (GENERIC_TRIP_NAME_REGEX.test(itinerary.tripName)) {
+    violations.push(`tripName "${itinerary.tripName}" is a generic English placeholder`)
+  }
+
+  for (const day of itinerary.days) {
+    if (GENERIC_THEME_REGEX.test(day.theme)) {
+      violations.push(`day ${day.dayNumber} theme "${day.theme}" is a generic placeholder`)
+    }
+    for (const activity of day.activities) {
+      if (ALLOWED_GENERIC_ACTIVITY_NAMES.has(activity.name.trim().toLowerCase())) continue
+      if (GENERIC_ACTIVITY_NAME_PATTERNS.some((pattern) => pattern.test(activity.name))) {
+        violations.push(`day ${day.dayNumber} activity "${activity.name}" is a forbidden generic name`)
+      }
+    }
+  }
+
+  return violations
 }
 
 export function normalizeGenerationContext(
@@ -355,7 +401,7 @@ function normalizeDay(
   return {
     dayNumber: Math.max(1, Math.round(parseNumber(raw.dayNumber, index + 1))),
     date: normalizeDate(raw.date, fallbackDate),
-    theme: normalizeWhitespace(raw.theme) || `Day ${index + 1} in ${context.destination}`,
+    theme: normalizeWhitespace(raw.theme) || `Día ${index + 1} en ${context.destination}`,
     isRestDay: toBoolean(raw.isRestDay, false),
     activities,
   }
@@ -374,7 +420,7 @@ function normalizeItinerary(itinerary: Partial<GeneratedItinerary>, context: Nor
   }
 
   const normalized: GeneratedItinerary = {
-    tripName: normalizeWhitespace(itinerary.tripName) || `${context.destination} Adventure`,
+    tripName: normalizeWhitespace(itinerary.tripName) || `Viaje a ${context.destination}`,
     days: normalizedDays.map((day, index) => ({
       ...day,
       dayNumber: index + 1,
@@ -415,7 +461,7 @@ function parseBookedTickets(input: string): ParsedBookedTicket[] {
     )
 
     return {
-      title: title || "Booked activity",
+      title: title || "Actividad reservada",
       date,
       time,
       duration: 90,
@@ -447,7 +493,7 @@ function insertOrRetimeBookedTickets(
             ...activities[existingIndex],
             time: normalizedTime,
             endTime: addMinutes(normalizedTime, activities[existingIndex].duration),
-            notes: [activities[existingIndex].notes, "Booked ticket preserved"].filter(Boolean).join(" · "),
+            notes: [activities[existingIndex].notes, "Reserva confirmada conservada"].filter(Boolean).join(" · "),
           }
           warnings.push({ code: "booked_ticket_retimed", message: `Retimed booked activity '${activities[existingIndex].name}' to ${normalizedTime}` })
         }
@@ -463,7 +509,7 @@ function insertOrRetimeBookedTickets(
         endTime: addMinutes(fallbackTime, ticket.duration),
         duration: ticket.duration,
         cost: 0,
-        notes: "Booked ticket inserted by validation layer",
+        notes: "Entrada reservada añadida por la capa de validación",
         icon: DEFAULT_ICON_BY_TYPE.tour,
         indoor: false,
         weatherDependent: false,
@@ -497,7 +543,7 @@ function applySiestaWindow(day: GeneratedDay, context: NormalizedGenerationConte
         ...activity,
         time: minutesToTime(nextStart),
         endTime: minutesToTime(nextStart + activity.duration),
-        notes: [activity.notes, "Shifted to preserve siesta window 14:00-16:00"].filter(Boolean).join(" · "),
+        notes: [activity.notes, "Reajustada para respetar la siesta de 14:00 a 16:00"].filter(Boolean).join(" · "),
       }
     }
     return activity
@@ -574,7 +620,7 @@ function applyBudgetSanity(day: GeneratedDay, context: NormalizedGenerationConte
       adjusted[index] = {
         ...activity,
         cost: activity.cost - reduction,
-        notes: [activity.notes, "Budget-normalized estimate"].filter(Boolean).join(" · "),
+        notes: [activity.notes, "Coste ajustado al presupuesto"].filter(Boolean).join(" · "),
       }
       overflow -= reduction
     }
@@ -705,7 +751,12 @@ export function validateAndRepairItinerary(
   const normalizedContext = normalizeGenerationContext(context, tripDates, destinationFallback)
   const extracted = extractJsonObject(raw)
   const parsed = JSON.parse(extracted) as Partial<GeneratedItinerary>
-  return normalizeItinerary(parsed, normalizedContext)
+  const result = normalizeItinerary(parsed, normalizedContext)
+  const violations = findGenericContentViolations(result.itinerary)
+  if (violations.length > 0) {
+    throw new Error(`Generic content rejected: ${violations.slice(0, 5).join("; ")}`)
+  }
+  return result
 }
 
 export function buildFallbackItinerary(
@@ -722,14 +773,14 @@ export function buildFallbackItinerary(
   const days: GeneratedDay[] = dates.map((date, index) => {
     const baseActivities: GeneratedActivity[] = [
       {
-        name: `Orientation walk in ${context.destination}`,
+        name: `Paseo de orientación por ${context.destination}`,
         type: "tour",
         location: context.accommodationZone || context.destination,
         time: minutesToTime(wakeMinutes),
         endTime: minutesToTime(wakeMinutes + 90),
         duration: 90,
         cost: context.budget === "premium" ? 25 : 0,
-        notes: "Minimal fallback itinerary generated after model validation failures",
+        notes: "Itinerario básico generado tras fallos de validación del modelo",
         icon: DEFAULT_ICON_BY_TYPE.tour,
         indoor: false,
         weatherDependent: false,
@@ -738,14 +789,14 @@ export function buildFallbackItinerary(
         dietaryTags: [],
       },
       {
-        name: hasKids(context) ? "Family-friendly lunch" : "Flexible local lunch",
+        name: hasKids(context) ? "Comida en restaurante familiar" : "Comida en restaurante local",
         type: "restaurant",
         location: context.accommodationZone || context.destination,
         time: hasSiesta ? "13:00" : minutesToTime(wakeMinutes + 180),
         endTime: hasSiesta ? "14:00" : minutesToTime(wakeMinutes + 240),
         duration: 60,
         cost: Math.min(18, budgetLimit.perActivity),
-        notes: "Safe fallback meal slot",
+        notes: "Sugerencia de comida orientativa",
         icon: DEFAULT_ICON_BY_TYPE.restaurant,
         indoor: true,
         weatherDependent: false,
@@ -754,14 +805,14 @@ export function buildFallbackItinerary(
         dietaryTags: context.dietary,
       },
       {
-        name: hasPets(context) ? "Pet-friendly sunset park" : "Flexible highlight slot",
+        name: hasPets(context) ? "Paseo al atardecer en un parque que admite mascotas" : "Visita libre a un punto de interés",
         type: hasPets(context) ? "park" : "tour",
         location: context.destination,
         time: hasSiesta ? "16:30" : minutesToTime(wakeMinutes + 360),
         endTime: hasSiesta ? "18:00" : minutesToTime(wakeMinutes + 450),
         duration: hasSiesta ? 90 : 90,
         cost: context.budget === "premium" ? 30 : 10,
-        notes: "Can be replaced once richer recommendations are available",
+        notes: "Puedes sustituirla por otra actividad cuando quieras",
         icon: hasPets(context) ? DEFAULT_ICON_BY_TYPE.park : DEFAULT_ICON_BY_TYPE.tour,
         indoor: false,
         weatherDependent: true,
@@ -774,7 +825,7 @@ export function buildFallbackItinerary(
     return {
       dayNumber: index + 1,
       date,
-      theme: `Reliable fallback day ${index + 1}`,
+      theme: `Día ${index + 1} en ${context.destination}`,
       isRestDay: Boolean(context.wantsRestDays && context.restDayFrequency === "cada-2" && (index + 1) % 2 === 0),
       activities: baseActivities,
     }
@@ -782,7 +833,7 @@ export function buildFallbackItinerary(
 
   return applyRuleChecks(
     {
-      tripName: `${context.destination} Essentials`,
+      tripName: `Lo esencial de ${context.destination}`,
       days,
     },
     context,
@@ -848,7 +899,7 @@ export function mapDbDaysToGeneratedItinerary(
     days: days.map((day) => ({
       dayNumber: day.day_number,
       date: day.date,
-      theme: day.theme ?? `Day ${day.day_number}`,
+      theme: day.theme ?? `Día ${day.day_number}`,
       isRestDay: day.is_rest_day,
       activities: (day.activities ?? []).map((activity) => ({
         name: activity.name,

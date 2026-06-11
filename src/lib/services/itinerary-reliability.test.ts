@@ -105,7 +105,7 @@ test("runReliableGenerationPipeline retries invalid payloads and succeeds withou
       {
         dayNumber: 1,
         date: "2026-04-10",
-        theme: "Day 1",
+        theme: "Centro histórico",
         isRestDay: false,
         activities: [
           {
@@ -123,7 +123,7 @@ test("runReliableGenerationPipeline retries invalid payloads and succeeds withou
       {
         dayNumber: 2,
         date: "2026-04-11",
-        theme: "Day 2",
+        theme: "Día de playa",
         isRestDay: false,
         activities: [],
       },
@@ -146,13 +146,111 @@ test("runReliableGenerationPipeline retries invalid payloads and succeeds withou
   assert.equal(result.itinerary.days.length, 2)
 })
 
-test("buildFallbackItinerary returns a minimal coherent itinerary", () => {
+test("buildFallbackItinerary returns a minimal coherent itinerary in Spanish", () => {
   const fallback = buildFallbackItinerary(onboarding)
 
-  assert.equal(fallback.itinerary.tripName, "Barcelona Essentials")
+  assert.equal(fallback.itinerary.tripName, "Lo esencial de Barcelona")
   assert.equal(fallback.itinerary.days.length, 2)
   assert.ok(fallback.itinerary.days.every((day) => day.activities.length >= 3))
+  assert.ok(
+    fallback.itinerary.days.every((day) =>
+      day.activities.every((activity) => !/orientation walk|family-friendly|flexible/i.test(activity.name))
+    )
+  )
   assert.ok(fallback.warnings.some((warning) => warning.code === "json_extract_failed"))
+})
+
+test("runReliableGenerationPipeline rejects generic content and retries", async () => {
+  const generic = JSON.stringify({
+    tripName: "Barcelona Adventure",
+    days: [
+      {
+        dayNumber: 1,
+        date: "2026-04-10",
+        theme: "Day 1",
+        isRestDay: false,
+        activities: [
+          { name: "Free time", type: "tour", location: "Centro", time: "10:00", endTime: "11:00", duration: 60, cost: 0 },
+        ],
+      },
+      { dayNumber: 2, date: "2026-04-11", theme: "Playa", isRestDay: false, activities: [] },
+    ],
+  })
+  const corrected = JSON.stringify({
+    tripName: "Barcelona en familia",
+    days: [
+      {
+        dayNumber: 1,
+        date: "2026-04-10",
+        theme: "Centro histórico",
+        isRestDay: false,
+        activities: [
+          { name: "Catedral de Barcelona", type: "monument", location: "Barrio Gótico", time: "10:00", endTime: "11:30", duration: 90, cost: 9 },
+        ],
+      },
+      { dayNumber: 2, date: "2026-04-11", theme: "Día de playa", isRestDay: false, activities: [] },
+    ],
+  })
+
+  const result = await runReliableGenerationPipeline(generic, onboarding, {
+    mode: "generate",
+    maxAttempts: 3,
+    onAttempt: async () => corrected,
+  })
+
+  assert.equal(result.usedFallback, false)
+  assert.equal(result.attempts, 2)
+  assert.ok(result.failureReasons[0]?.includes("Generic content rejected"))
+  assert.ok(result.failureReasons[0]?.includes("Free time"))
+  assert.equal(result.itinerary.tripName, "Barcelona en familia")
+})
+
+test("validateAndRepairItinerary allows the alojamiento generic names", () => {
+  const raw = JSON.stringify({
+    tripName: "Madrid con niños",
+    days: [
+      {
+        dayNumber: 1,
+        date: "2026-04-10",
+        theme: "Centro histórico",
+        isRestDay: false,
+        activities: [
+          { name: "Salida del alojamiento", type: "tour", location: "Eixample", time: "09:00", endTime: "09:30", duration: 30, cost: 0 },
+          { name: "Museo del Prado", type: "museum", location: "Paseo del Prado", time: "10:00", endTime: "12:00", duration: 120, cost: 15 },
+          { name: "Vuelta al alojamiento", type: "tour", location: "Eixample", time: "18:00", endTime: "18:30", duration: 30, cost: 0 },
+        ],
+      },
+    ],
+  })
+
+  const result = validateAndRepairItinerary(raw, { ...onboarding, destination: "Madrid", alreadyBooked: "" })
+  const names = result.itinerary.days[0].activities.map((activity) => activity.name)
+
+  assert.ok(names.includes("Salida del alojamiento"))
+  assert.ok(names.includes("Vuelta al alojamiento"))
+  assert.equal(result.itinerary.days[1]?.theme, "Día 2 en Madrid")
+})
+
+test("validateAndRepairItinerary rejects generic English trip names", () => {
+  const raw = JSON.stringify({
+    tripName: "Madrid Adventure",
+    days: [
+      {
+        dayNumber: 1,
+        date: "2026-04-10",
+        theme: "Centro histórico",
+        isRestDay: false,
+        activities: [
+          { name: "Museo del Prado", type: "museum", location: "Paseo del Prado", time: "10:00", endTime: "12:00", duration: 120, cost: 15 },
+        ],
+      },
+    ],
+  })
+
+  assert.throws(
+    () => validateAndRepairItinerary(raw, { ...onboarding, destination: "Madrid", alreadyBooked: "" }),
+    /Generic content rejected/
+  )
 })
 
 test("validateAndRepairItinerary preserves activity lat/lng from the model", () => {
