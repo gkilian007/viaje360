@@ -1,7 +1,7 @@
 import { Metadata } from "next"
 
 export const metadata: Metadata = {
-  title: "Precios — Viaje360",
+  title: "Precios",
   description:
     "Planes flexibles para cada viajero. 2 días gratis al llegar a tu destino, luego elige entre pagar por destino o suscripción anual.",
 }

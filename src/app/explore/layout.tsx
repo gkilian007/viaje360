@@ -1,7 +1,7 @@
 import { Metadata } from "next"
 
 export const metadata: Metadata = {
-  title: "Explorar destinos — Viaje360",
+  title: "Explorar destinos",
   description:
     "Descubre destinos populares, gemas ocultas y estilos de viaje. Planifica tu próxima aventura con IA.",
 }

@@ -19,7 +19,7 @@ export async function generateMetadata({ params }: RecapLayoutProps): Promise<Me
 
     if (!trip) {
       return {
-        title: "Recap de viaje · Viaje360",
+        title: "Recap de viaje",
         description: "Descubre este itinerario de viaje creado con Viaje360.",
       }
     }
@@ -27,14 +27,17 @@ export async function generateMetadata({ params }: RecapLayoutProps): Promise<Me
     const dest = trip.destination ?? "Mi viaje"
     const country = trip.country ? `, ${trip.country}` : ""
     const startYear = trip.start_date ? new Date(trip.start_date).getFullYear() : ""
-    const title = `Mi viaje a ${dest}${country}${startYear ? ` · ${startYear}` : ""} · Viaje360`
+    // The root layout's title.template already appends "| Viaje360" to the
+    // document title, but not to openGraph/twitter titles
+    const title = `Mi viaje a ${dest}${country}${startYear ? ` · ${startYear}` : ""}`
+    const socialTitle = `${title} · Viaje360`
     const description = `Descubre el itinerario completo de ${dest}: actividades, experiencias y momentos únicos planificados con inteligencia artificial.`
 
     return {
       title,
       description,
       openGraph: {
-        title,
+        title: socialTitle,
         description,
         type: "article",
         url: `https://viaje360.app/recap/${tripId}`,
@@ -50,14 +53,14 @@ export async function generateMetadata({ params }: RecapLayoutProps): Promise<Me
       },
       twitter: {
         card: "summary_large_image",
-        title,
+        title: socialTitle,
         description,
         images: [`https://viaje360.app/api/og/recap?destination=${encodeURIComponent(dest)}&country=${encodeURIComponent(trip.country ?? "")}`],
       },
     }
   } catch {
     return {
-      title: "Recap de viaje · Viaje360",
+      title: "Recap de viaje",
       description: "Itinerario de viaje creado con inteligencia artificial.",
     }
   }
