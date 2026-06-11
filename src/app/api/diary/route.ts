@@ -6,6 +6,10 @@ import { requireAccess } from "@/lib/api/access-guard"
 import { createServiceClient } from "@/lib/supabase/server"
 import type { DiaryMessage } from "@/lib/services/trip-learning"
 
+// Guest trips use local "trip-<timestamp>" ids that don't exist in the database;
+// rejecting them here avoids a Postgres uuid cast error surfacing as a 500.
+const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
+
 interface DiaryRequestBody {
   tripId: string
   dayNumber: number
@@ -31,6 +35,13 @@ export async function POST(request: NextRequest) {
     if (!body.tripId || !body.dayNumber || !body.date) {
       return NextResponse.json(
         { ok: false, message: "Missing required fields: tripId, dayNumber, date" },
+        { status: 400 }
+      )
+    }
+
+    if (!UUID_RE.test(body.tripId)) {
+      return NextResponse.json(
+        { ok: false, message: "tripId must be a valid trip UUID" },
         { status: 400 }
       )
     }
@@ -90,6 +101,13 @@ export async function GET(request: NextRequest) {
     if (!tripId || !dayNumber) {
       return NextResponse.json(
         { ok: false, message: "Missing required params: tripId, dayNumber" },
+        { status: 400 }
+      )
+    }
+
+    if (!UUID_RE.test(tripId)) {
+      return NextResponse.json(
+        { ok: false, message: "tripId must be a valid trip UUID" },
         { status: 400 }
       )
     }
