@@ -13,9 +13,18 @@ import Image from "next/image"
 import { getDestinationHeroThumb } from "@/lib/services/destination-photos"
 import type { Interest } from "@/lib/onboarding-types"
 
+// Accent-insensitive matching: "paris" must find "París", "amsterdam" → "Ámsterdam"
+function fold(text: string): string {
+  return text
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+}
+
 // ─── Curated content — no dependency on user state ───────────────────────────
 
 const FEATURED_DESTINATIONS = [
+  { name: "Madrid", country: "España", emoji: "🐻", color: "#E63946", tag: "Arte, tapas y vida de barrio" },
   { name: "Tokio", country: "Japón", emoji: "🗼", color: "#FF453A", tag: "Cultura y tecnología" },
   { name: "Barcelona", country: "España", emoji: "🏛️", color: "#0A84FF", tag: "Arquitectura y playa" },
   { name: "Bali", country: "Indonesia", emoji: "🏝️", color: "#30D158", tag: "Naturaleza y bienestar" },
@@ -326,18 +335,14 @@ export default function ExplorePage() {
 
   const email = authUser?.email ?? ""
 
+  const query = fold(search)
+
   const filteredDestinations = FEATURED_DESTINATIONS.filter(
-    d =>
-      d.name.toLowerCase().includes(search.toLowerCase()) ||
-      d.country.toLowerCase().includes(search.toLowerCase()) ||
-      d.tag.toLowerCase().includes(search.toLowerCase())
+    d => fold(d.name).includes(query) || fold(d.country).includes(query) || fold(d.tag).includes(query)
   )
 
   const filteredGems = HIDDEN_GEMS.filter(
-    g =>
-      g.name.toLowerCase().includes(search.toLowerCase()) ||
-      g.country.toLowerCase().includes(search.toLowerCase()) ||
-      g.desc.toLowerCase().includes(search.toLowerCase())
+    g => fold(g.name).includes(query) || fold(g.country).includes(query) || fold(g.desc).includes(query)
   )
 
   function handleDestinationSelect(destName: string) {
