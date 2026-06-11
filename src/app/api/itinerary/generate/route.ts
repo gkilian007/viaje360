@@ -1,6 +1,6 @@
 import * as Sentry from "@sentry/nextjs"
 import { PostHog } from "posthog-node"
-import { NextRequest } from "next/server"
+import { NextRequest, after } from "next/server"
 import { rateLimit } from "@/lib/rate-limit"
 import { onboardingRequestSchema } from "@/lib/api/contracts"
 import {
@@ -10,7 +10,7 @@ import {
   successResponse,
 } from "@/lib/api/route-helpers"
 import { resolveRequestIdentity } from "@/lib/auth/server"
-import { geocodeItinerary } from "@/lib/services/geocode.server"
+import { backfillTripCoordinates } from "@/lib/services/geocode-backfill.server"
 import { generateItinerary, mapToAppTypes } from "@/lib/services/itinerary.service"
 import { findReusableItinerary } from "@/lib/services/itinerary-library"
 import { getPersonalRecommendationContext } from "@/lib/services/personal-recommendation"
@@ -171,16 +171,17 @@ export async function POST(req: NextRequest) {
           }).catch((err) => console.warn("[generate] notification scheduling error:", err))
         }
 
-        // Background full geocoding — fills missing coords via Nominatim after saving
-        // This runs async and updates the DB directly via /api/trips/backfill-geocode
+        // Background full geocoding — fills missing coords via Nominatim after
+        // the response is sent; after() keeps the lambda alive up to maxDuration.
         const tripIdForGeocode = resolvedTripId
         if (tripIdForGeocode !== localTripId) {
-          const baseUrl = process.env.NEXT_PUBLIC_APP_URL ?? "https://viaje360.app"
-          fetch(`${baseUrl}/api/trips/backfill-geocode`, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ tripId: tripIdForGeocode }),
-          }).catch((err) => console.warn("[generate] background geocode error:", err))
+          after(async () => {
+            try {
+              await backfillTripCoordinates(tripIdForGeocode)
+            } catch (err) {
+              console.warn("[generate] background geocode error:", err)
+            }
+          })
         }
 
     // Pre-fetch images for the first 10 activities — fire-and-forget, never block the response
