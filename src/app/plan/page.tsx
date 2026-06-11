@@ -1005,6 +1005,42 @@ function PlanPageContent() {
 
               {/* Alerts & banners */}
               <div className="px-6 pt-3">
+                <AnimatePresence>
+                  {showGuestBanner && (
+                    <motion.div
+                      initial={{ opacity: 0, y: -12 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: -12 }}
+                      transition={{ duration: 0.3 }}
+                      className="mb-3 flex items-center justify-between gap-3 px-4 py-3 rounded-2xl"
+                      style={{
+                        background: "rgba(88,86,214,0.14)",
+                        border: "1px solid rgba(88,86,214,0.35)",
+                        backdropFilter: "blur(12px)",
+                      }}
+                    >
+                      <p className="text-[13px] text-[var(--on-surface-variant)] flex-1">
+                        💾 ¿Quieres guardar este itinerario? Inicia sesión para no perderlo.
+                      </p>
+                      <div className="flex items-center gap-2 shrink-0">
+                        <a
+                          href="/login?next=/plan"
+                          className="text-[11px] font-semibold px-2.5 py-1.5 rounded-lg"
+                          style={{ background: "rgba(88,86,214,0.3)", color: "#c4b5fd" }}
+                        >
+                          Guardar
+                        </a>
+                        <button
+                          onClick={() => setShowGuestBanner(false)}
+                          className="text-[11px] text-[#666] hover:text-white transition-colors"
+                          aria-label="Cerrar"
+                        >
+                          ✕
+                        </button>
+                      </div>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
                 <AutoAdaptedBanner days={autoAdaptedDays} onDismiss={clearAutoAdapted} />
                 {topIssue && currentTrip?.id && (
                   <ProactiveAdaptationBanner
