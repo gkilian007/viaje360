@@ -110,6 +110,8 @@ export const generatedActivitySchema = z.object({
   kidFriendly: z.boolean().optional(),
   petFriendly: z.boolean().optional(),
   dietaryTags: z.array(z.string().trim().min(1)).optional(),
+  lat: z.number().min(-90).max(90).optional(),
+  lng: z.number().min(-180).max(180).optional(),
 })
 
 export const generatedDaySchema = z.object({
