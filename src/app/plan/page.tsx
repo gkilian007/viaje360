@@ -45,6 +45,7 @@ import { NotificationBanner } from "@/components/features/NotificationBanner"
 import Link from "next/link"
 import Image from "next/image"
 import { getDestinationHeroThumb } from "@/lib/services/destination-photos"
+import { createClient, isSupabaseBrowserConfigured } from "@/lib/supabase/client"
 import type { TimelineActivity, Trip } from "@/lib/types"
 
 function DaySelector({
@@ -380,8 +381,73 @@ function PlanPageContent() {
             tripId: payload.data.trip.id,
           })
         } else if (useAppStore.getState().currentTrip) {
-          // Server has no trip but we have one in localStorage → guest mode
-          setShowGuestBanner(true)
+          // Server has no trip but we have one in localStorage. If the user
+          // logged in after generating as a guest, claim it to their account;
+          // otherwise prompt them to save it.
+          const localTrip = useAppStore.getState().currentTrip
+          const localDays = useAppStore.getState().generatedItinerary
+          let claimed = false
+          if (
+            localTrip?.id.startsWith("trip-") &&
+            localDays &&
+            localDays.length > 0 &&
+            isSupabaseBrowserConfigured()
+          ) {
+            const { data: auth } = await createClient().auth.getUser()
+            if (auth.user) {
+              try {
+                const claimRes = await fetch("/api/trips/claim", {
+                  method: "POST",
+                  headers: { "Content-Type": "application/json" },
+                  body: JSON.stringify({
+                    trip: {
+                      name: localTrip.name,
+                      destination: localTrip.destination,
+                      startDate: localTrip.startDate,
+                      endDate: localTrip.endDate,
+                    },
+                    days: localDays.map((day) => ({
+                      dayNumber: day.dayNumber,
+                      date: day.date,
+                      activities: day.activities.map((a) => ({
+                        name: a.name,
+                        type: a.type,
+                        location: a.location,
+                        time: a.time,
+                        duration: a.duration,
+                        cost: a.cost,
+                        isLocked: a.isLocked ?? undefined,
+                        notes: a.notes ?? undefined,
+                        description: a.description ?? undefined,
+                        icon: a.icon ?? undefined,
+                        url: a.url ?? undefined,
+                        pricePerPerson: a.pricePerPerson ?? undefined,
+                        imageQuery: a.imageQuery ?? undefined,
+                        recommendationReason: a.recommendationReason ?? undefined,
+                        indoor: a.indoor ?? undefined,
+                        lat: a.lat ?? undefined,
+                        lng: a.lng ?? undefined,
+                      })),
+                    })),
+                  }),
+                })
+                if (claimRes.ok) {
+                  const claimPayload = await claimRes.json()
+                  if (claimPayload?.data?.trip) {
+                    setCurrentTrip(claimPayload.data.trip)
+                    setGeneratedItinerary(claimPayload.data.days ?? null)
+                    setSelectedDay(1)
+                    track("guest_trip_claimed", {
+                      destination: claimPayload.data.trip.destination,
+                      tripId: claimPayload.data.trip.id,
+                    })
+                    claimed = true
+                  }
+                }
+              } catch {}
+            }
+          }
+          if (!claimed) setShowGuestBanner(true)
         }
 
         // Backfill geocoding for legacy trips that have no lat/lng
@@ -659,7 +725,7 @@ function PlanPageContent() {
                 </p>
                 <div className="flex items-center gap-2 shrink-0">
                   <a
-                    href="/login"
+                    href="/login?next=/plan"
                     className="text-[11px] font-semibold px-2.5 py-1.5 rounded-lg"
                     style={{ background: "rgba(88,86,214,0.3)", color: "#c4b5fd" }}
                   >
