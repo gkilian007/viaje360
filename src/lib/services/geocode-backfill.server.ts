@@ -36,6 +36,15 @@ function simplify(name: string): string | null {
   return parts.length > 1 ? parts[0].trim() : null
 }
 
+// Nominatim chokes on parentheticals ("(near 62nd St)") and on full postal
+// addresses with the city appended again ("Невский пр. 35, Санкт-Петербург,
+// Россия, Saint Petersburg"). Strip the former; only append the destination
+// to short place names that lack their own city context.
+function locationQuery(location: string, destination: string): string {
+  const clean = location.replace(/\s*\([^)]*\)/g, "").trim()
+  return clean.includes(",") ? clean : `${clean}, ${destination}`
+}
+
 function delay(ms: number) {
   return new Promise(r => setTimeout(r, ms))
 }
@@ -93,8 +102,8 @@ export async function backfillTripCoordinates(
     if (cache.has(cacheKey)) {
       coords = cache.get(cacheKey)!
     } else {
-      // Try location + destination first
-      coords = await geocodeSingle(`${location}, ${destination}`)
+      // Try the cleaned location first (as-is if it's already a full address)
+      coords = await geocodeSingle(locationQuery(location, destination))
       if (!coords) await delay(1100)
 
       // Try name + destination
