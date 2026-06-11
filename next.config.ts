@@ -15,16 +15,10 @@ const nextConfig: NextConfig = {
   },
   async headers() {
     return [
-      // Static assets from Next.js build — immutable, cache forever
-      {
-        source: "/_next/static/:path*",
-        headers: [
-          {
-            key: "Cache-Control",
-            value: "public, max-age=31536000, immutable",
-          },
-        ],
-      },
+      // NOTE: no custom rule for /_next/static — Next.js already serves hashed
+      // build assets as immutable in production, and forcing immutable here also
+      // applied in dev, where Turbopack chunk names are NOT content-hashed:
+      // browsers cached stale chunks forever (old code survived rebuilds).
       // Public PWA icons
       {
         source: "/:icon(icon-.*\\.png|apple-touch-icon\\.png)",

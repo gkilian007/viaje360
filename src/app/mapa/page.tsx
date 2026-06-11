@@ -181,20 +181,11 @@ export default function MapaPage() {
     [generatedItinerary, selectedDay]
   )
 
-  if (!hydrated) {
-    return (
-      <div className="min-h-screen bg-[#0f1117] flex items-center justify-center">
-        <div className="w-8 h-8 border-2 border-[#0A84FF] border-t-transparent rounded-full animate-spin" />
-      </div>
-    )
-  }
-
   const itinerary = generatedItinerary ?? []
   const totalDays = itinerary.length
   const today = itinerary[selectedDay - 1]
 
   // Geocoded activities for the HUD (same data the map uses)
-  // eslint-disable-next-line react-hooks/rules-of-hooks
   const { geocoded: geocodedToday } = useGeocodedActivities(
     today?.activities ?? [],
     currentTrip?.destination ?? ""
@@ -262,6 +253,14 @@ export default function MapaPage() {
     setHudActiveIndex(activeIdx)
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [hydrated, today?.activities])
+
+  if (!hydrated) {
+    return (
+      <div className="min-h-screen bg-[#0f1117] flex items-center justify-center">
+        <div className="w-8 h-8 border-2 border-[#0A84FF] border-t-transparent rounded-full animate-spin" />
+      </div>
+    )
+  }
 
   if (!currentTrip || totalDays === 0) {
     return (
