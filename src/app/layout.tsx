@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from "next"
 import { Inter } from "next/font/google"
 import { AppBootstrap } from "@/components/AppBootstrap"
 import { ServiceWorkerProvider } from "@/components/ServiceWorkerProvider"
+import { FeedbackWidget } from "@/components/features/FeedbackWidget"
 import { PHProvider } from "@/lib/analytics/posthog"
 import { I18nProvider } from "@/lib/i18n-context"
 import { ThemeProvider } from "@/lib/theme-context"
@@ -104,6 +105,7 @@ export default function RootLayout({
             <ThemeProvider>
               <AppBootstrap />
               <ServiceWorkerProvider />
+              <FeedbackWidget />
               {children}
             </ThemeProvider>
           </I18nProvider>
