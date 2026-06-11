@@ -8,6 +8,7 @@
     "start": "next start",
     "lint": "eslint",
     "test": "find src -name '*.test.ts' -print0 | xargs -0 node --import tsx --test",
+    "test:e2e": "playwright test",
     "db:seed-madrid-transport": "node --experimental-strip-types scripts/seed-madrid-transport.mjs",
     "db:seed-itinerary-library": "node scripts/seed-itinerary-library-to-db.mjs",
     "library:export": "node scripts/export-itinerary-library.mjs"
@@ -56,6 +57,7 @@
     "zustand": "^5.0.12"
   },
   "devDependencies": {
+    "@playwright/test": "^1.60.0",
     "@tailwindcss/postcss": "^4",
     "@types/leaflet": "^1.9.21",
     "@types/mapbox-gl": "^3.4.1",

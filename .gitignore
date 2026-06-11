@@ -46,3 +46,7 @@ node_modules/@next/swc-linux-arm64-gnu/next-swc.linux-arm64-gnu.node
 .next/dev/cache/turbopack/600cd2fe/00000408.sst
 .next/dev/cache/turbopack/600cd2fe/00000408.sst
 .next/dev/cache/turbopack/600cd2fe/00000681.sst
+
+# playwright
+/test-results/
+/playwright-report/
