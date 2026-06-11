@@ -6,12 +6,13 @@
  * - Static assets (_next/static): Cache-first, immutable
  * - Map tiles (OSM/Stadia): Cache-first, max 500 tiles
  * - Unsplash images: Cache-first, 7-day TTL
- * - API routes: Network-first with cache fallback (offline only)
+ * - Public API routes (weather, places, directions…): Network-first with cache fallback (offline only)
+ * - User-data API routes (trips, diary, expenses…): never cached — Cache Storage outlives the session
  * - Navigation: Cache-first with offline fallback page
  * - Push notifications: handled here
  */
 
-const CACHE_VERSION = 'v4'
+const CACHE_VERSION = 'v5'
 const SHELL_CACHE = `viaje360-shell-${CACHE_VERSION}`
 const TILE_CACHE = `viaje360-tiles-${CACHE_VERSION}`
 const API_CACHE = `viaje360-api-${CACHE_VERSION}`
@@ -91,15 +92,22 @@ self.addEventListener('fetch', (event) => {
     return
   }
 
-  // API routes
+  // API routes — only public, non-user data may be cached for offline
+  // fallback. User-scoped responses (trips, diary, expenses…) must never
+  // land in Cache Storage: it outlives the session, so a cached copy could
+  // be served to a different account on a shared device.
   if (url.pathname.startsWith('/api/')) {
-    // Never cache auth-sensitive or mutation endpoints
-    const noCacheApis = ['/api/stripe', '/api/webhook', '/api/notifications/send']
-    if (noCacheApis.some(path => url.pathname.startsWith(path))) return
-
-    // Network-first: API responses are auth-dependent, so the cache copy is
-    // only ever served as an offline fallback — never while online
-    event.respondWith(networkFirstWithCache(request, API_CACHE, MAX_API_ENTRIES))
+    const publicApis = [
+      '/api/weather',
+      '/api/places/search',
+      '/api/directions',
+      '/api/transit-route',
+      '/api/nearby',
+      '/api/destination-transport',
+    ]
+    if (publicApis.some(path => url.pathname.startsWith(path))) {
+      event.respondWith(networkFirstWithCache(request, API_CACHE, MAX_API_ENTRIES))
+    }
     return
   }
 
