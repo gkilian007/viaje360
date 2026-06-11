@@ -53,12 +53,15 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
   if (!trip) {
     return {
-      title: "Itinerario compartido | Viaje360",
+      title: "Itinerario compartido",
       description: "Planifica tu próximo viaje con inteligencia artificial.",
     }
   }
 
-  const title = `Mi viaje a ${trip.destination} | Viaje360`
+  // The root layout's title.template already appends "| Viaje360" to the
+  // document title, but not to openGraph/twitter titles
+  const title = `Mi viaje a ${trip.destination}`
+  const socialTitle = `${title} | Viaje360`
   const description = `${trip.totalDays} días, ${trip.totalActivities} actividades — planificado con IA`
   const ogImageUrl = `/api/og/trip?destination=${encodeURIComponent(trip.destination)}&days=${trip.totalDays}&activities=${trip.totalActivities}`
 
@@ -66,7 +69,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     title,
     description,
     openGraph: {
-      title,
+      title: socialTitle,
       description,
       type: "website",
       url: `https://viaje360.app/share/${tripId}`,
@@ -82,7 +85,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     },
     twitter: {
       card: "summary_large_image",
-      title,
+      title: socialTitle,
       description,
       images: [ogImageUrl],
     },

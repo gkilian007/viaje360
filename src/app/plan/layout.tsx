@@ -1,7 +1,7 @@
 import type { Metadata } from "next"
 
 export const metadata: Metadata = {
-  title: "Tu plan de viaje | Viaje360",
+  title: "Tu plan de viaje",
   description:
     "Gestiona tu itinerario personalizado en tiempo real. Actividades, mapa, diario y adaptaciones con IA.",
   robots: { index: false, follow: false },

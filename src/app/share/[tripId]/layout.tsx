@@ -59,13 +59,16 @@ export async function generateMetadata({ params }: ShareLayoutProps): Promise<Me
 
   if (!trip) {
     return {
-      title: "Plan de viaje | Viaje360",
+      title: "Plan de viaje",
       description: "Descubre este itinerario de viaje creado con Viaje360.",
     }
   }
 
   const dest = trip.destination
-  const title = `Mi viaje a ${dest} | Viaje360`
+  // The root layout's title.template already appends "| Viaje360" to the
+  // document title, but not to openGraph/twitter titles
+  const title = `Mi viaje a ${dest}`
+  const socialTitle = `${title} | Viaje360`
   const description = `${trip.days} días, ${trip.activities} actividades — planificado con IA`
   const ogImageUrl = `https://viaje360.app/api/og/recap?destination=${encodeURIComponent(dest)}&country=${encodeURIComponent(trip.country ?? "")}`
 
@@ -73,7 +76,7 @@ export async function generateMetadata({ params }: ShareLayoutProps): Promise<Me
     title,
     description,
     openGraph: {
-      title,
+      title: socialTitle,
       description,
       type: "article",
       url: `https://viaje360.app/share/${tripId}`,
@@ -82,7 +85,7 @@ export async function generateMetadata({ params }: ShareLayoutProps): Promise<Me
     },
     twitter: {
       card: "summary_large_image",
-      title,
+      title: socialTitle,
       description,
       images: [ogImageUrl],
     },
