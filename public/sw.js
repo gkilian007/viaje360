@@ -5,14 +5,13 @@
  * - Shell (app routes): Cache-first, precached on install
  * - Static assets (_next/static): Cache-first, immutable
  * - Map tiles (OSM/Stadia): Cache-first, max 500 tiles
- * - API /api/trips + /api/access: Stale-while-revalidate, 5-min TTL
  * - Unsplash images: Cache-first, 7-day TTL
- * - Other API routes: Network-first with cache fallback
+ * - API routes: Network-first with cache fallback (offline only)
  * - Navigation: Cache-first with offline fallback page
  * - Push notifications: handled here
  */
 
-const CACHE_VERSION = 'v3'
+const CACHE_VERSION = 'v4'
 const SHELL_CACHE = `viaje360-shell-${CACHE_VERSION}`
 const TILE_CACHE = `viaje360-tiles-${CACHE_VERSION}`
 const API_CACHE = `viaje360-api-${CACHE_VERSION}`
@@ -21,9 +20,6 @@ const IMAGE_CACHE = `viaje360-images-${CACHE_VERSION}`
 const MAX_TILE_ENTRIES = 500
 const MAX_API_ENTRIES = 50
 const MAX_IMAGE_ENTRIES = 200
-
-// Stale-while-revalidate TTL for trip/access API responses (ms)
-const SWR_API_TTL_MS = 5 * 60 * 1000
 
 // Cache-first TTL for Unsplash images (ms)
 const IMAGE_TTL_MS = 7 * 24 * 60 * 60 * 1000
@@ -101,14 +97,8 @@ self.addEventListener('fetch', (event) => {
     const noCacheApis = ['/api/stripe', '/api/webhook', '/api/notifications/send']
     if (noCacheApis.some(path => url.pathname.startsWith(path))) return
 
-    // Stale-while-revalidate for frequently polled lightweight endpoints
-    const swrApis = ['/api/trips', '/api/access']
-    if (swrApis.some(path => url.pathname.startsWith(path))) {
-      event.respondWith(staleWhileRevalidateWithTTL(request, API_CACHE, SWR_API_TTL_MS, MAX_API_ENTRIES))
-      return
-    }
-
-    // Network-first with cache fallback for other API routes
+    // Network-first: API responses are auth-dependent, so the cache copy is
+    // only ever served as an offline fallback — never while online
     event.respondWith(networkFirstWithCache(request, API_CACHE, MAX_API_ENTRIES))
     return
   }
@@ -226,50 +216,6 @@ async function networkFirstWithCache(request, cacheName, maxEntries) {
       headers: { 'Content-Type': 'application/json' }
     })
   }
-}
-
-async function staleWhileRevalidateWithTTL(request, cacheName, ttlMs, maxEntries) {
-  const cache = await caches.open(cacheName)
-  const cached = await cache.match(request)
-
-  // Check if cached response is still fresh
-  let isFresh = false
-  if (cached) {
-    const cachedDate = cached.headers.get('sw-cached-at')
-    isFresh = cachedDate && Date.now() - Number(cachedDate) < ttlMs
-  }
-
-  // Kick off background revalidation if stale or no cache
-  if (!isFresh) {
-    const fetchPromise = fetch(request).then(async (response) => {
-      if (response.ok) {
-        const keys = await cache.keys()
-        if (keys.length >= maxEntries) {
-          await cache.delete(keys[0])
-        }
-        const headers = new Headers(response.headers)
-        headers.set('sw-cached-at', String(Date.now()))
-        const timestamped = new Response(await response.clone().blob(), {
-          status: response.status,
-          statusText: response.statusText,
-          headers,
-        })
-        cache.put(request, timestamped)
-      }
-      return response
-    }).catch(() => null)
-
-    // Return cached immediately if available, otherwise wait for network
-    if (cached) return cached
-    const networkResponse = await fetchPromise
-    if (networkResponse) return networkResponse
-    return new Response(JSON.stringify({ error: 'offline', cached: false }), {
-      status: 503,
-      headers: { 'Content-Type': 'application/json' }
-    })
-  }
-
-  return cached
 }
 
 async function staleWhileRevalidate(request) {
