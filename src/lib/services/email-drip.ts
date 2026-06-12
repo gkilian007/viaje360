@@ -1,28 +1,18 @@
 /**
- * Email drip sequences for onboarding.
- * Triggered by: user signup (via Supabase auth hook or Stripe webhook).
- * Scheduling: uses scheduled_notifications table with type "email".
+ * Email drip sequence for onboarding: welcome → tips (+24h) → nudge (+72h).
+ *
+ * Rows in `scheduled_drip_emails` are enqueued by a DB trigger on auth.users
+ * (migration 20260612000003_email_drip.sql) and sent by `/api/cron/unified`
+ * via processDripEmails().
  */
 
 import { sendEmail } from "./email.service"
 
-const DRIP_SEQUENCE = [
-  {
-    delayHours: 0,
-    subject: "¡Bienvenido/a a Viaje360! 🌍",
-    template: "welcome",
-  },
-  {
-    delayHours: 24,
-    subject: "3 tips para sacar el máximo de tu itinerario ✨",
-    template: "tips",
-  },
-  {
-    delayHours: 72,
-    subject: "Tu viaje te espera — ¿listo/a para la aventura?",
-    template: "nudge",
-  },
-]
+const DRIP_SUBJECTS: Record<string, string> = {
+  welcome: "¡Bienvenido/a a Viaje360! 🌍",
+  tips: "3 tips para sacar el máximo de tu itinerario ✨",
+  nudge: "Tu viaje te espera — ¿listo/a para la aventura?",
+}
 
 function renderTemplate(template: string, name: string): string {
   const templates: Record<string, string> = {
@@ -89,18 +79,57 @@ function renderTemplate(template: string, name: string): string {
   return templates[template] ?? templates.welcome
 }
 
-/**
- * Enqueue drip emails for a new user.
- * Call this from the auth callback or Stripe webhook.
- */
-export async function enqueueDripEmails(email: string, name: string) {
-  // Send welcome immediately
-  const html = renderTemplate("welcome", name)
-  await sendEmail(email, DRIP_SEQUENCE[0].subject, html)
-
-  // For delayed emails, we'd normally schedule them via a queue/cron.
-  // For now, log that they should be scheduled.
-  console.info(`[email-drip] Enqueued ${DRIP_SEQUENCE.length - 1} delayed emails for ${email}`)
+interface DripEmailRow {
+  id: string
+  email: string
+  name: string
+  template: string
 }
 
-export { DRIP_SEQUENCE }
+/**
+ * Sends due drip emails and marks them as sent.
+ *
+ * Rows are only marked sent after a successful send, so a missing
+ * RESEND_API_KEY (e.g. local dev) leaves the queue untouched for the
+ * next production run.
+ */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export async function processDripEmails(supabase: any) {
+  const now = new Date().toISOString()
+
+  const { data: pending, error } = await supabase
+    .from("scheduled_drip_emails")
+    .select("id, email, name, template")
+    .eq("sent", false)
+    .lte("scheduled_at", now)
+    .order("scheduled_at", { ascending: true })
+    .limit(50)
+
+  if (error || !pending || pending.length === 0) {
+    return { processed: 0, sent: 0, failed: 0 }
+  }
+
+  let sent = 0
+  let failed = 0
+  const sentIds: string[] = []
+
+  for (const row of pending as DripEmailRow[]) {
+    const subject = DRIP_SUBJECTS[row.template] ?? DRIP_SUBJECTS.welcome
+    const ok = await sendEmail(row.email, subject, renderTemplate(row.template, row.name))
+    if (ok) {
+      sent++
+      sentIds.push(row.id)
+    } else {
+      failed++
+    }
+  }
+
+  if (sentIds.length > 0) {
+    await supabase
+      .from("scheduled_drip_emails")
+      .update({ sent: true, sent_at: new Date().toISOString() })
+      .in("id", sentIds)
+  }
+
+  return { processed: pending.length, sent, failed }
+}

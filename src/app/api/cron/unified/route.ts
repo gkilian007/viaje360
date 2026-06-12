@@ -3,7 +3,8 @@
  *
  * Unified daily cron that handles ALL notification tasks:
  * 1. Process pending scheduled_notifications (trip reminders, diary prompts)
- * 2. Dispatch proactive insights for active trips
+ * 2. Send due onboarding drip emails (scheduled_drip_emails)
+ * 3. Dispatch proactive insights for active trips
  *
  * Runs daily at 08:00 UTC via Vercel Cron.
  * Also callable manually with ?context=morning|evening|postday|process
@@ -15,6 +16,7 @@ import { NextRequest, NextResponse } from "next/server"
 import { createClient } from "@supabase/supabase-js"
 import webpush from "web-push"
 import { evaluateProactiveInsights } from "@/lib/services/proactive-engine"
+import { processDripEmails } from "@/lib/services/email-drip"
 
 let vapidInitialized = false
 
@@ -58,7 +60,11 @@ export async function GET(req: NextRequest) {
     const processResult = await processScheduledNotifications(supabase)
     results.scheduled = processResult
 
-    // ── Step 2: Dispatch proactive insights for active trips ──
+    // ── Step 2: Send due onboarding drip emails ──
+    const dripResult = await processDripEmails(supabase)
+    results.drip = dripResult
+
+    // ── Step 3: Dispatch proactive insights for active trips ──
     // Determine context based on time of day (UTC) if auto
     let proactiveContext = context
     if (context === "auto") {
