@@ -141,5 +141,69 @@
     "seedIds": [
       "las-batuecas-6a134403-a971-4ad6-a9cd-106352f2b34c-v1"
     ]
+  },
+  {
+    "destination": "Madrid",
+    "targetProfiles": ["pareja", "primera-visita", "historia", "moderado"],
+    "notes": "Ruta clásica de 3 días para primera visita en pareja: Austrias, Paseo del Arte y atardeceres.",
+    "seedIds": [
+      "madrid-b3117cbc-a7f5-5ecd-9edc-26a9f38aaa4d-v1"
+    ]
+  },
+  {
+    "destination": "Madrid",
+    "targetProfiles": ["familia", "highlights", "moderado"],
+    "notes": "4 días pensados para niños: Casa de Campo, ciencia, dinosaurios y Madrid Río.",
+    "seedIds": [
+      "madrid-7cc5a04d-bec2-570f-8c64-f732be734dfa-v1"
+    ]
+  },
+  {
+    "destination": "Madrid",
+    "targetProfiles": ["pareja", "gastronomia", "moderado"],
+    "notes": "3 días de mercados, tabernas centenarias y cocido para viajeros foodies.",
+    "seedIds": [
+      "madrid-5ca50939-0691-5802-8465-3b7407649965-v1"
+    ]
+  },
+  {
+    "destination": "Madrid",
+    "targetProfiles": ["solo", "arte", "cultural", "economico"],
+    "notes": "2 días intensos de arte: Triángulo del Arte y museos con encanto sin colas.",
+    "seedIds": [
+      "madrid-d297a72b-655b-5985-b8e2-f0700abea2b8-v1"
+    ]
+  },
+  {
+    "destination": "Madrid",
+    "targetProfiles": ["amigos", "nocturna", "moderado"],
+    "notes": "3 noches: Malasaña y la Movida, cócteles y jazz, flamenco y Kapital.",
+    "seedIds": [
+      "madrid-9c49b394-7f14-5748-9dda-7cf4fe45a31f-v1"
+    ]
+  },
+  {
+    "destination": "Madrid",
+    "targetProfiles": ["solo", "explorador", "fotografia", "economico"],
+    "notes": "3 días fuera del circuito: Lavapiés, Rastro, Conde Duque, miradores y el Goya secreto.",
+    "seedIds": [
+      "madrid-d5795da6-b163-5198-b843-b9ac4c29f0ff-v1"
+    ]
+  },
+  {
+    "destination": "Madrid",
+    "targetProfiles": ["pareja", "premium", "gastronomia", "shopping"],
+    "notes": "2 días de lujo: Milla de Oro, hammam, Colecciones Reales, ópera y DiverXO.",
+    "seedIds": [
+      "madrid-3cddf75c-22f9-53e2-ab55-6d547fb4ec04-v1"
+    ]
+  },
+  {
+    "destination": "Madrid",
+    "targetProfiles": ["familia", "accesible", "naturaleza", "moderado"],
+    "notes": "3 días de parques y jardines con rutas cómodas y accesibles para todos.",
+    "seedIds": [
+      "madrid-9af013c9-1982-5602-8b8c-e4465c9266de-v1"
+    ]
   }
 ]
