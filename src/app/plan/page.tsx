@@ -1190,6 +1190,24 @@ function PlanPageContent() {
                   </div>
                 )}
 
+                {/* Where to stay */}
+                {currentTrip?.destination && (
+                  <div className="px-4 pt-4">
+                    <WhereToStayCard
+                      destination={String(currentTrip.destination)}
+                      startDate={currentTrip.startDate}
+                      endDate={currentTrip.endDate}
+                      savedZone={
+                        onboardingData.accommodationZone.trim() &&
+                        onboardingData.destination.trim().toLowerCase() ===
+                          String(currentTrip.destination).trim().toLowerCase()
+                          ? onboardingData.accommodationZone.trim()
+                          : null
+                      }
+                    />
+                  </div>
+                )}
+
                 {/* Trial banner */}
                 {!access.loading && (
                   <div className="px-4 pt-4">
