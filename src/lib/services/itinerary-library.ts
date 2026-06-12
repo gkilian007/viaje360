@@ -73,6 +73,16 @@ function normalizeDestination(value: string | null | undefined): string {
   return DESTINATION_ALIASES[normalized] ?? normalized
 }
 
+function destinationQueryVariants(value: string | null | undefined): string[] {
+  const canonical = normalizeDestination(value)
+  const variants = new Set([normalizeText(value), canonical])
+  for (const [alias, target] of Object.entries(DESTINATION_ALIASES)) {
+    if (target === canonical) variants.add(alias)
+  }
+  // Double-quoted inside the PostgREST or() filter, so drop anything with a quote.
+  return [...variants].filter(Boolean).filter((variant) => !variant.includes('"'))
+}
+
 function normalizeList(values: string[] | null | undefined): string[] {
   return (values ?? []).map(normalizeText).filter(Boolean)
 }
@@ -301,27 +311,50 @@ async function findCuratedSeedFallback(input: OnboardingData): Promise<Itinerary
   return best
 }
 
+const VERSION_SELECT = `
+  id,
+  trip_id,
+  snapshot,
+  trips!inner(
+    destination,
+    onboarding_id
+  )
+`
+
 export async function findReusableItinerary(
   input: OnboardingData,
-  options?: { minScore?: number; limit?: number }
+  options?: { minScore?: number; limit?: number; client?: ReturnType<typeof createServiceClient> }
 ): Promise<ItineraryLibraryMatch | null> {
   const minScore = options?.minScore ?? 72
   const limit = options?.limit ?? 20
-  const supabase = createServiceClient()
+  const supabase = options?.client ?? createServiceClient()
 
-  const { data, error } = await supabase
-    .from("itinerary_versions")
-    .select(`
-      id,
-      trip_id,
-      snapshot,
-      trips!inner(
-        destination,
-        onboarding_id
-      )
-    `)
-    .order("created_at", { ascending: false })
-    .limit(limit * 3)
+  // ilike without wildcards = case-insensitive exact match on the joined trip
+  // destination, so matches aren't capped by the recent-versions window.
+  const scopedFilter = destinationQueryVariants(input.destination)
+    .map((variant) => `destination.ilike."${variant}"`)
+    .join(",")
+
+  let result = scopedFilter
+    ? await supabase
+        .from("itinerary_versions")
+        .select(VERSION_SELECT)
+        .or(scopedFilter, { referencedTable: "trips" })
+        .order("created_at", { ascending: false })
+        .limit(limit * 3)
+    : null
+
+  if (!result || (!result.error && result.data?.length === 0)) {
+    // Accented stored destinations (e.g. "París") miss the accent-stripped
+    // filter; rescan the most recent versions and rely on the normalize filter below.
+    result = await supabase
+      .from("itinerary_versions")
+      .select(VERSION_SELECT)
+      .order("created_at", { ascending: false })
+      .limit(limit * 3)
+  }
+
+  const { data, error } = result
 
   if (error || !data) {
     console.warn("[itinerary-library] version lookup failed", error)

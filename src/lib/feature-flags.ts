@@ -14,8 +14,7 @@ const FLAG_PREFIX = "FEATURE_"
 const DEFAULTS: Record<string, boolean> = {
   GOOGLE_PLACES: true,
   OPEN_METEO: true,
-  PLACES_CACHE: false,
-  WEATHER_CACHE: false,
+  PLACES_CACHE: true,
   RATE_LIMITING: true,
 }
 

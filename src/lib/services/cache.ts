@@ -3,8 +3,8 @@ import { createServiceClient } from "@/lib/supabase/server"
 
 /**
  * Lightweight cache layer backed by Supabase tables.
- * TTL: places = 7 days, weather = 1 hour.
- * Controlled by feature flags: FEATURE_PLACES_CACHE, FEATURE_WEATHER_CACHE.
+ * TTL: places = 7 days.
+ * Controlled by feature flag: FEATURE_PLACES_CACHE.
  */
 
 export function placesCacheKey(
@@ -61,62 +61,5 @@ export async function setPlacesCache(
     )
   } catch (err) {
     console.warn("[setPlacesCache] Failed to write cache:", err)
-  }
-}
-
-export function weatherCacheKey(lat: number, lng: number, days = 7): string {
-  return `weather:${lat.toFixed(2)}:${lng.toFixed(2)}:${days}`
-}
-
-interface WeatherCacheEntry {
-  result: unknown
-  forecast: unknown
-}
-
-export async function getWeatherFromCache(cacheKey: string): Promise<WeatherCacheEntry | null> {
-  if (!getFeatureFlag("WEATHER_CACHE")) return null
-
-  try {
-    const supabase = createServiceClient()
-    const { data, error } = await supabase
-      .from("weather_cache")
-      .select("result, forecast")
-      .eq("cache_key", cacheKey)
-      .gt("expires_at", new Date().toISOString())
-      .single()
-
-    if (error || !data) return null
-    return { result: data.result, forecast: data.forecast }
-  } catch {
-    return null
-  }
-}
-
-export async function setWeatherCache(
-  cacheKey: string,
-  lat: number,
-  lng: number,
-  result: unknown,
-  forecast: unknown
-): Promise<void> {
-  if (!getFeatureFlag("WEATHER_CACHE")) return
-
-  try {
-    const supabase = createServiceClient()
-    const expiresAt = new Date(Date.now() + 60 * 60 * 1000).toISOString()
-
-    await supabase.from("weather_cache").upsert(
-      {
-        cache_key: cacheKey,
-        lat,
-        lng,
-        result,
-        forecast,
-        expires_at: expiresAt,
-      },
-      { onConflict: "cache_key" }
-    )
-  } catch (err) {
-    console.warn("[setWeatherCache] Failed to write cache:", err)
   }
 }
