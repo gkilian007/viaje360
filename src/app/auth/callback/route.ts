@@ -24,6 +24,16 @@ export async function GET(req: NextRequest) {
   const next = searchParams.get("next")
   const safeNext = next && next.startsWith("/") ? next : "/home"
 
+  // OAuth signups blocked by the beta allowlist come back without a code and
+  // with error_description "Database error saving new user" (the GoTrue wrapper
+  // around the enforce_beta_invite trigger exception).
+  const errorParam = searchParams.get("error")
+  if (errorParam) {
+    const description = (searchParams.get("error_description") ?? "").toLowerCase()
+    const reason = description.includes("database error") ? "beta" : "auth"
+    return NextResponse.redirect(`${origin}/login?error=${reason}`)
+  }
+
   if (code) {
     const cookieStore = await cookies()
     const supabase = createServerClient(
@@ -43,7 +53,10 @@ export async function GET(req: NextRequest) {
       }
     )
 
-    await supabase.auth.exchangeCodeForSession(code)
+    const { error } = await supabase.auth.exchangeCodeForSession(code)
+    if (error) {
+      return NextResponse.redirect(`${origin}/login?error=auth`)
+    }
   }
 
   return NextResponse.redirect(`${origin}${safeNext}`)

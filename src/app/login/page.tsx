@@ -15,8 +15,15 @@ export default function LoginPage() {
   const [password, setPassword] = useState("")
   const [name, setName] = useState("")
   const [loading, setLoading] = useState(false)
-  const [error, setError] = useState<string | null>(null)
+  const [error, setError] = useState<string | null>(() =>
+    searchParams.get("error") === "auth"
+      ? "No se pudo completar el inicio de sesión. Inténtalo de nuevo."
+      : null
+  )
   const [successMsg, setSuccessMsg] = useState<string | null>(null)
+  const [betaClosed, setBetaClosed] = useState(() => searchParams.get("error") === "beta")
+  const [waitlistLoading, setWaitlistLoading] = useState(false)
+  const [waitlistDone, setWaitlistDone] = useState(false)
   const { track } = useAnalytics()
 
   const nextPath = (() => {
@@ -58,9 +65,36 @@ export default function LoginPage() {
         window.location.href = nextPath
       }
     } catch (err: unknown) {
-      setError(err instanceof Error ? err.message : "Error de autenticación")
+      const message = err instanceof Error ? err.message : "Error de autenticación"
+      // El trigger enforce_beta_invite rechaza registros no invitados; GoTrue
+      // devuelve "beta_closed" (signup directo) o "Database error saving new user".
+      if (message.includes("beta_closed") || message.includes("Database error saving new user")) {
+        setBetaClosed(true)
+      } else {
+        setError(message)
+      }
     } finally {
       setLoading(false)
+    }
+  }
+
+  async function handleJoinWaitlist() {
+    if (!email) return
+    setWaitlistLoading(true)
+    setError(null)
+    try {
+      const res = await fetch("/api/beta/waitlist", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email }),
+      })
+      if (!res.ok) throw new Error("No se pudo guardar tu email. Inténtalo de nuevo.")
+      track("beta_waitlist_joined")
+      setWaitlistDone(true)
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : "No se pudo guardar tu email.")
+    } finally {
+      setWaitlistLoading(false)
     }
   }
 
@@ -131,7 +165,7 @@ export default function LoginPage() {
           {(["login", "register"] as const).map((m) => (
             <button
               key={m}
-              onClick={() => { setMode(m); setError(null); setSuccessMsg(null) }}
+              onClick={() => { setMode(m); setError(null); setSuccessMsg(null); setBetaClosed(false); setWaitlistDone(false) }}
               className={`flex-1 py-2.5 rounded-lg text-[13px] font-semibold transition-all ${
                 mode === m
                   ? "bg-[#0A84FF] text-white"
@@ -188,6 +222,28 @@ export default function LoginPage() {
           {error && (
             <div className="p-3 rounded-xl text-[12px] text-[#FF453A]" style={{ background: "rgba(255,69,58,0.1)" }}>
               {error}
+            </div>
+          )}
+
+          {betaClosed && (
+            <div className="p-3 rounded-xl text-[12px] space-y-2" style={{ background: "rgba(255,159,10,0.1)" }}>
+              <p className="text-[#FF9F0A]">
+                Viaje360 está en beta cerrada y tu email aún no tiene invitación.
+                Déjanos tu email y te avisaremos en cuanto abramos.
+              </p>
+              {waitlistDone ? (
+                <p className="text-[#30D158]">¡Apuntado! Te avisaremos pronto.</p>
+              ) : (
+                <button
+                  type="button"
+                  onClick={handleJoinWaitlist}
+                  disabled={waitlistLoading || !email}
+                  className="w-full py-2 rounded-lg text-[12px] font-semibold text-white disabled:opacity-50"
+                  style={{ background: "rgba(255,159,10,0.8)" }}
+                >
+                  {waitlistLoading ? "Enviando…" : "Apuntarme a la lista de espera"}
+                </button>
+              )}
             </div>
           )}
 
