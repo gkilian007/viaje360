@@ -1,11 +1,9 @@
 /**
  * Notification scheduler — stores upcoming push notifications in Supabase.
  *
- * A cron/edge worker (TODO) reads `scheduled_notifications` where
- * `scheduled_at <= now() AND sent = false` and calls /api/notifications/send
- * for each, then marks them as sent.
- *
- * This module only handles WRITING scheduled rows. Dispatching is a TODO.
+ * This module only WRITES scheduled rows. `/api/cron/unified` (daily, 07:00 UTC)
+ * reads `scheduled_notifications` where `scheduled_at <= now() AND sent = false`,
+ * pushes them and marks them as sent.
  */
 
 import { createServiceClient } from "@/lib/supabase/server"

@@ -17,14 +17,8 @@
     "src/app/api/chat/route.ts": {
       "maxDuration": 20
     },
-    "src/app/api/cron/dispatch-notifications/route.ts": {
-      "maxDuration": 20
-    },
     "src/app/api/proactive/evaluate/route.ts": {
       "maxDuration": 15
-    },
-    "src/app/api/cron/process-notifications/route.ts": {
-      "maxDuration": 20
     },
     "src/app/api/cron/unified/route.ts": {
       "maxDuration": 45
