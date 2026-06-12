@@ -38,6 +38,7 @@ import { BudgetTracker } from "@/components/features/BudgetTracker"
 import { PackingList } from "@/components/features/PackingList"
 import { LocalTipsCard } from "@/components/features/LocalTipsCard"
 import { WhereToStayCard } from "@/components/features/WhereToStayCard"
+import { DestinationGuideCard } from "@/components/features/DestinationGuideCard"
 import { useProactiveAdaptation } from "@/lib/hooks/useProactiveAdaptation"
 import { useProactiveInsights } from "@/lib/hooks/useProactiveInsights"
 import { MagicMomentCard } from "@/components/features/MagicMomentCard"
@@ -826,6 +827,11 @@ function PlanPageContent() {
             />
           )}
 
+          {/* Practical destination guide */}
+          {currentTrip?.destination && (
+            <DestinationGuideCard destination={String(currentTrip.destination)} />
+          )}
+
           {/* Live activity banner */}
           <CurrentActivityBanner
             current={liveStatus.current}
@@ -1205,6 +1211,13 @@ function PlanPageContent() {
                           : null
                       }
                     />
+                  </div>
+                )}
+
+                {/* Practical destination guide */}
+                {currentTrip?.destination && (
+                  <div className="px-4 pt-4">
+                    <DestinationGuideCard destination={String(currentTrip.destination)} />
                   </div>
                 )}
 
