@@ -28,6 +28,16 @@ export interface RouteSegment {
 
 const osrmCache = new Map<string, { coords: [number, number][]; distance?: number; duration?: number }>()
 
+interface TransitStepData {
+  travelMode: string
+  polyline?: string
+  distanceMeters?: number
+  durationSeconds?: number
+  transitDetails?: RouteSegment["transitInfo"]
+}
+
+const transitCache = new Map<string, { steps: TransitStepData[] } | null>()
+
 const OSRM_BASE = "https://router.project-osrm.org/route/v1"
 
 /** Haversine distance in meters */
@@ -143,9 +153,16 @@ export function useRouteGeometry(
   const [segments, setSegments] = useState<RouteSegment[]>([])
   const abortRef = useRef(false)
   const prefsKey = transportPrefs.join(",")
+  // Depend on content, not array identity: callers may rebuild the array each
+  // render, which would otherwise re-trigger the effect (and refetch) forever.
+  const activitiesRef = useRef(activities)
+  activitiesRef.current = activities
+  const activitiesKey = activities
+    .map((a) => `${a.id}:${a.lat.toFixed(5)}:${a.lng.toFixed(5)}`)
+    .join("|")
 
   useEffect(() => {
-    const valid = activities.filter(
+    const valid = activitiesRef.current.filter(
       (a) => typeof a.lat === "number" && typeof a.lng === "number" && !isNaN(a.lat) && !isNaN(a.lng)
     )
     if (valid.length < 2) {
@@ -169,46 +186,49 @@ export function useRouteGeometry(
         if (mode === "transit") {
           // Use Google Routes API via our endpoint for real transit data
           try {
-            const params = new URLSearchParams({
-              olat: from.lat.toString(),
-              olng: from.lng.toString(),
-              dlat: to.lat.toString(),
-              dlng: to.lng.toString(),
-              city: destination,
-              oname: from.name ?? "",
-              dname: to.name ?? "",
-            })
-            const res = await fetch(`/api/transit-route?${params}`)
-            if (res.ok) {
-              const { data } = await res.json()
-              if (data?.steps?.length) {
-                // Create sub-segments for each step (walk vs transit)
-                for (const step of data.steps) {
-                  if (abortRef.current) break
-                  const coords = step.polyline ? decodePolyline(step.polyline) : []
-                  if (coords.length < 2) continue
+            const cacheKey = `${from.lat.toFixed(5)},${from.lng.toFixed(5)}->${to.lat.toFixed(5)},${to.lng.toFixed(5)}`
+            let data = transitCache.get(cacheKey)
+            if (data === undefined) {
+              const params = new URLSearchParams({
+                olat: from.lat.toString(),
+                olng: from.lng.toString(),
+                dlat: to.lat.toString(),
+                dlng: to.lng.toString(),
+                city: destination,
+                oname: from.name ?? "",
+                dname: to.name ?? "",
+              })
+              const res = await fetch(`/api/transit-route?${params}`)
+              data = res.ok ? ((await res.json()).data ?? null) : null
+              transitCache.set(cacheKey, data ?? null)
+            }
+            if (data?.steps?.length) {
+              // Create sub-segments for each step (walk vs transit)
+              for (const step of data.steps) {
+                if (abortRef.current) break
+                const coords = step.polyline ? decodePolyline(step.polyline) : []
+                if (coords.length < 2) continue
 
-                  const isTransitStep = step.travelMode === "TRANSIT"
-                  result.push({
-                    fromId: from.id,
-                    toId: to.id,
-                    coordinates: coords,
-                    color: isTransitStep
-                      ? step.transitDetails?.color ?? MODE_COLORS.transit
-                      : MODE_COLORS.foot,
-                    mode: isTransitStep ? "transit" : "foot",
-                    distanceMeters: step.distanceMeters,
-                    durationSeconds: step.durationSeconds,
-                    transitInfo: isTransitStep ? step.transitDetails : undefined,
-                  })
-                }
-                setSegments([...result])
-                // Rate limit
-                if (i < valid.length - 2 && !abortRef.current) {
-                  await new Promise((r) => setTimeout(r, 100))
-                }
-                continue
+                const isTransitStep = step.travelMode === "TRANSIT"
+                result.push({
+                  fromId: from.id,
+                  toId: to.id,
+                  coordinates: coords,
+                  color: isTransitStep
+                    ? step.transitDetails?.color ?? MODE_COLORS.transit
+                    : MODE_COLORS.foot,
+                  mode: isTransitStep ? "transit" : "foot",
+                  distanceMeters: step.distanceMeters,
+                  durationSeconds: step.durationSeconds,
+                  transitInfo: isTransitStep ? step.transitDetails : undefined,
+                })
               }
+              setSegments([...result])
+              // Rate limit
+              if (i < valid.length - 2 && !abortRef.current) {
+                await new Promise((r) => setTimeout(r, 100))
+              }
+              continue
             }
           } catch {
             // Fallback to OSRM below
@@ -250,7 +270,7 @@ export function useRouteGeometry(
       abortRef.current = true
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [activities, prefsKey, maxWalkMeters, destination])
+  }, [activitiesKey, prefsKey, maxWalkMeters, destination])
 
   return segments
 }
