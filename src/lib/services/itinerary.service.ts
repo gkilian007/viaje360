@@ -1,4 +1,4 @@
-import { requireEnv } from "@/lib/env"
+import { getEnv, requireEnv } from "@/lib/env"
 import { createServiceClient } from "@/lib/supabase/server"
 import type {
   DbActivity,
@@ -41,6 +41,10 @@ import type { ItineraryVersionSource } from "@/lib/services/itinerary-versioning
 
 const GEMINI_API_URL =
   "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent"
+
+const GROQ_ITINERARY_API_URL = "https://api.groq.com/openai/v1/chat/completions"
+// gpt-oss-120b: 131k context, 65536 max completion tokens — matches Gemini's maxOutputTokens
+const GROQ_ITINERARY_MODEL = "openai/gpt-oss-120b"
 
 const GEMINI_ITINERARY_RESPONSE_SCHEMA = {
   type: "OBJECT",
@@ -589,8 +593,74 @@ async function callGeminiRaw(prompt: string): Promise<string> {
   throw lastError
 }
 
-async function callGeminiWithRepair(prompt: string, reason: string): Promise<string> {
-  return callGeminiRaw(`${prompt}\n\n${buildRepairHint(reason)}`)
+/**
+ * Call Groq (gpt-oss-120b) as fallback provider. Returns the raw JSON text;
+ * schema validation happens downstream in runReliableGenerationPipeline.
+ */
+async function callGroqRaw(prompt: string): Promise<string> {
+  const apiKey = requireEnv("GROQ_API_KEY", "Groq itinerary fallback")
+  const controller = new AbortController()
+  const timeoutId = setTimeout(() => controller.abort(), 90_000)
+
+  let res: Response
+  try {
+    res = await fetch(GROQ_ITINERARY_API_URL, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${apiKey}`,
+      },
+      signal: controller.signal,
+      body: JSON.stringify({
+        model: GROQ_ITINERARY_MODEL,
+        messages: [{ role: "user", content: prompt }],
+        temperature: 0.2,
+        max_completion_tokens: 65536,
+        reasoning_effort: "low",
+        response_format: { type: "json_object" },
+      }),
+    })
+  } catch (fetchErr: unknown) {
+    const isTimeout = fetchErr instanceof Error && fetchErr.name === "AbortError"
+    throw new Error(isTimeout ? "Groq request timed out" : "Groq network error")
+  } finally {
+    clearTimeout(timeoutId)
+  }
+
+  if (!res.ok) {
+    const errText = await res.text().catch(() => "")
+    throw new Error(`Groq error ${res.status}: ${errText}`)
+  }
+
+  const data = await res.json() as {
+    choices?: Array<{ message?: { content?: string } }>
+  }
+
+  const raw = data.choices?.[0]?.message?.content?.trim() ?? ""
+  if (!raw) {
+    throw new Error("Groq returned empty itinerary payload")
+  }
+  return raw
+}
+
+/**
+ * Provider chain for itinerary generation: Gemini first, Groq as fallback.
+ * Only if both fail does the caller's catch produce the stub itinerary.
+ */
+async function callItineraryLlm(prompt: string): Promise<string> {
+  try {
+    return await callGeminiRaw(prompt)
+  } catch (geminiError) {
+    if (!getEnv("GROQ_API_KEY")) {
+      throw geminiError
+    }
+    console.warn("[itinerary/llm] Gemini failed, falling back to Groq", geminiError)
+    return callGroqRaw(prompt)
+  }
+}
+
+async function callItineraryLlmWithRepair(prompt: string, reason: string): Promise<string> {
+  return callItineraryLlm(`${prompt}\n\n${buildRepairHint(reason)}`)
 }
 
 /**
@@ -676,14 +746,14 @@ export async function generateItinerary(
   let result
 
   try {
-    const raw = await callGeminiRaw(prompt)
+    const raw = await callItineraryLlm(prompt)
     result = await runReliableGenerationPipeline(
       raw,
       onboardingData,
       {
         mode: "generate",
         maxAttempts: 3,
-        onAttempt: async (_attempt, reason) => callGeminiWithRepair(prompt, reason),
+        onAttempt: async (_attempt, reason) => callItineraryLlmWithRepair(prompt, reason),
         log: (message, meta) => console.warn(`[itinerary/generate] ${message}`, meta ?? {}),
       },
       { startDate: onboardingData.startDate, endDate: onboardingData.endDate },
@@ -861,7 +931,7 @@ export async function adaptItinerary(
       reason,
       resolvedPersonalization
     )
-    const raw = await callGeminiRaw(prompt)
+    const raw = await callItineraryLlm(prompt)
 
     const result = await runReliableGenerationPipeline(
       raw,
@@ -901,7 +971,7 @@ export async function adaptItinerary(
       {
         mode: "adapt",
         maxAttempts: 3,
-        onAttempt: async (_attempt, failureReason) => callGeminiWithRepair(prompt, failureReason),
+        onAttempt: async (_attempt, failureReason) => callItineraryLlmWithRepair(prompt, failureReason),
         log: (message, meta) => console.warn(`[itinerary/adapt] ${message}`, meta ?? {}),
       },
       {
