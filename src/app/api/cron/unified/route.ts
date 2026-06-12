@@ -5,6 +5,7 @@
  * 1. Process pending scheduled_notifications (trip reminders, diary prompts)
  * 2. Send due onboarding drip emails (scheduled_drip_emails)
  * 3. Dispatch proactive insights for active trips
+ * 4. Send check-in reminders for trips starting tomorrow
  *
  * Runs daily at 08:00 UTC via Vercel Cron.
  * Also callable manually with ?context=morning|evening|postday|process
@@ -17,6 +18,7 @@ import { createClient } from "@supabase/supabase-js"
 import webpush from "web-push"
 import { evaluateProactiveInsights } from "@/lib/services/proactive-engine"
 import { processDripEmails } from "@/lib/services/email-drip"
+import { processCheckinReminders } from "@/lib/services/checkin-reminder"
 
 let vapidInitialized = false
 
@@ -83,6 +85,10 @@ export async function GET(req: NextRequest) {
       )
       results.proactive = proactiveResult
     }
+
+    // ── Step 4: Send check-in reminders for trips starting tomorrow ──
+    const checkinResult = await processCheckinReminders(supabase)
+    results.checkin = checkinResult
 
     return NextResponse.json({ ok: true, ...results })
   } catch (error) {
