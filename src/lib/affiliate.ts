@@ -81,6 +81,42 @@ export function buildBookingUrl(destination: string, checkin?: string, checkout?
   return `https://www.booking.com/searchresults.html?ss=${city}&label=viaje360&aid=304142${dates}`
 }
 
+// ─── Flights (Kiwi.com + Google Flights) ─────────────────────────────────────
+// Plain deep links — no affiliate program wired yet. Kiwi has one (Kiwi.com
+// Partners / Tequila: https://partners.kiwi.com) but it uses a different
+// tracking URL structure, so it should be added here once an account exists.
+//
+// URL formats verified against the live sites (2026-06):
+// - Kiwi needs the slug "{city}-{country}" (Spanish, de-accented); city alone
+//   redirects to the homepage. Origin is left empty for the user to fill.
+// - Google Flights only prefills destination + both dates with the exact
+//   English phrasing "flights to X on YYYY-MM-DD through YYYY-MM-DD";
+//   Spanish phrasings prefill partially or break the parser.
+
+function slugify(text: string): string {
+  return text
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/\p{M}/gu, "")
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "")
+}
+
+export function buildKiwiFlightsUrl(
+  destination: string,
+  country: string,
+  startDate: string,
+  endDate: string
+): string {
+  const slug = slugify(`${destination} ${country}`)
+  return `https://www.kiwi.com/es/search/results/-/${slug}/${startDate}/${endDate}/`
+}
+
+export function buildGoogleFlightsUrl(destination: string, startDate: string, endDate: string): string {
+  const q = encodeURIComponent(`flights to ${destination} on ${startDate} through ${endDate}`)
+  return `https://www.google.com/travel/flights?hl=es&q=${q}`
+}
+
 // ─── Activity type classification ────────────────────────────────────────────
 
 const EXPERIENCE_TYPES = new Set([

@@ -38,6 +38,7 @@ import { BudgetTracker } from "@/components/features/BudgetTracker"
 import { PackingList } from "@/components/features/PackingList"
 import { LocalTipsCard } from "@/components/features/LocalTipsCard"
 import { WhereToStayCard } from "@/components/features/WhereToStayCard"
+import { FlightLinksCard } from "@/components/features/FlightLinksCard"
 import { DestinationGuideCard } from "@/components/features/DestinationGuideCard"
 import { useProactiveAdaptation } from "@/lib/hooks/useProactiveAdaptation"
 import { useProactiveInsights } from "@/lib/hooks/useProactiveInsights"
@@ -827,6 +828,16 @@ function PlanPageContent() {
             />
           )}
 
+          {/* Flight search links */}
+          {currentTrip?.destination && (
+            <FlightLinksCard
+              destination={String(currentTrip.destination)}
+              country={currentTrip.country}
+              startDate={currentTrip.startDate}
+              endDate={currentTrip.endDate}
+            />
+          )}
+
           {/* Practical destination guide */}
           {currentTrip?.destination && (
             <DestinationGuideCard destination={String(currentTrip.destination)} />
@@ -1210,6 +1221,18 @@ function PlanPageContent() {
                           ? onboardingData.accommodationZone.trim()
                           : null
                       }
+                    />
+                  </div>
+                )}
+
+                {/* Flight search links */}
+                {currentTrip?.destination && (
+                  <div className="px-4 pt-4">
+                    <FlightLinksCard
+                      destination={String(currentTrip.destination)}
+                      country={currentTrip.country}
+                      startDate={currentTrip.startDate}
+                      endDate={currentTrip.endDate}
                     />
                   </div>
                 )}
