@@ -24,6 +24,18 @@ interface SegmentInfo {
   distanceMeters?: number
   durationSeconds?: number
   mode: "foot" | "car" | "transit"
+  /** For transit segments: first line to board */
+  transitInfo?: {
+    lineName: string
+    lineShort: string
+    vehicle: string
+    color: string
+    textColor: string
+    departureStop: string
+    arrivalStop: string
+    stopCount: number
+    headsign: string
+  }
 }
 
 interface ImmersiveHudProps {
@@ -337,6 +349,26 @@ function NavigationBanner({
           )}
         </div>
       </div>
+
+      {/* Transit line: which line to board and from which stop */}
+      {mode === "transit" && segment?.transitInfo && (
+        <div className="mb-2 flex items-center gap-2">
+          <span
+            className="shrink-0 rounded-md px-2 py-0.5 text-[10px] font-bold"
+            style={{
+              background: segment.transitInfo.color,
+              color: segment.transitInfo.textColor,
+            }}
+          >
+            {segment.transitInfo.lineShort || segment.transitInfo.lineName || "Línea"}
+          </span>
+          {segment.transitInfo.departureStop && (
+            <span className="truncate text-[11px] text-white/60">
+              desde {segment.transitInfo.departureStop}
+            </span>
+          )}
+        </div>
+      )}
 
       {/* Destination info */}
       <div className="flex items-center gap-3">

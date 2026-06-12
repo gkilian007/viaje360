@@ -197,8 +197,8 @@ export function useRouteGeometry(
                       ? step.transitDetails?.color ?? MODE_COLORS.transit
                       : MODE_COLORS.foot,
                     mode: isTransitStep ? "transit" : "foot",
-                    distanceMeters: undefined,
-                    durationSeconds: undefined,
+                    distanceMeters: step.distanceMeters,
+                    durationSeconds: step.durationSeconds,
                     transitInfo: isTransitStep ? step.transitDetails : undefined,
                   })
                 }

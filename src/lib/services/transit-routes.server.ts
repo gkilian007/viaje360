@@ -17,6 +17,8 @@ const FIELD_MASK = [
   "routes.legs.steps.startLocation",
   "routes.legs.steps.endLocation",
   "routes.legs.steps.localizedValues",
+  "routes.legs.steps.distanceMeters",
+  "routes.legs.steps.staticDuration",
 ].join(",")
 
 // ── Types ──
@@ -41,6 +43,9 @@ export interface TransitStep {
   polyline: string
   distanceText: string
   durationText: string
+  /** Optional: rows cached before 2026-06 lack these numeric fields */
+  distanceMeters?: number
+  durationSeconds?: number
   transitDetails?: TransitStepDetails
 }
 
@@ -80,6 +85,8 @@ interface GoogleRouteStep {
     distance?: { text?: string }
     staticDuration?: { text?: string }
   }
+  distanceMeters?: number
+  staticDuration?: string
   transitDetails?: GoogleTransitDetails
 }
 
@@ -183,6 +190,10 @@ export async function getTransitRoute(
         polyline: step.polyline?.encodedPolyline ?? "",
         distanceText: step.localizedValues?.distance?.text ?? "",
         durationText: step.localizedValues?.staticDuration?.text ?? "",
+        distanceMeters: step.distanceMeters,
+        durationSeconds: step.staticDuration
+          ? parseInt(step.staticDuration.replace("s", ""), 10) || undefined
+          : undefined,
       }
 
       if (step.transitDetails) {

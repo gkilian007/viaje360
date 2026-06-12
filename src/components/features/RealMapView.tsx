@@ -304,6 +304,30 @@ const MODE_LABEL: Record<string, string> = {
   bicycling: "Bicicleta",
 }
 
+interface HighlightLeg {
+  coords: [number, number][]
+  color: string
+  weight: number
+  dashed: boolean
+}
+
+interface HighlightTransitStep {
+  travelMode: "WALK" | "TRANSIT"
+  distanceText?: string
+  durationText?: string
+  transitDetails?: {
+    lineName?: string
+    lineShort?: string
+    vehicle?: string
+    color?: string
+    textColor?: string
+    departureStop?: string
+    arrivalStop?: string
+    stopCount?: number
+    headsign?: string
+  }
+}
+
 // Route highlight overlay — shows a chosen route on the map
 function RouteHighlightOverlay({
   routeHighlight,
@@ -311,7 +335,7 @@ function RouteHighlightOverlay({
   routeHighlight: RouteHighlight
 }) {
   const map = useMap()
-  const [coords, setCoords] = useState<[number, number][]>([])
+  const [legs, setLegs] = useState<HighlightLeg[]>([])
   const [error, setError] = useState(false)
 
   const { from, to, mode } = routeHighlight
@@ -319,7 +343,7 @@ function RouteHighlightOverlay({
 
   useEffect(() => {
     let cancelled = false
-    setCoords([])
+    setLegs([])
     setError(false)
 
     async function fetchRoute() {
@@ -337,12 +361,22 @@ function RouteHighlightOverlay({
           if (!res.ok) throw new Error("transit failed")
           const { data } = await res.json()
           if (data?.steps?.length) {
-            const allCoords: [number, number][] = []
+            const stepLegs: HighlightLeg[] = []
             for (const step of data.steps) {
-              if (step.polyline) allCoords.push(...decodePolyline(step.polyline))
+              const coords = step.polyline ? decodePolyline(step.polyline) : []
+              if (coords.length < 2) continue
+              const isTransit = step.travelMode === "TRANSIT"
+              stepLegs.push({
+                coords,
+                color: isTransit ? step.transitDetails?.color ?? "#0A84FF" : "#30D158",
+                weight: isTransit ? 6 : 4,
+                dashed: !isTransit,
+              })
             }
-            if (!cancelled) setCoords(allCoords)
-            return
+            if (stepLegs.length) {
+              if (!cancelled) setLegs(stepLegs)
+              return
+            }
           }
           throw new Error("no transit steps")
         } else {
@@ -357,12 +391,12 @@ function RouteHighlightOverlay({
           const pts: [number, number][] = (route.geometry?.coordinates ?? []).map(
             (c: [number, number]) => [c[1], c[0]] as [number, number]
           )
-          if (!cancelled) setCoords(pts)
+          if (!cancelled) setLegs([{ coords: pts, color: "#0A84FF", weight: 6, dashed: false }])
         }
       } catch {
         if (!cancelled) {
           // Fallback: straight line
-          setCoords([[from.lat, from.lng], [to.lat, to.lng]])
+          setLegs([{ coords: [[from.lat, from.lng], [to.lat, to.lng]], color: "#0A84FF", weight: 6, dashed: false }])
           setError(true)
         }
       }
@@ -373,12 +407,13 @@ function RouteHighlightOverlay({
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [key])
 
-  // Fit bounds when coords are ready
+  // Fit bounds when legs are ready
   useEffect(() => {
-    if (coords.length < 2) return
-    const bounds = L.latLngBounds(coords)
+    const allCoords = legs.flatMap((leg) => leg.coords)
+    if (allCoords.length < 2) return
+    const bounds = L.latLngBounds(allCoords)
     map.fitBounds(bounds, { padding: [60, 60], maxZoom: 16 })
-  }, [coords, map])
+  }, [legs, map])
 
   const fromIcon = L.divIcon({
     className: "",
@@ -395,18 +430,19 @@ function RouteHighlightOverlay({
 
   return (
     <>
-      {/* Route polyline */}
-      {coords.length >= 2 && (
+      {/* Route polylines — walk legs dotted green, transit legs solid in line color */}
+      {legs.map((leg, i) => (
         <Polyline
-          positions={coords}
+          key={`highlight-leg-${i}`}
+          positions={leg.coords}
           pathOptions={{
-            color: "#0A84FF",
-            weight: 6,
+            color: leg.color,
+            weight: leg.weight,
             opacity: 0.9,
-            dashArray: error ? "10, 8" : undefined,
+            dashArray: error ? "10, 8" : leg.dashed ? "1, 8" : undefined,
           }}
         />
-      )}
+      ))}
 
       {/* Origin marker */}
       <Marker position={[from.lat, from.lng]} icon={fromIcon}>
@@ -440,6 +476,7 @@ function RouteHighlightCard({
   // This component renders outside the MapContainer (as a DOM overlay)
   const [distance, setDistance] = useState<number | null>(null)
   const [duration, setDuration] = useState<number | null>(null)
+  const [transitSteps, setTransitSteps] = useState<HighlightTransitStep[]>([])
   const [loading, setLoading] = useState(true)
 
   const { from, to, mode } = routeHighlight
@@ -450,6 +487,7 @@ function RouteHighlightCard({
     setLoading(true)
     setDistance(null)
     setDuration(null)
+    setTransitSteps([])
 
     async function fetchInfo() {
       try {
@@ -465,12 +503,11 @@ function RouteHighlightCard({
           const res = await fetch(`/api/transit-route?${params}`)
           if (res.ok) {
             const { data } = await res.json()
-            let totalDist = 0, totalDur = 0
-            for (const step of data?.steps ?? []) {
-              if (step.distanceMeters) totalDist += step.distanceMeters
-              if (step.durationSeconds) totalDur += step.durationSeconds
+            if (!cancelled) {
+              setDistance(data?.totalDistanceMeters || null)
+              setDuration(data?.totalDurationSeconds || null)
+              setTransitSteps((data?.steps ?? []) as HighlightTransitStep[])
             }
-            if (!cancelled) { setDistance(totalDist || null); setDuration(totalDur || null) }
           }
         } else {
           const profile = mode === "driving" ? "driving" : mode === "bicycling" ? "driving" : "foot"
@@ -506,61 +543,101 @@ function RouteHighlightCard({
         borderRadius: 18,
         padding: "12px 16px",
         backdropFilter: "blur(20px)",
-        display: "flex",
-        alignItems: "center",
-        gap: 12,
         boxShadow: "0 8px 32px rgba(0,0,0,0.5)",
       }}
     >
-      {/* Mode icon */}
-      <div style={{
-        width: 40, height: 40, borderRadius: 12,
-        background: `${modeColor}18`,
-        border: `1.5px solid ${modeColor}40`,
-        display: "flex", alignItems: "center", justifyContent: "center",
-        flexShrink: 0,
-      }}>
-        <span className="material-symbols-outlined" style={{ fontSize: 22, color: modeColor }}>
-          {MODE_ICON[mode] ?? "directions"}
-        </span>
+      <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+        {/* Mode icon */}
+        <div style={{
+          width: 40, height: 40, borderRadius: 12,
+          background: `${modeColor}18`,
+          border: `1.5px solid ${modeColor}40`,
+          display: "flex", alignItems: "center", justifyContent: "center",
+          flexShrink: 0,
+        }}>
+          <span className="material-symbols-outlined" style={{ fontSize: 22, color: modeColor }}>
+            {MODE_ICON[mode] ?? "directions"}
+          </span>
+        </div>
+
+        {/* Route info */}
+        <div style={{ flex: 1, minWidth: 0 }}>
+          <div style={{ fontSize: 12, fontWeight: 700, color: "#e4e2e4", marginBottom: 2 }}>
+            {MODE_LABEL[mode] ?? mode}
+          </div>
+          <div style={{ fontSize: 11, color: "#c0c6d6" }}>
+            {loading ? (
+              <span style={{ color: "#888" }}>Calculando...</span>
+            ) : (
+              <>
+                {distance != null && <span>{formatDistance(distance)}</span>}
+                {distance != null && duration != null && <span style={{ margin: "0 6px", color: "#444" }}>·</span>}
+                {duration != null && <span>{formatDuration(duration)}</span>}
+                {distance == null && duration == null && <span style={{ color: "#888" }}>Ruta aproximada</span>}
+              </>
+            )}
+          </div>
+          <div style={{ fontSize: 10, color: "#666", marginTop: 2, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
+            {from.name.slice(0, 20)}{from.name.length > 20 ? "…" : ""} → {to.name.slice(0, 20)}{to.name.length > 20 ? "…" : ""}
+          </div>
+        </div>
+
+        {/* Close button */}
+        <button
+          type="button"
+          onClick={onClear}
+          style={{
+            flexShrink: 0, width: 32, height: 32, borderRadius: 10,
+            background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.08)",
+            color: "#888", display: "flex", alignItems: "center", justifyContent: "center",
+            cursor: "pointer",
+          }}
+          aria-label="Cerrar ruta"
+        >
+          <span className="material-symbols-outlined" style={{ fontSize: 16 }}>close</span>
+        </button>
       </div>
 
-      {/* Route info */}
-      <div style={{ flex: 1, minWidth: 0 }}>
-        <div style={{ fontSize: 12, fontWeight: 700, color: "#e4e2e4", marginBottom: 2 }}>
-          {MODE_LABEL[mode] ?? mode}
+      {/* Transit step breakdown: walk to the stop, then which line to take */}
+      {mode === "transit" && transitSteps.length > 0 && (
+        <div style={{
+          marginTop: 10, paddingTop: 10,
+          borderTop: "1px solid rgba(255,255,255,0.08)",
+          maxHeight: 132, overflowY: "auto",
+          display: "flex", flexDirection: "column", gap: 6,
+        }}>
+          {transitSteps.map((step, i) => {
+            if (step.travelMode === "TRANSIT") {
+              const td = step.transitDetails
+              return (
+                <div key={`ts-${i}`} style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 11, color: "#c0c6d6" }}>
+                  <span style={{
+                    flexShrink: 0, padding: "1px 8px", borderRadius: 6, fontSize: 10, fontWeight: 700,
+                    background: td?.color ?? "#0A84FF", color: td?.textColor ?? "#ffffff",
+                  }}>
+                    {td?.lineShort || td?.lineName || "Línea"}
+                  </span>
+                  <span style={{ minWidth: 0, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                    {td?.departureStop} → {td?.arrivalStop}
+                    {td?.stopCount ? ` · ${td.stopCount} paradas` : ""}
+                    {td?.headsign ? ` · dirección ${td.headsign}` : ""}
+                  </span>
+                </div>
+              )
+            }
+            const nextTransit = transitSteps.slice(i + 1).find((s) => s.travelMode === "TRANSIT")
+            const walkTarget = nextTransit?.transitDetails?.departureStop || to.name
+            return (
+              <div key={`ts-${i}`} style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 11, color: "#8e949e" }}>
+                <span className="material-symbols-outlined" style={{ fontSize: 14, color: "#30D158", flexShrink: 0 }}>directions_walk</span>
+                <span style={{ minWidth: 0, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                  {step.distanceText ? `Camina ${step.distanceText} hasta ${walkTarget}` : `Camina hasta ${walkTarget}`}
+                </span>
+              </div>
+            )
+          })}
         </div>
-        <div style={{ fontSize: 11, color: "#c0c6d6" }}>
-          {loading ? (
-            <span style={{ color: "#888" }}>Calculando...</span>
-          ) : (
-            <>
-              {distance != null && <span>{formatDistance(distance)}</span>}
-              {distance != null && duration != null && <span style={{ margin: "0 6px", color: "#444" }}>·</span>}
-              {duration != null && <span>{formatDuration(duration)}</span>}
-              {distance == null && duration == null && <span style={{ color: "#888" }}>Ruta aproximada</span>}
-            </>
-          )}
-        </div>
-        <div style={{ fontSize: 10, color: "#666", marginTop: 2, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
-          {from.name.slice(0, 20)}{from.name.length > 20 ? "…" : ""} → {to.name.slice(0, 20)}{to.name.length > 20 ? "…" : ""}
-        </div>
-      </div>
-
-      {/* Close button */}
-      <button
-        type="button"
-        onClick={onClear}
-        style={{
-          flexShrink: 0, width: 32, height: 32, borderRadius: 10,
-          background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.08)",
-          color: "#888", display: "flex", alignItems: "center", justifyContent: "center",
-          cursor: "pointer",
-        }}
-        aria-label="Cerrar ruta"
-      >
-        <span className="material-symbols-outlined" style={{ fontSize: 16 }}>close</span>
-      </button>
+      )}
     </div>
   )
 }
@@ -997,7 +1074,7 @@ export function RealMapView({
           </div>
           {(transportPrefs?.includes("publico") || transportPrefs?.includes("mix")) && (
             <div className="flex items-center gap-1.5">
-              <div className="w-5 h-[3px] rounded-full" style={{ background: "#32ADE6", backgroundImage: "repeating-linear-gradient(90deg, #32ADE6 0 5px, transparent 5px 9px)" }} />
+              <div className="w-5 h-[3px] rounded-full" style={{ background: "#32ADE6" }} />
               <span className="text-[10px] text-[#c0c6d6]">Transporte público</span>
             </div>
           )}

@@ -220,6 +220,7 @@ export default function MapaPage() {
           distanceMeters: seg.distanceMeters ?? 0,
           durationSeconds: seg.durationSeconds ?? 0,
           mode: seg.mode,
+          transitInfo: seg.transitInfo,
         })
         continue
       }
@@ -230,6 +231,8 @@ export default function MapaPage() {
       // Prefer the most informative mode for mixed routes
       if (seg.mode === "transit") existing.mode = "transit"
       else if (seg.mode === "car" && existing.mode !== "transit") existing.mode = "car"
+      // Keep the first transit line of the pair (the one to board first)
+      if (!existing.transitInfo && seg.transitInfo) existing.transitInfo = seg.transitInfo
     }
 
     return Array.from(grouped.values())
