@@ -105,7 +105,12 @@ async function fetchOsrmRoute(
     return {
       coords: coords.map((c: [number, number]) => [c[1], c[0]] as [number, number]),
       distance: route.distance,
-      duration: route.duration,
+      // The public OSRM demo only serves the car profile, so walking durations
+      // come back as drive times — derive them from distance at ~5 km/h instead.
+      duration:
+        osrmProfile === "foot" && route.distance != null
+          ? route.distance / 1.4
+          : route.duration,
     }
   } catch {
     return null

@@ -516,7 +516,16 @@ function RouteHighlightCard({
           if (res.ok) {
             const data = await res.json()
             const route = data.routes?.[0]
-            if (!cancelled && route) { setDistance(route.distance ?? null); setDuration(route.duration ?? null) }
+            if (!cancelled && route) {
+              setDistance(route.distance ?? null)
+              // The public OSRM demo only serves the car profile, so walking
+              // durations come back as drive times — derive at ~5 km/h instead.
+              const duration =
+                profile === "foot" && route.distance != null
+                  ? route.distance / 1.4
+                  : route.duration
+              setDuration(duration ?? null)
+            }
           }
         }
       } catch {}

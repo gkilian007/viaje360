@@ -480,9 +480,22 @@ export function ImmersiveHud({
   // Find the segment between current and next
   const currentSegment = useMemo(() => {
     if (!current || !next) return undefined
-    return segments.find(
+    // Transit pairs decompose into walk + transit sub-segments that share the
+    // same from/to ids — surface the transit leg (line info) and aggregate totals.
+    const parts = segments.filter(
       (s) => s.fromId === current.id && s.toId === next.id
     )
+    if (parts.length <= 1) return parts[0]
+    const transit = parts.find((p) => p.mode === "transit")
+    const sum = (vals: Array<number | undefined>) =>
+      vals.some((v) => v != null)
+        ? vals.reduce((acc: number, v) => acc + (v ?? 0), 0)
+        : undefined
+    return {
+      ...(transit ?? parts[0]),
+      distanceMeters: sum(parts.map((p) => p.distanceMeters)),
+      durationSeconds: sum(parts.map((p) => p.durationSeconds)),
+    }
   }, [segments, current, next])
 
   const handleActivitySelect = useCallback(
