@@ -41,7 +41,7 @@ const transitCache = new Map<string, { steps: TransitStepData[] } | null>()
 const OSRM_BASE = "https://router.project-osrm.org/route/v1"
 
 /** Haversine distance in meters */
-function haversineMeters(lat1: number, lng1: number, lat2: number, lng2: number): number {
+export function haversineMeters(lat1: number, lng1: number, lat2: number, lng2: number): number {
   const R = 6371000
   const dLat = ((lat2 - lat1) * Math.PI) / 180
   const dLng = ((lng2 - lng1) * Math.PI) / 180
@@ -132,7 +132,7 @@ export interface UseRouteGeometryOptions {
   destination?: string
 }
 
-function resolveSegmentMode(
+export function resolveSegmentMode(
   distanceMeters: number,
   transportPrefs: string[],
   maxWalkMeters: number

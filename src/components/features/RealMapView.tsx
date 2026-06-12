@@ -6,7 +6,7 @@ import L from "leaflet"
 import "leaflet/dist/leaflet.css"
 import "react-leaflet-cluster/dist/assets/MarkerCluster.css"
 import "react-leaflet-cluster/dist/assets/MarkerCluster.Default.css"
-import { useRouteGeometry } from "@/lib/hooks/useRouteGeometry"
+import { useRouteGeometry, haversineMeters, resolveSegmentMode, type RouteMode } from "@/lib/hooks/useRouteGeometry"
 
 // Dynamic import for MarkerClusterGroup (ESM-only package)
 import dynamic from "next/dynamic"
@@ -104,14 +104,16 @@ const TYPE_COLOR: Record<string, string> = {
 }
 
 // Detect iOS for navigation URL
-function getDirectionsUrl(fromLat: number, fromLng: number, toLat: number, toLng: number): string {
+function getDirectionsUrl(fromLat: number, fromLng: number, toLat: number, toLng: number, mode: RouteMode = "foot"): string {
   const isIOS =
     typeof navigator !== "undefined" &&
     (navigator.userAgent.includes("iPhone") || navigator.userAgent.includes("iPad"))
   if (isIOS) {
-    return `maps://maps.apple.com/?saddr=${fromLat},${fromLng}&daddr=${toLat},${toLng}`
+    const dirflg = mode === "car" ? "d" : mode === "transit" ? "r" : "w"
+    return `maps://maps.apple.com/?saddr=${fromLat},${fromLng}&daddr=${toLat},${toLng}&dirflg=${dirflg}`
   }
-  return `https://www.google.com/maps/dir/?api=1&origin=${fromLat},${fromLng}&destination=${toLat},${toLng}&travelmode=walking`
+  const travelmode = mode === "car" ? "driving" : mode === "transit" ? "transit" : "walking"
+  return `https://www.google.com/maps/dir/?api=1&origin=${fromLat},${fromLng}&destination=${toLat},${toLng}&travelmode=${travelmode}`
 }
 
 // Create marker icon with emoji by type + number badge
@@ -936,8 +938,15 @@ export function RealMapView({
 
             // Directions: from this activity to the next one
             const nextGeo = offsetGeo[index + 1]
+            const pairMode = nextGeo
+              ? resolveSegmentMode(
+                  haversineMeters(geo.lat, geo.lng, nextGeo.lat, nextGeo.lng),
+                  transportPrefs ?? [],
+                  maxWalkMeters ?? 1500
+                )
+              : "foot"
             const directionsUrl = nextGeo
-              ? getDirectionsUrl(geo.lat, geo.lng, nextGeo.lat, nextGeo.lng)
+              ? getDirectionsUrl(geo.lat, geo.lng, nextGeo.lat, nextGeo.lng, pairMode)
               : getDirectionsUrl(geo.lat, geo.lng, geo.lat, geo.lng) // last activity: self
 
             return (
