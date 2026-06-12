@@ -75,9 +75,10 @@ function buildTheForkUrl(restaurantName: string, destination: string): string {
 // ─── Booking.com ──────────────────────────────────────────────────────────────
 // Affiliate program: https://www.booking.com/affiliate-program/
 
-function buildBookingUrl(destination: string): string {
+export function buildBookingUrl(destination: string, checkin?: string, checkout?: string): string {
   const city = encodeURIComponent(destination)
-  return `https://www.booking.com/searchresults.html?ss=${city}&label=viaje360&aid=304142`
+  const dates = checkin && checkout ? `&checkin=${checkin}&checkout=${checkout}` : ""
+  return `https://www.booking.com/searchresults.html?ss=${city}&label=viaje360&aid=304142${dates}`
 }
 
 // ─── Activity type classification ────────────────────────────────────────────

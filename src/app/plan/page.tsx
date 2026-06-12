@@ -37,6 +37,7 @@ import { ProactiveInsightCard } from "@/components/features/ProactiveInsightCard
 import { BudgetTracker } from "@/components/features/BudgetTracker"
 import { PackingList } from "@/components/features/PackingList"
 import { LocalTipsCard } from "@/components/features/LocalTipsCard"
+import { WhereToStayCard } from "@/components/features/WhereToStayCard"
 import { useProactiveAdaptation } from "@/lib/hooks/useProactiveAdaptation"
 import { useProactiveInsights } from "@/lib/hooks/useProactiveInsights"
 import { MagicMomentCard } from "@/components/features/MagicMomentCard"
@@ -806,6 +807,22 @@ function PlanPageContent() {
               destination={String(currentTrip.destination)}
               lat={firstWithCoords?.lat}
               lng={firstWithCoords?.lng}
+            />
+          )}
+
+          {/* Where to stay */}
+          {currentTrip?.destination && (
+            <WhereToStayCard
+              destination={String(currentTrip.destination)}
+              startDate={currentTrip.startDate}
+              endDate={currentTrip.endDate}
+              savedZone={
+                onboardingData.accommodationZone.trim() &&
+                onboardingData.destination.trim().toLowerCase() ===
+                  String(currentTrip.destination).trim().toLowerCase()
+                  ? onboardingData.accommodationZone.trim()
+                  : null
+              }
             />
           )}
 
