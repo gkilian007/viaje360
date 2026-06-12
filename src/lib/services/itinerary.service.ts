@@ -43,8 +43,9 @@ const GEMINI_API_URL =
   "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent"
 
 const GROQ_ITINERARY_API_URL = "https://api.groq.com/openai/v1/chat/completions"
-// gpt-oss-120b: 131k context, 65536 max completion tokens — matches Gemini's maxOutputTokens
-const GROQ_ITINERARY_MODEL = "openai/gpt-oss-120b"
+// llama-4-scout: 30k TPM on the free tier — Groq pre-validates prompt + max_completion_tokens
+// against the model's TPM, so the request budget must stay well under that limit
+const GROQ_ITINERARY_MODEL = "meta-llama/llama-4-scout-17b-16e-instruct"
 
 const GEMINI_ITINERARY_RESPONSE_SCHEMA = {
   type: "OBJECT",
@@ -615,8 +616,7 @@ async function callGroqRaw(prompt: string): Promise<string> {
         model: GROQ_ITINERARY_MODEL,
         messages: [{ role: "user", content: prompt }],
         temperature: 0.2,
-        max_completion_tokens: 65536,
-        reasoning_effort: "low",
+        max_completion_tokens: 8192,
         response_format: { type: "json_object" },
       }),
     })
