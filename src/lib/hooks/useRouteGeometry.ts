@@ -200,7 +200,9 @@ export function useRouteGeometry(
               })
               const res = await fetch(`/api/transit-route?${params}`)
               data = res.ok ? ((await res.json()).data ?? null) : null
-              transitCache.set(cacheKey, data ?? null)
+              // Cache successes and genuine "no route" (404); transient errors
+              // (5xx/429) must stay uncached so a later run can retry.
+              if (data || res.status === 404) transitCache.set(cacheKey, data ?? null)
             }
             if (data?.steps?.length) {
               // Create sub-segments for each step (walk vs transit)
