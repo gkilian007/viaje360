@@ -5,13 +5,13 @@ import { getAllFeatureFlags, getFeatureFlag } from "./feature-flags"
 
 test("getFeatureFlag reads explicit true/false env values", () => {
   process.env.FEATURE_GOOGLE_PLACES = "true"
-  process.env.FEATURE_PLACES_CACHE = "0"
+  process.env.FEATURE_OPEN_METEO = "0"
 
   assert.equal(getFeatureFlag("GOOGLE_PLACES"), true)
-  assert.equal(getFeatureFlag("PLACES_CACHE"), false)
+  assert.equal(getFeatureFlag("OPEN_METEO"), false)
 
   delete process.env.FEATURE_GOOGLE_PLACES
-  delete process.env.FEATURE_PLACES_CACHE
+  delete process.env.FEATURE_OPEN_METEO
 })
 
 test("getAllFeatureFlags returns known flags with defaults", () => {

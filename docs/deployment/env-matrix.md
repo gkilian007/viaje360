@@ -19,8 +19,6 @@ Viaje360 backend supports three environments:
 | `VIAJE360_ALLOW_ANONYMOUS_FALLBACK` | optional | no | no | no |
 | `FEATURE_GOOGLE_PLACES` | optional | recommended | recommended | no |
 | `FEATURE_OPEN_METEO` | optional | recommended | recommended | no |
-| `FEATURE_PLACES_CACHE` | optional | recommended | recommended | no |
-| `FEATURE_WEATHER_CACHE` | optional | recommended | recommended | no |
 | `FEATURE_RATE_LIMITING` | optional | yes | yes | no |
 
 \* In dev, the app still works without service role for reduced/fallback flows, but Supabase-backed caching and some trusted server writes will be disabled/fail closed.
@@ -31,8 +29,6 @@ Viaje360 backend supports three environments:
 ```env
 FEATURE_GOOGLE_PLACES=false
 FEATURE_OPEN_METEO=true
-FEATURE_PLACES_CACHE=false
-FEATURE_WEATHER_CACHE=false
 FEATURE_RATE_LIMITING=false
 VIAJE360_ALLOW_ANONYMOUS_FALLBACK=true
 ```
@@ -41,8 +37,6 @@ VIAJE360_ALLOW_ANONYMOUS_FALLBACK=true
 ```env
 FEATURE_GOOGLE_PLACES=true
 FEATURE_OPEN_METEO=true
-FEATURE_PLACES_CACHE=true
-FEATURE_WEATHER_CACHE=true
 FEATURE_RATE_LIMITING=true
 VIAJE360_ALLOW_ANONYMOUS_FALLBACK=false
 ```
@@ -51,8 +45,6 @@ VIAJE360_ALLOW_ANONYMOUS_FALLBACK=false
 ```env
 FEATURE_GOOGLE_PLACES=true
 FEATURE_OPEN_METEO=true
-FEATURE_PLACES_CACHE=true
-FEATURE_WEATHER_CACHE=true
 FEATURE_RATE_LIMITING=true
 VIAJE360_ALLOW_ANONYMOUS_FALLBACK=false
 ```

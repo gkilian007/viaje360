@@ -29,8 +29,6 @@ Use `.env.example` as the canonical template for local/staging/prod variable nam
 Set as environment variables:
 - `FEATURE_GOOGLE_PLACES=true|false`
 - `FEATURE_OPEN_METEO=true|false`
-- `FEATURE_PLACES_CACHE=true|false`
-- `FEATURE_WEATHER_CACHE=true|false`
 - `FEATURE_RATE_LIMITING=true|false`
 
 ## Operational notes

@@ -1,10 +1,8 @@
-import { getFeatureFlag } from "@/lib/feature-flags"
 import { createServiceClient } from "@/lib/supabase/server"
 
 /**
  * Lightweight cache layer backed by Supabase tables.
  * TTL: places = 7 days.
- * Controlled by feature flag: FEATURE_PLACES_CACHE.
  */
 
 export function placesCacheKey(
@@ -17,8 +15,6 @@ export function placesCacheKey(
 }
 
 export async function getPlacesFromCache(cacheKey: string): Promise<unknown[] | null> {
-  if (!getFeatureFlag("PLACES_CACHE")) return null
-
   try {
     const supabase = createServiceClient()
     const { data, error } = await supabase
@@ -42,13 +38,11 @@ export async function setPlacesCache(
   results: unknown[],
   provider: string
 ): Promise<void> {
-  if (!getFeatureFlag("PLACES_CACHE")) return
-
   try {
     const supabase = createServiceClient()
     const expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString()
 
-    await supabase.from("places_cache").upsert(
+    const { error } = await supabase.from("places_cache").upsert(
       {
         cache_key: cacheKey,
         location,
@@ -59,6 +53,10 @@ export async function setPlacesCache(
       },
       { onConflict: "cache_key" }
     )
+
+    if (error) {
+      console.warn("[setPlacesCache] Failed to write cache:", error.message)
+    }
   } catch (err) {
     console.warn("[setPlacesCache] Failed to write cache:", err)
   }

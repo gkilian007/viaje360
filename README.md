@@ -281,10 +281,8 @@ Toggle features at runtime via environment variables:
 
 | Flag | Default | Description |
 |------|---------|-------------|
-| `FEATURE_GOOGLE_PLACES` | `false` | Use Google Places API as primary provider |
+| `FEATURE_GOOGLE_PLACES` | `true` | Use Google Places API as primary provider |
 | `FEATURE_OPEN_METEO` | `true` | Weather data from Open-Meteo |
-| `FEATURE_PLACES_CACHE` | `false` | Cache places responses in Supabase |
-| `FEATURE_WEATHER_CACHE` | `false` | Cache weather responses |
 | `FEATURE_RATE_LIMITING` | `true` | API rate limiting |
 
 ---
