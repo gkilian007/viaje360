@@ -53,7 +53,7 @@ export async function GET(req: NextRequest) {
     const token = authHeader?.replace("Bearer ", "")
     const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY
 
-    if (token && token !== serviceKey) {
+    if (!token || !serviceKey || token !== serviceKey) {
       return new Response(JSON.stringify({ error: "Unauthorized" }), {
         status: 401,
         headers: { "Content-Type": "application/json" },
