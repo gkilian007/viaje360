@@ -1229,6 +1229,16 @@ function PlanPageContent() {
                   </div>
                 )}
 
+                {/* Otros viajeros también visitaron */}
+                {currentTrip?.destination && (
+                  <div className="pt-4">
+                    <TravelersAlsoVisitedCard
+                      destination={String(currentTrip.destination)}
+                      excludeNames={itinerary.flatMap((d) => d.activities).map((a) => a.name)}
+                    />
+                  </div>
+                )}
+
                 {/* Where to stay */}
                 {currentTrip?.destination && (
                   <div className="px-4 pt-4">
