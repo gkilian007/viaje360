@@ -145,6 +145,26 @@ test("scoped filter includes alias variants", async () => {
   assert.ok(filter.includes('destination.ilike."new york"'))
 })
 
+test("remaps snapshots with null day dates instead of throwing", async () => {
+  const row = makeVersionRow({ id: "ver-null", tripId: "trip-null", destination: "Madrid", onboardingId: "ob-1" })
+  row.snapshot.days = [{ date: null as unknown as string }, { date: null as unknown as string }, { date: null as unknown as string }]
+
+  const { supabase } = makeFakeSupabase({
+    scopedRows: [row],
+    onboardingRows: [makeProfile("ob-1")],
+  })
+
+  const match = await findReusableItinerary(makeInput({ destination: "Madrid" }), { client: supabase })
+
+  assert.ok(match, "expected the null-dated snapshot to still produce a match")
+  assert.equal(match.sourceVersionId, "ver-null")
+  assert.deepEqual(
+    match.itinerary.days.map((day) => day.date),
+    ["2026-07-01", "2026-07-02", "2026-07-03"],
+    "null dates must fall back to consecutive days from the requested start"
+  )
+})
+
 test("returns null when candidates score below the threshold and no curated seed exists", async () => {
   const { supabase, calls } = makeFakeSupabase({
     // 5-day snapshot vs 3 requested days and no onboarding profile: 50 + 5 = 55 < 72.

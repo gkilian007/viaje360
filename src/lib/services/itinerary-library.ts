@@ -109,13 +109,20 @@ function getRequestedDayCount(input: OnboardingData): number {
 function remapDateKeepingTime(originalDate: string, targetDate: string, itinerary: GeneratedItinerary): GeneratedItinerary {
   const original = new Date(`${originalDate}T00:00:00Z`)
   const target = new Date(`${targetDate}T00:00:00Z`)
+  if (Number.isNaN(target.getTime())) return itinerary
   const baseDiffMs = target.getTime() - original.getTime()
 
   return {
     ...itinerary,
-    days: itinerary.days.map((day) => {
+    days: itinerary.days.map((day, index) => {
       const dayDate = new Date(`${day.date}T00:00:00Z`)
-      const shifted = new Date(dayDate.getTime() + baseDiffMs)
+      const shiftedMs = dayDate.getTime() + baseDiffMs
+      // Stored snapshots can carry null/garbage day dates (seen in prod);
+      // fall back to consecutive days from the target start instead of
+      // letting toISOString() throw on an Invalid Date.
+      const shifted = Number.isNaN(shiftedMs)
+        ? new Date(target.getTime() + index * 86400000)
+        : new Date(shiftedMs)
       return {
         ...day,
         date: shifted.toISOString().slice(0, 10),
