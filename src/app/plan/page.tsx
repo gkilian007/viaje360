@@ -37,6 +37,7 @@ import { ProactiveInsightCard } from "@/components/features/ProactiveInsightCard
 import { BudgetTracker } from "@/components/features/BudgetTracker"
 import { PackingList } from "@/components/features/PackingList"
 import { LocalTipsCard } from "@/components/features/LocalTipsCard"
+import { TravelersAlsoVisitedCard } from "@/components/features/TravelersAlsoVisitedCard"
 import { WhereToStayCard } from "@/components/features/WhereToStayCard"
 import { FlightLinksCard } from "@/components/features/FlightLinksCard"
 import { DestinationGuideCard } from "@/components/features/DestinationGuideCard"
@@ -813,6 +814,14 @@ function PlanPageContent() {
               destination={String(currentTrip.destination)}
               lat={firstWithCoords?.lat}
               lng={firstWithCoords?.lng}
+            />
+          )}
+
+          {/* Otros viajeros también visitaron */}
+          {currentTrip?.destination && (
+            <TravelersAlsoVisitedCard
+              destination={String(currentTrip.destination)}
+              excludeNames={itinerary.flatMap((d) => d.activities).map((a) => a.name)}
             />
           )}
 
