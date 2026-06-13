@@ -468,6 +468,90 @@ function TipsWidget() {
   )
 }
 
+function InviteWidget() {
+  const [email, setEmail] = useState("")
+  const [sending, setSending] = useState(false)
+  const [feedback, setFeedback] = useState<{ ok: boolean; text: string } | null>(null)
+  const [remaining, setRemaining] = useState<number | null>(null)
+
+  async function handleInvite(e: React.FormEvent) {
+    e.preventDefault()
+    const trimmed = email.trim()
+    if (!trimmed || sending) return
+    setSending(true)
+    setFeedback(null)
+    try {
+      const res = await fetch("/api/beta/invite", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email: trimmed }),
+      })
+      const payload = await res.json()
+      if (payload?.ok) {
+        setRemaining(payload.data.remaining)
+        if (payload.data.alreadyInvited) {
+          setFeedback({ ok: true, text: "Ese email ya tiene invitación" })
+        } else {
+          setFeedback({ ok: true, text: "¡Invitación enviada!" })
+          setEmail("")
+        }
+      } else {
+        setFeedback({ ok: false, text: payload?.error?.message ?? "No se pudo enviar la invitación" })
+      }
+    } catch {
+      setFeedback({ ok: false, text: "No se pudo enviar la invitación" })
+    }
+    setSending(false)
+  }
+
+  return (
+    <div
+      className="rounded-2xl p-4"
+      style={{
+        background: "var(--surface-container)",
+        border: "1px solid var(--border-color)",
+      }}
+    >
+      <div className="flex items-center gap-2 mb-3">
+        <span className="material-symbols-outlined text-[18px] text-[#0A84FF]">person_add</span>
+        <h3 className="text-[14px] font-bold text-[var(--on-surface)]">Invita a un amigo</h3>
+      </div>
+      <p className="text-[12px] text-[color:var(--on-surface-variant)] leading-relaxed mb-3">
+        La beta es privada: comparte tus invitaciones con quien quieras que pruebe Viaje360.
+      </p>
+      <form onSubmit={handleInvite} className="space-y-2">
+        <input
+          type="email"
+          required
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+          placeholder="email@ejemplo.com"
+          className="w-full px-3 py-2.5 rounded-xl text-[13px] text-[var(--on-surface)] placeholder:text-[color:var(--on-surface-variant)]"
+          style={{ background: "var(--surface-container-high)", border: "1px solid var(--border-color)" }}
+        />
+        <button
+          type="submit"
+          disabled={sending}
+          className="w-full px-3 py-2.5 rounded-xl text-[13px] font-semibold text-white disabled:opacity-60 active:scale-[0.98] transition-transform"
+          style={{ background: "linear-gradient(135deg, #0A84FF, #5856D6)" }}
+        >
+          {sending ? "Enviando..." : "Enviar invitación"}
+        </button>
+      </form>
+      {feedback && (
+        <p className="text-[12px] mt-2" style={{ color: feedback.ok ? "#30D158" : "#FF453A" }}>
+          {feedback.text}
+        </p>
+      )}
+      {remaining !== null && (
+        <p className="text-[11px] text-[color:var(--on-surface-variant)] mt-1">
+          Te quedan {remaining} {remaining === 1 ? "invitación" : "invitaciones"}
+        </p>
+      )}
+    </div>
+  )
+}
+
 // ─── Main page ───────────────────────────────────────────────────────────────
 
 export default function HomePage() {
@@ -829,6 +913,7 @@ export default function HomePage() {
               <TrendingWidget onSelect={handleNewTrip} />
               <StylesWidget onNewTrip={handleNewTrip} />
               <TipsWidget />
+              {authUser && <InviteWidget />}
             </div>
           </main>
 
@@ -837,6 +922,7 @@ export default function HomePage() {
             <TrendingWidget onSelect={handleNewTrip} />
             <StylesWidget onNewTrip={handleNewTrip} />
             <TipsWidget />
+            {authUser && <InviteWidget />}
           </aside>
 
         </div>
