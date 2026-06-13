@@ -207,6 +207,24 @@ export async function POST(req: NextRequest) {
       )
     ).catch((err) => console.warn("[generate] activity-assets Promise.allSettled error:", err))
 
+    // Record the generation for savings metrics (AI vs library reuse)
+    try {
+      const supabase = createServiceClient()
+      supabase
+        .from("generation_events")
+        .insert({
+          destination: body.destination,
+          source_type: generationSource.type,
+          score: generationSource.type === "ai" ? null : generationSource.score,
+          authenticated: Boolean(identity.userId),
+        })
+        .then(({ error }) => {
+          if (error) console.warn("[generate] generation_events insert error:", error.message)
+        })
+    } catch (err) {
+      console.warn("[generate] generation_events insert error:", err)
+    }
+
     // PostHog server-side tracking
     try {
       const ph = getServerPostHog()

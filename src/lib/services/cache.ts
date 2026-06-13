@@ -25,6 +25,14 @@ export async function getPlacesFromCache(cacheKey: string): Promise<unknown[] | 
       .single()
 
     if (error || !data) return null
+
+    // Count the hit for savings metrics — never block or fail the read.
+    supabase
+      .rpc("increment_places_cache_hit", { p_cache_key: cacheKey })
+      .then(({ error: rpcError }) => {
+        if (rpcError) console.warn("[getPlacesFromCache] hit count error:", rpcError.message)
+      })
+
     return Array.isArray(data.results) ? (data.results as unknown[]) : null
   } catch {
     return null
