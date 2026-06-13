@@ -11,9 +11,10 @@ interface TopAppBarProps {
   showBack?: boolean
   onShare?: () => void
   onCalendarExport?: () => void
+  onPdfExport?: () => void
 }
 
-export function TopAppBar({ title, showBack = false, onShare, onCalendarExport }: TopAppBarProps) {
+export function TopAppBar({ title, showBack = false, onShare, onCalendarExport, onPdfExport }: TopAppBarProps) {
   const { currentTrip, user } = useAppStore()
   const router = useRouter()
   const displayTitle = title ?? currentTrip?.name ?? "Viaje360"
@@ -73,6 +74,15 @@ export function TopAppBar({ title, showBack = false, onShare, onCalendarExport }
 
         {/* Right: share + notifications + avatar */}
         <div className="flex items-center gap-2">
+          {onPdfExport && (
+            <button
+              onClick={onPdfExport}
+              className="w-9 h-9 flex items-center justify-center rounded-full text-[#c0c6d6] hover:text-white hover:bg-white/10 transition-all"
+              title="Exportar PDF"
+            >
+              <span className="material-symbols-outlined text-[20px]">print</span>
+            </button>
+          )}
           {onCalendarExport && (
             <button
               onClick={onCalendarExport}

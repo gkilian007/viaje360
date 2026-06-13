@@ -172,3 +172,12 @@ div[style*="spline"] canvas,
 div > canvas {
   background: transparent !important;
 }
+
+/* Print (Exportar PDF) — light on white, let content flow across pages */
+@media print {
+  html, body {
+    background: #fff;
+    color: #1C1C1E;
+    height: auto;
+  }
+}

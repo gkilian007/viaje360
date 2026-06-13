@@ -334,6 +334,10 @@ function PlanPageContent() {
     window.open(`/api/trips/${currentTrip.id}/calendar`, "_blank")
   }, [currentTrip?.id])
 
+  const handlePdfExport = useCallback(() => {
+    window.print()
+  }, [])
+
   const handleShare = useCallback(async () => {
     if (!currentTrip?.id) return
     const shareUrl = `${window.location.origin}/share/${currentTrip.id}`
@@ -634,9 +638,9 @@ function PlanPageContent() {
   return (
     <>
       {/* ── Mobile Layout ── */}
-      <div className="lg:hidden flex flex-col h-screen bg-[var(--surface)]">
+      <div className="lg:hidden print:hidden flex flex-col h-screen bg-[var(--surface)]">
         {/* Top bar */}
-        <TopAppBar onShare={currentTrip?.id ? handleShare : undefined} onCalendarExport={currentTrip?.id ? handleCalendarExport : undefined} />
+        <TopAppBar onShare={currentTrip?.id ? handleShare : undefined} onCalendarExport={currentTrip?.id ? handleCalendarExport : undefined} onPdfExport={currentTrip?.id ? handlePdfExport : undefined} />
 
         {/* Scrollable content */}
         <div className="flex-1 overflow-y-auto pt-[72px] pb-24">
@@ -969,7 +973,7 @@ function PlanPageContent() {
       </div>
 
       {/* ── Desktop Layout ── */}
-      <div className="hidden lg:block h-screen">
+      <div className="hidden lg:block print:hidden h-screen">
         <DesktopLayout
           leftPanel={
             <div className="flex flex-col h-full">
@@ -993,6 +997,15 @@ function PlanPageContent() {
                     <h1 className="text-[20px] font-bold text-[var(--on-surface)]">{currentTrip?.name}</h1>
                   </div>
                   <div className="flex items-center gap-2">
+                    {currentTrip?.id && (
+                      <button
+                        onClick={handlePdfExport}
+                        className="w-9 h-9 rounded-xl flex items-center justify-center bg-white/5 hover:bg-white/10 transition-colors"
+                        title="Exportar PDF"
+                      >
+                        <span className="material-symbols-outlined text-[18px] text-[var(--on-surface-variant)]">print</span>
+                      </button>
+                    )}
                     {currentTrip?.id && (
                       <button
                         onClick={handleCalendarExport}
@@ -1306,6 +1319,8 @@ function PlanPageContent() {
         />
       </div>
 
+      {/* Modals & toasts (hidden in print) */}
+      <div className="contents print:hidden">
       {/* Activity detail modal */}
       <ErrorBoundary fallback={null}>
         <ActivityDetailModal
@@ -1396,6 +1411,38 @@ function PlanPageContent() {
           }}
         />
       )}
+      </div>
+
+      {/* Print-only itinerary (Exportar PDF → window.print) */}
+      <div className="hidden print:block bg-white text-[#1C1C1E] p-8">
+        <h1 className="text-2xl font-bold">{currentTrip?.name}</h1>
+        <p className="text-sm mt-1 capitalize">
+          {currentTrip?.destination}{currentTrip?.country ? `, ${currentTrip.country}` : ""}
+          {currentTrip?.startDate && currentTrip?.endDate ? ` · ${currentTrip.startDate} — ${currentTrip.endDate}` : ""}
+        </p>
+        {itinerary.map((day) => (
+          <div key={day.dayNumber} className="mt-6 break-inside-avoid">
+            <h2 className="text-lg font-semibold border-b border-[#1C1C1E]/20 pb-1">
+              Día {day.dayNumber}{day.date ? ` — ${day.date}` : ""}
+            </h2>
+            <table className="w-full mt-2 text-sm">
+              <tbody>
+                {day.activities.map((activity) => (
+                  <tr key={activity.id} className="align-top">
+                    <td className="w-16 py-1 pr-3 font-medium whitespace-nowrap">{activity.time}</td>
+                    <td className="py-1">
+                      <p className="font-medium">{activity.name}</p>
+                      {activity.location && <p className="text-[#1C1C1E]/60">{activity.location}</p>}
+                    </td>
+                    <td className="w-16 py-1 text-right whitespace-nowrap">{activity.cost > 0 ? `€${activity.cost}` : "Gratis"}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        ))}
+        <p className="mt-8 text-xs text-[#1C1C1E]/50">Generado con Viaje360 — viaje360.app</p>
+      </div>
     </>
   )
 }
