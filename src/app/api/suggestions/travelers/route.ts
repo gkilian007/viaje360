@@ -6,6 +6,18 @@ import type { DbActivityKnowledge } from "@/lib/supabase/database.types"
 
 const MAX_RESULTS = 12
 
+// Logistics entries that exist in activity_knowledge but are not places a
+// traveler would "visit" — they are itinerary plumbing (lodging returns,
+// metro stops, transfers, transit alerts). Excluded from suggestions.
+const NOISE_CATEGORIES = [
+  "hotel",
+  "metro_station",
+  "transport_hub",
+  "transport_network",
+  "bus_line",
+  "service_alert",
+] as const
+
 interface TravelerSuggestion {
   id: string
   name: string
@@ -47,6 +59,7 @@ export async function GET(req: NextRequest) {
         "id, canonical_name, category, address, metadata, booking_url, official_url, price_per_person, ticket_price, latitude, longitude"
       )
       .eq("destination", destination)
+      .not("category", "in", `(${NOISE_CATEGORIES.join(",")})`)
       .order("updated_at", { ascending: false })
       .limit(40)
 
