@@ -22,12 +22,19 @@
     },
     "src/app/api/cron/unified/route.ts": {
       "maxDuration": 45
+    },
+    "src/app/api/cron/nightly/route.ts": {
+      "maxDuration": 45
     }
   },
   "crons": [
     {
       "path": "/api/cron/unified",
       "schedule": "0 7 * * *"
+    },
+    {
+      "path": "/api/cron/nightly",
+      "schedule": "0 20 * * *"
     }
   ]
 }
