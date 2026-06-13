@@ -22,16 +22,11 @@ async function fetchTripMeta(tripId: string) {
       .select("id", { count: "exact", head: true })
       .eq("trip_id", tripId)
 
-    // Count activities from itinerary_days JSON
-    const { data: days } = await supabase
-      .from("itinerary_days")
-      .select("activities")
+    // Count activities from the activities table by trip
+    const { count: totalActivities } = await supabase
+      .from("activities")
+      .select("id", { count: "exact", head: true })
       .eq("trip_id", tripId)
-
-    const totalActivities = days?.reduce((acc, d) => {
-      const acts = d.activities as unknown[]
-      return acc + (Array.isArray(acts) ? acts.length : 0)
-    }, 0) ?? 0
 
     return {
       destination: trip.destination ?? "Viaje",
@@ -40,7 +35,7 @@ async function fetchTripMeta(tripId: string) {
       endDate: trip.end_date,
       imageUrl: trip.image_url,
       totalDays: count ?? 0,
-      totalActivities,
+      totalActivities: totalActivities ?? 0,
     }
   } catch {
     return null

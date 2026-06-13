@@ -58,7 +58,7 @@ export async function GET(
 
     // Fetch days
     const { data: daysRows, error: daysError } = await supabase
-      .from("trip_days")
+      .from("itinerary_days")
       .select("id, day_number, date")
       .eq("trip_id", tripId)
       .order("day_number", { ascending: true })
@@ -75,10 +75,10 @@ export async function GET(
       const { data: activitiesRows } = await supabase
         .from("activities")
         .select(
-          "id, day_id, name, type, location, time, end_time, duration_minutes, description, notes, lat, lng"
+          "id, day_id, name, type, location, time, end_time, duration, description, notes, latitude, longitude, sort_order"
         )
         .in("day_id", dayIds)
-        .order("time", { ascending: true })
+        .order("sort_order", { ascending: true })
 
       const activitiesByDayId = new Map<string, PublicActivity[]>()
       for (const row of activitiesRows ?? []) {
@@ -93,11 +93,11 @@ export async function GET(
           location: row.location as string,
           time: row.time as string,
           endTime: row.end_time as string | undefined,
-          duration: row.duration_minutes as number,
+          duration: (row.duration as number | null) ?? 0,
           description: row.description as string | undefined,
           notes: row.notes as string | undefined,
-          lat: row.lat as number | undefined,
-          lng: row.lng as number | undefined,
+          lat: row.latitude as number | undefined,
+          lng: row.longitude as number | undefined,
         })
       }
 

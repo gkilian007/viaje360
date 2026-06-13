@@ -111,7 +111,7 @@ export default function ShareTripClient() {
           <p className="text-4xl mb-4">🗺️</p>
           <h1 className="text-white text-xl font-semibold mb-2">Itinerario no encontrado</h1>
           <p className="text-[#c0c6d6] text-sm mb-6">Este plan de viaje no existe o ha sido eliminado.</p>
-          <Link href="/home" className="inline-block bg-[#0A84FF] text-white px-6 py-3 rounded-xl text-sm font-semibold">
+          <Link href="/login" className="inline-block bg-[#0A84FF] text-white px-6 py-3 rounded-xl text-sm font-semibold">
             Planifica tu viaje →
           </Link>
         </div>
@@ -127,7 +127,7 @@ export default function ShareTripClient() {
           <span className="text-white font-bold text-sm">Viaje360</span>
           <span className="text-[#c0c6d6] text-xs">· Plan compartido</span>
         </div>
-        <Link href="/home" className="text-[#0A84FF] text-sm font-semibold hover:underline">
+        <Link href="/login" className="text-[#0A84FF] text-sm font-semibold hover:underline">
           Planifica tu viaje →
         </Link>
       </header>
@@ -199,7 +199,7 @@ export default function ShareTripClient() {
             <span className="text-base">{copied ? "✅" : "🔗"}</span>
             {copied ? "Copiado" : "Compartir"}
           </button>
-          <Link href="/home" className="shrink-0 bg-gradient-to-r from-[#0A84FF] to-[#5E5CE6] text-white text-sm font-semibold px-5 py-2.5 rounded-xl">
+          <Link href="/login" className="shrink-0 bg-gradient-to-r from-[#0A84FF] to-[#5E5CE6] text-white text-sm font-semibold px-5 py-2.5 rounded-xl">
             Planifica tu viaje →
           </Link>
         </div>
